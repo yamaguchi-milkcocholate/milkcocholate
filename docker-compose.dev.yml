@@ -1,0 +1,16 @@
+version: '3'
+services:
+  jupyter:
+    build:
+      context: ./docker/jupyter
+    user: root
+    ports:
+      - "8888:8888"
+    volumes:
+      - "./src/jupyter/work:/home/jovyan/work"
+    command: start.sh jupyter lab --NotebookApp.password='sha1:c5b53f77b829:c9a1bb2b62071482b4d09cf99fc0f5baffe57755'
+  webserver:
+    build:
+      context: ./docker/webserver
+    ports:
+      - "8000:80"
