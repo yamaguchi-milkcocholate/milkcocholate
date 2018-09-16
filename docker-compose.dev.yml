@@ -7,10 +7,14 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - "./src/jupyter/work:/home/jovyan/work"
+      - ./src/jupyter/work:/home/jovyan/work
     command: start.sh jupyter lab --NotebookApp.password='sha1:c5b53f77b829:c9a1bb2b62071482b4d09cf99fc0f5baffe57755'
-  webserver:
+  flask:
     build:
-      context: ./docker/webserver
+      context: ./
+      dockerfile: ./docker/flask/Dockerfile
     ports:
-      - "8000:80"
+      - "5000:5000"
+    volumes:
+      - ./src/flask:/code
+    restart: always

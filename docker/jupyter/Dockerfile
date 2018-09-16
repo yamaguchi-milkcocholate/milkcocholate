@@ -7,5 +7,3 @@ LABEL titile     "DataScience"
 RUN pip install --upgrade pip
 RUN pip install jupyterlab
 RUN jupyter serverextension enable --py jupyterlab
-
-EXPOSE 8080
