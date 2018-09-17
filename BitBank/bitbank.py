@@ -1,9 +1,12 @@
 from flask import Flask, jsonify, request
 import sys, os
-sys.path.append(os.getcwd()+'/sample')
-from sample import Sample
+sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/API')
+from API.BitBankPubAPIManager import BitBankPubAPIManager
 import json
+
+
 app = Flask(__name__)
+bitBankPubAPIManager = BitBankPubAPIManager()
 
 
 @app.route("/", methods=['GET'])
@@ -23,10 +26,20 @@ def reply():
     return "reply"
 
 
-@app.route('/sample', methods=['GET'])
-def sample():
-    sam = Sample()
-    return sam.print_str()
+@app.route('/public/<pair>', methods=['GET'])
+def api_public_ticker(pair):
+    if not pair:
+        pair = 'btc_jpy'
+    value = bitBankPubAPIManager.get_ticker(pair)
+    return jsonify(value)
+
+
+@app.route('/public/<pair>', methods=['GET'])
+def api_public_depth(pair):
+    if not pair:
+        pair = 'btc_jpy'
+    value = bitBankPubAPIManager.get_depth(pair)
+    return jsonify(value)
 
 
 if __name__ == "__main__":

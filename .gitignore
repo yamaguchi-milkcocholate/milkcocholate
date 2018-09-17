@@ -1,0 +1,6 @@
+
+BitBank/.idea/*
+BitBank/.idea/vcs.xml
+BitBank/.idea/libraries/R_User_Library.xml
+*.xml
+BitBank/API/__pycache__/BitBankPubAPIManager.cpython-36.pyc

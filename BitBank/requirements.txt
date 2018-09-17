@@ -23,3 +23,4 @@ pillow
 h5py
 google-api-python-client
 flask
+configparser
