@@ -1,32 +1,17 @@
 from flask import Flask, jsonify, request
-import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(__file__))+'/API')
-from API.BitBankPubAPIManager import BitBankPubAPIManager
-import json
+from API import bitbankpub
 
 
 app = Flask(__name__)
-bitBankPubAPIManager = BitBankPubAPIManager()
+bitBankPubAPIManager = bitbankpub.BitBankPubAPIManager()
 
 
 @app.route("/", methods=['GET'])
 def hello():
-    return "BitBank"
+    return "BitBank 1.0"
 
 
-@app.route('/reply', methods=['GET'])
-def reply():
-    data = json.loads(request.data)
-    answer = "Yes, it is %s!\n" % data["keyword"]
-    result = {
-      "Content-Type": "application/json",
-      "Answer":{"Text": answer}
-    }
-    # return answer
-    return "reply"
-
-
-@app.route('/public/<pair>', methods=['GET'])
+@app.route('/public/ticker/<pair>', methods=['GET'])
 def api_public_ticker(pair):
     if not pair:
         pair = 'btc_jpy'
@@ -34,11 +19,20 @@ def api_public_ticker(pair):
     return jsonify(value)
 
 
-@app.route('/public/<pair>', methods=['GET'])
+@app.route('/public/depth/<pair>', methods=['GET'])
 def api_public_depth(pair):
     if not pair:
         pair = 'btc_jpy'
     value = bitBankPubAPIManager.get_depth(pair)
+    return jsonify(value)
+
+
+@app.route('/public/transactions/<pair>')
+def api_public_transaction(pair):
+    time = request.args.get('time')
+    if not pair:
+        pair = 'btc_jpy'
+    value = bitBankPubAPIManager.get_transactions(pair, time)
     return jsonify(value)
 
 
