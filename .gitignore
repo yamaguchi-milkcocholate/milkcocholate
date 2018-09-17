@@ -1,6 +1,7 @@
 
 BitBank/.idea/*
-BitBank/.idea/vcs.xml
-BitBank/.idea/libraries/R_User_Library.xml
+BitBank/config.ini
 *.xml
 BitBank/API/__pycache__/BitBankPubAPIManager.cpython-36.pyc
+.idea/milkcocholate.iml
+BitBank/API/__pycache__/__init__.cpython-36.pyc

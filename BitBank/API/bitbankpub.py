@@ -5,13 +5,13 @@ class BitBankPubAPIManager:
 
     def __init__(self):
         """
-        コンストラクタ
+        constructor
         """
         self.pub = python_bitbankcc.public()
 
     def get_ticker(self, pair):
         """
-        市場価格を取得
+        getting market price
         :param pair:
         :return:
         """
@@ -24,7 +24,7 @@ class BitBankPubAPIManager:
 
     def get_depth(self, pair):
         """
-        板情報を取得
+        getting board information
         :param pair:
         :return:
         """
@@ -37,7 +37,7 @@ class BitBankPubAPIManager:
 
     def get_transactions(self, pair, time=None):
         """
-        約定履歴を取得
+        getting contract history
         :param pair:
         :param time:
         :return:
@@ -51,7 +51,7 @@ class BitBankPubAPIManager:
 
     def get_candlestick(self, pair, candle_type, time=None):
         """
-        ロウソク足データを取得
+        getting candlestick information
         :param pair:
         :param candle_type:
         :param time:
