@@ -1,8 +1,6 @@
 from flask import Flask, jsonify, request
 import sys, os
 sys.path.append(os.getcwd()+'/sample')
-from sample import Sample
-import json
 app = Flask(__name__)
 
 
