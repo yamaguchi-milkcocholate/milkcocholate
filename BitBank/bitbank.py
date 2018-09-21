@@ -36,5 +36,12 @@ def api_public_transaction(pair):
     return jsonify(value)
 
 
+@app.route('/public/candlestick/<pair>/<type>')
+def api_public_candlestick(pair, type):
+    time = request.args.get('time')
+    value = bitBankPubAPIManager.get_candlestick(pair, type, time)
+    return jsonify(value)
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=10080, debug=True)
