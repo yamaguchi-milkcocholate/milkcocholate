@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5e1e9a62-e836-4b25-9bc4-28fa9f51b1f6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jupyter/work/bitbank/.ipynb_checkpoints/sample-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Jupyter/work/bitbank/.ipynb_checkpoints/sample-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jupyter/work/bitbank/sample.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Jupyter/work/bitbank/sample.ipynb" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,16 +14,18 @@
     <session id="1932633222">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="2" />
+          <entry key="project.closed" value="3" />
+          <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.5" value="1" />
           <entry key="project.open.time.6" value="1" />
-          <entry key="project.opened" value="3" />
+          <entry key="project.opened" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="Dockerfile" value="5" />
+          <entry key="gitignore" value="1" />
           <entry key="py" value="3" />
           <entry key="yml" value="2" />
         </counts>
@@ -33,6 +33,7 @@
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="Dockerfile" value="5" />
+          <entry key="PLAIN_TEXT" value="1" />
           <entry key="Python" value="3" />
           <entry key="YAML" value="2" />
         </counts>
@@ -40,14 +41,14 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="Dockerfile" value="46" />
-          <entry key="py" value="261" />
+          <entry key="py" value="284" />
           <entry key="yml" value="96" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="Dockerfile" value="46" />
-          <entry key="Python" value="261" />
+          <entry key="Python" value="284" />
           <entry key="YAML" value="96" />
         </counts>
       </usages-collector>
@@ -66,15 +67,24 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/BitBank/bitbank.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="636">
-              <caret line="39" column="39" lean-forward="true" selection-start-line="39" selection-start-column="39" selection-end-line="39" selection-end-column="39" />
+            <state relative-caret-position="772">
+              <caret line="47" selection-start-line="47" selection-end-line="47" />
               <folding>
                 <element signature="e#0#41#0" expanded="true" />
-                <marker date="1537493353459" expanded="true" signature="957:1089" ph="..." />
+                <marker date="1537533096791" expanded="true" signature="957:1182" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="34">
+              <caret line="2" column="18" lean-forward="true" selection-start-line="2" selection-start-column="18" selection-end-line="2" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -138,17 +148,6 @@
               <item name="milkcocholate" type="b2602c69:ProjectViewProjectNode" />
               <item name="milkcocholate" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="milkcocholate" type="b2602c69:ProjectViewProjectNode" />
-              <item name="milkcocholate" type="462c0819:PsiDirectoryNode" />
-              <item name="Jupyter" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="milkcocholate" type="b2602c69:ProjectViewProjectNode" />
-              <item name="milkcocholate" type="462c0819:PsiDirectoryNode" />
-              <item name="Jupyter" type="462c0819:PsiDirectoryNode" />
-              <item name="work" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -191,7 +190,7 @@
     <frame x="-1928" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.2553305" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25799572" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -267,12 +266,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/BitBank/bitbank.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="636">
-          <caret line="39" column="39" lean-forward="true" selection-start-line="39" selection-start-column="39" selection-end-line="39" selection-end-column="39" />
+        <state relative-caret-position="772">
+          <caret line="47" selection-start-line="47" selection-end-line="47" />
           <folding>
             <element signature="e#0#41#0" expanded="true" />
-            <marker date="1537493353459" expanded="true" signature="957:1089" ph="..." />
+            <marker date="1537533096791" expanded="true" signature="957:1182" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="18" lean-forward="true" selection-start-line="2" selection-start-column="18" selection-end-line="2" selection-end-column="18" />
         </state>
       </provider>
     </entry>
