@@ -1,4 +1,4 @@
-
+*.pyc
 BitBank/.idea/*
 BitBank/config.ini
 *.xml
