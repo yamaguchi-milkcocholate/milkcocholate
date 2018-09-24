@@ -1,18 +1,26 @@
-import numpy as np
-import os
 import pandas as pd
+from exceptions import exceptions
 
 
 class MacD:
 
-    def __init__(self, candlestick, short, long, signal):
-        """
+    def __init__(self):
+        self.__can_calculate = False
+        self.__candlestick = None
+        self.__short = None
+        self.__long = None
+        self.__signal = None
+        self.__list = None
+        self.data = None
 
-        :param candlestick: DataFrame
-        :param short:       int
-        :param long:        int
-        :param signal:      int
+    def setting(self, candlestick, short, long, signal):
         """
+                :param candlestick: DataFrame
+                :param short:       int
+                :param long:        int
+                :param signal:      int
+                """
+        self.__can_calculate = True
         self.__candlestick = candlestick
         self.__short = short
         self.__long = long
@@ -21,6 +29,8 @@ class MacD:
         self.data = pd.DataFrame([], columns=['end', 'short_term', 'long_term', 'time'])
 
     def calculate(self):
+        if self.__can_calculate is not True:
+            raise exceptions.SettingError("call function 'setting()' before calling function 'calculate()'...")
         columns = ['end', 'short_term', 'long_term', 'time']
         line = self.__new_first_line()
         self.__append_line(line, columns)
