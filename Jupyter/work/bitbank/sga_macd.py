@@ -11,7 +11,7 @@ class SgaMacd:
         situation.append((1, 50))
         situation.append((2, 100))
         situation.append((1, 50))
-        self.ga = sga.SimpleGeneticAlgorithm(situation, population=2)
+        self.ga = sga.SimpleGeneticAlgorithm(situation, population=5)
 
     def back_test(self, steps=DEFAULT_STEPS):
         self.ga(steps)

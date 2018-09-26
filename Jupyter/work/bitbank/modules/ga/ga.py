@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import pprint
 
 
 class GeneticAlgorithm:
@@ -46,8 +45,6 @@ class GeneticAlgorithm:
     @staticmethod
     def calc_fitness(geno_type, fitness_function):
         fitness = fitness_function.calc_fitness(geno_type)
-        # Todo: fitness
-        fitness = np.ones((geno_type.shape[0]), int)
         return fitness
 
     def determine_next_generation(self, geno_type, fitness, elite_num):
@@ -86,9 +83,8 @@ class GeneticAlgorithm:
                 value = self.situation[situ_i]
                 geno_type[geno_i][situ_i] = random.randrange(value[0], value[1])
 
-        rest = geno_type[:elite_num]
+        rest = geno_type[elite_num:]
         geno_type = np.asarray(np.r_[elites, rest], int)
-
         return geno_type
 
     @staticmethod
