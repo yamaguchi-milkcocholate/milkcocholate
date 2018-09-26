@@ -44,3 +44,4 @@ services:
     depends_on:
     - data
     command: python /home/bitbank/bitbank.py
+    restart: always
