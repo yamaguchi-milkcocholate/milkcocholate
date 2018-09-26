@@ -1,22 +1,36 @@
 from . import ga
+import pprint
+import pickle
+from modules.fitnessfunction import simple_macd_params
 
 
-class SimpleGeneticAlgorithm(ga.GeneticAlgorithm, type='sga'):
+class SimpleGeneticAlgorithm:
 
-    def __init__(self, situation, action, population):
-        super().__init__(situation, action, population)
+    def __init__(self, situation, population, mutation, cross, elite_num):
+        self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num)
+        self.fitness_function = simple_macd_params.SimpleMacDParams()
+        self.population = population
+        self.situation = situation
+        self.geno_type = None
+        self.fitness = None
 
     def init_population(self):
-        pass
+        self.geno_type = self.ga.init_population(self.situation, self.population)
 
     def generation(self, steps):
-        pass
+        self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function)
+        self.save_geno_type()
 
-    def calc_fitness(self, steps):
-        pass
+    def show_geno_type(self):
+        pprint.pprint(self.geno_type)
+        print('count: ', len(self.geno_type))
 
-    def determine_next_generation(self):
-        pass
+    def show_fitness(self):
+        pprint.pprint(self.fitness)
+        print('count: ', len(self.fitness))
 
-    def obtain_situation(self):
-        pass
+    def save_geno_type(self):
+        save_file = 'geno_type.pkl'
+        with open(save_file, 'wb') as f:
+            pickle.dump(self.geno_type, f)
+        print('saved geno_type')

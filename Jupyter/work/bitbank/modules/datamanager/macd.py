@@ -15,11 +15,11 @@ class MacD:
 
     def setting(self, candlestick, short, long, signal):
         """
-                :param candlestick: DataFrame
-                :param short:       int
-                :param long:        int
-                :param signal:      int
-                """
+        :param candlestick: DataFrame
+        :param short:       int
+        :param long:        int
+        :param signal:      int
+        """
         self.__can_calculate = True
         self.__candlestick = candlestick
         self.__short = short
@@ -32,32 +32,33 @@ class MacD:
         if self.__can_calculate is not True:
             raise exceptions.SettingError("call function 'setting()' before calling function 'calculate()'...")
         columns = ['end', 'short_term', 'long_term', 'time']
-        line = self.__new_first_line()
-        self.__append_line(line, columns)
-        pre_line = self.__peek_line()
+        line = self.__new_first_line(self)
+        self.__append_line(self, line, columns)
+        pre_line = self.__peek_line(self)
 
         for index in range(self.__long, len(self.__candlestick)):
-            line = self.__new_following_line(index, pre_line)
-            self.__append_line(line, columns)
-            pre_line = self.__peek_line()
+            line = self.__new_following_line(self, index, pre_line)
+            self.__append_line(self, line, columns)
+            pre_line = self.__peek_line(self)
 
         columns = ['end', 'short_term', 'long_term', 'time', 'macd', 'macd_signal']
         for item in self.__list:
             macd = float(item['short_term']) - float(item['long_term'])
             item['macd'] = macd
 
-        self.__replace_line_to_data_frame()
+        self.__replace_line_to_data_frame(self)
 
-        line = self.__extend_first_line()
-        self.__append_line(line, columns)
-        pre_line = self.__peek_line()
+        line = self.__extend_first_line(self)
+        self.__append_line(self, line, columns)
+        pre_line = self.__peek_line(self)
 
         for index in range(self.__signal, len(self.data)):
-            line = self.__extend_following_line(index, pre_line)
-            self.__append_line(line, columns)
-            pre_line = self.__peek_line()
+            line = self.__extend_following_line(self, index, pre_line)
+            self.__append_line(self, line, columns)
+            pre_line = self.__peek_line(self)
 
-        self.__replace_line_to_data_frame()
+        self.__replace_line_to_data_frame(self)
+        self.__can_calculate = False
         return self.data
 
     def __new_first_line(self):
