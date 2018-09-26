@@ -38,11 +38,9 @@ class GeneticAlgorithm:
         """
         fitness = self.calc_fitness(geno_type, fitness_function)
         for step_i in range(steps):
-            print('No. ', step_i)
+            print('No. ', step_i + 1)
             geno_type = self.determine_next_generation(geno_type, fitness, self.elite_num)
             fitness = self.calc_fitness(geno_type, fitness_function)
-            if step_i % 100 == 0:
-                print('No. ', step_i)
         return geno_type, fitness
 
     @staticmethod
@@ -103,5 +101,5 @@ class GeneticAlgorithm:
         :return: numpy
         """
         fitness = np.argsort(fitness)[::-1]
-        elites = geno_type[fitness[:num - 1]]
+        elites = geno_type[fitness[:num]]
         return elites

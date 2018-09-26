@@ -1,35 +1,32 @@
 from modules.ga import sga
 from modules.datamanager import macd
-from modules.datamanager import picker
 import matplotlib.pyplot as plt
 
 
 class SgaMacd:
+    DEFAULT_STEPS = 10000
 
     def __init__(self):
-        self.picker = picker.Picker('1hour')
-        candlestick = self.picker.get_candlestick()
-        situation = dict()
-        situation['short'] = (1, 50)
-        situation['long'] = (2, 100)
-        situation['signal'] = (1, 50)
-        action = dict()
-        action['buy'] = (0, 100)
-        action['sale'] = (0, 100)
-        self.ga = sga.SimpleGeneticAlgorithm(situation, action, 100)
-        self.approach = macd.MacD()
-        self.approach.setting(candlestick, 13, 26, 9)
-        self.data = self.approach.calculate()
-        self.data.set_index('time', inplace=True)
+        situation = list()
+        situation.append((1, 50))
+        situation.append((2, 100))
+        situation.append((1, 50))
+        self.ga = sga.SimpleGeneticAlgorithm(situation, population=2)
+
+    def back_test(self, steps=DEFAULT_STEPS):
+        self.ga(steps)
 
     def show_graph(self):
-        plt.style.use('ggplot')
-        self.data.plot()
-        plt.show()
+        pass
+        #plt.style.use('ggplot')
+        #self.data.plot()
+        #plt.show()
 
 
 if __name__ == '__main__':
     sga_macd = SgaMacd()
-    sga_macd.show_graph()
+    sga_macd.back_test(10)
+    sga_macd.ga.init_population()
+    #sga_macd.show_graph()
 
 
