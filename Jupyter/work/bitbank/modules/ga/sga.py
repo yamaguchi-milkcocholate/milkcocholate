@@ -7,7 +7,7 @@ from modules.fitnessfunction import simple_macd_params
 class SimpleGeneticAlgorithm:
 
     def __init__(self, situation, population=100, mutation=2, cross=70, elite_num=1, candle_type='1hour'):
-        self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num)
+        self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num=elite_num, population=population)
         self.fitness_function = simple_macd_params.SimpleMacDParams(candle_type)
         self.population = population
         self.situation = situation
@@ -19,7 +19,7 @@ class SimpleGeneticAlgorithm:
         self.generation(steps)
 
     def init_population(self):
-        self.geno_type = self.ga.init_population(self.situation, self.population)
+        self.geno_type = self.ga.init_population(self.situation)
 
     def generation(self, steps):
         self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function)

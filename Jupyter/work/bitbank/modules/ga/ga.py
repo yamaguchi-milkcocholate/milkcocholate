@@ -5,24 +5,29 @@ import pickle
 
 class GeneticAlgorithm:
 
-    def __init__(self, mutation, cross, situation, elite_num):
+    def __init__(self, mutation, cross, situation, elite_num, population):
         self.mutation = mutation
         self.cross = cross
+        for i in situation:
+            if type(i) is not tuple:
+                raise TypeError('need tuple')
         self.situation = situation
+        if population < elite_num:
+            raise ArithmeticError('population must be larger than elite_num')
+        if (population + elite_num) % 2 is not 0:
+            raise ArithmeticError('population + elite_num is must be even')
+        self.population = population
         self.elite_num = elite_num
 
-    @staticmethod
-    def init_population(situation, population):
+    def init_population(self):
         """
-        :param situation: dict(tuple)
-        :param population: int
         :return: numpy
         """
         pop_list = []
-        for pop_i in range(population):
+        for pop_i in range(self.population):
             inter_list = []
-            for situ_i in range(len(situation)):
-                value = situation[situ_i]
+            for situ_i in range(len(self.situation)):
+                value = self.situation[situ_i]
                 inter_list.append(random.randint(value[0], value[1]))
             pop_list.append(np.asarray(inter_list, int))
         return np.asarray(pop_list, int)
@@ -32,7 +37,6 @@ class GeneticAlgorithm:
 
         :param steps: int
         :param geno_type: numpy
-        :param fitness: numpy
         :param fitness_function: fitnessfunction
         :return:
         """

@@ -2,6 +2,7 @@ import unittest
 import sys
 import os
 sys.path.append(os.pardir)
+
 from modules.ga import sga
 
 
