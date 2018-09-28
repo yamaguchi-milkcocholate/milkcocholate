@@ -11,7 +11,7 @@ class SgaMacd:
         situation.append((1, 50))
         situation.append((2, 100))
         situation.append((1, 50))
-        self.ga = sga.SimpleGeneticAlgorithm(situation, population=5)
+        self.ga = sga.SimpleGeneticAlgorithm(situation, population=11)
 
     def back_test(self, steps=DEFAULT_STEPS):
         self.ga(steps)
@@ -25,8 +25,7 @@ class SgaMacd:
 
 if __name__ == '__main__':
     sga_macd = SgaMacd()
-    sga_macd.back_test(10)
-    sga_macd.ga.init_population()
-    #sga_macd.show_graph()
-
+    sga_macd.back_test(1000)
+    print(sga_macd.ga.geno_type)
+    print(sga_macd.ga.fitness)
 
