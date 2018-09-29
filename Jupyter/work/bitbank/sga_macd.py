@@ -1,8 +1,5 @@
 from modules.ga import sga
-from modules.datamanager import macd
-import matplotlib.pyplot as plt
 from modules.fitnessfunction import simple_macd_params
-
 
 
 class SgaMacd:
@@ -19,12 +16,6 @@ class SgaMacd:
 
     def back_test(self, steps=DEFAULT_STEPS):
         self.ga(steps)
-
-    def show_graph(self):
-        pass
-        #plt.style.use('ggplot')
-        #self.data.plot()
-        #plt.show()
 
 
 if __name__ == '__main__':

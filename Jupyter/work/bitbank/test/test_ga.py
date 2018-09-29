@@ -3,9 +3,7 @@ import sys
 import os
 import numpy as np
 sys.path.append(os.pardir)
-from modules.fitnessfunction import simple_macd_params
 from modules.ga import ga
-import pandas as pd
 
 
 class TestGa(unittest.TestCase):
@@ -76,18 +74,6 @@ class TestGa(unittest.TestCase):
 
         def tearDown(self):
             pass
-"""
-    def test_determine_next_generation(self):
-        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50), (1, 50)], population=4, elite_num=2)
-        geno_type = np.asarray([[1, 10], [2, 20], [3, 30], [4, 40]])
-        fitness = np.asarray([10, 20, 30, 40])
-        geno_type = self.ga.determine_next_generation(geno_type, fitness)
-        self.assertIsInstance(geno_type, type(np.asarray([])))
-        self.assertIsInstance(geno_type[0], type(np.asarray([])))
-        self.assertIsInstance(geno_type[0][0], type(np.asarray([1])[0]))
-        self.assertEqual(len(geno_type), 4)
-        del self.ga
-"""
 
 
 class SampleFitnessFunction:

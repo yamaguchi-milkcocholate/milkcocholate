@@ -1,5 +1,4 @@
 from . import ga
-import pprint
 import pickle
 import numpy as np
 import random
