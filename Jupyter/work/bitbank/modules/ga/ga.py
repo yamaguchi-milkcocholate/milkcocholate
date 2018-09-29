@@ -64,13 +64,12 @@ class GeneticAlgorithm:
         new_geno_type = np.empty((0, situations), int)
         elites = self.select_elites(geno_type, fitness)
 
-        for geno_i in range(elite_num, population):
+        for geno_i in range(0, population):
             roulette = random.randrange(0, sum_fitness)
             select_index = np.where(field >= roulette)
-            select_index = select_index[0]
-            new_geno_type = np.r_[new_geno_type, geno_type[select_index]]
+            new_geno_type = np.r_[new_geno_type, geno_type[select_index[0][:1]]]
 
-        for geno_i in range(elite_num, population, 2):
+        for geno_i in range(0, population, 2):
             rand = random.randrange(0, 100)
             if rand >= self.cross:
                 continue
@@ -81,7 +80,7 @@ class GeneticAlgorithm:
             geno_type[pair_i] = np.asarray(np.r_[new_geno_type[pair_i][:cut_point + 1],
                                                  new_geno_type[geno_i][cut_point + 1:]], int)
 
-        for geno_i in range(elite_num, population):
+        for geno_i in range(self.elite_num, population):
             for situ_i in range(situations):
                 rand = random.randrange(0, 100)
                 if rand >= self.mutation:
