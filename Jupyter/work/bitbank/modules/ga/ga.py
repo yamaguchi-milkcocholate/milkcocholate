@@ -34,7 +34,6 @@ class GeneticAlgorithm:
 
     def generation(self, steps, geno_type, fitness_function):
         """
-
         :param steps: int
         :param geno_type: numpy
         :param fitness_function: fitnessfunction
@@ -43,7 +42,7 @@ class GeneticAlgorithm:
         fitness = self.calc_fitness(geno_type, fitness_function)
         for step_i in range(steps):
             print('No. ', step_i + 1)
-            geno_type = self.determine_next_generation(geno_type, fitness, self.elite_num)
+            geno_type = self.determine_next_generation(geno_type, fitness)
             fitness = self.calc_fitness(geno_type, fitness_function)
             self.save_geno_type(geno_type)
         return geno_type, fitness
@@ -53,7 +52,7 @@ class GeneticAlgorithm:
         fitness = fitness_function.calc_fitness(geno_type)
         return fitness
 
-    def determine_next_generation(self, geno_type, fitness, elite_num):
+    def determine_next_generation(self, geno_type, fitness):
         sum_fitness = 0
         population = geno_type.shape[0]
         situations = geno_type.shape[1]
@@ -63,7 +62,7 @@ class GeneticAlgorithm:
             field.append(sum_fitness)
         field = np.asarray(field, int)
         new_geno_type = np.empty((0, situations), int)
-        elites = self.select_elites(geno_type, fitness, elite_num)
+        elites = self.select_elites(geno_type, fitness)
 
         for geno_i in range(elite_num, population):
             roulette = random.randrange(0, sum_fitness)
@@ -90,21 +89,18 @@ class GeneticAlgorithm:
                 value = self.situation[situ_i]
                 geno_type[geno_i][situ_i] = random.randrange(value[0], value[1])
 
-        rest = geno_type[elite_num:]
+        rest = geno_type[self.elite_num:]
         geno_type = np.asarray(np.r_[elites, rest], int)
         return geno_type
 
-    @staticmethod
-    def select_elites(geno_type, fitness, num):
+    def select_elites(self, geno_type, fitness):
         """
-
-        :param num: int
         :param fitness: numpy
         :param geno_type numpy
         :return: numpy
         """
         fitness = np.argsort(fitness)[::-1]
-        elites = geno_type[fitness[:num]]
+        elites = geno_type[fitness[:self.elite_num]]
         return elites
 
     @staticmethod

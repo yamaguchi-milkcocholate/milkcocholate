@@ -19,7 +19,7 @@ class SimpleGeneticAlgorithm:
         self.generation(steps)
 
     def init_population(self):
-        self.geno_type = self.ga.init_population(self.situation)
+        self.geno_type = self.ga.init_population()
 
     def generation(self, steps):
         self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function)
