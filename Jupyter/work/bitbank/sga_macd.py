@@ -1,6 +1,8 @@
 from modules.ga import sga
 from modules.datamanager import macd
 import matplotlib.pyplot as plt
+from modules.fitnessfunction import simple_macd_params
+
 
 
 class SgaMacd:
@@ -11,7 +13,9 @@ class SgaMacd:
         situation.append((1, 50))
         situation.append((2, 100))
         situation.append((1, 50))
-        self.ga = sga.SimpleGeneticAlgorithm(situation, population=11)
+        candle_type = '1hour'
+        fitness_function = simple_macd_params.SimpleMacDParams(candle_type)
+        self.ga = sga.SimpleGeneticAlgorithm(situation, population=11, fitness_function=fitness_function)
 
     def back_test(self, steps=DEFAULT_STEPS):
         self.ga(steps)
