@@ -3,7 +3,9 @@ import sys
 import os
 import numpy as np
 sys.path.append(os.pardir)
+from modules.fitnessfunction import simple_macd_params
 from modules.ga import ga
+import pandas as pd
 
 
 class TestGa(unittest.TestCase):
@@ -52,11 +54,51 @@ class TestGa(unittest.TestCase):
         self.assertEqual(10, len(result))
         del self.ga
 
-    def generation(self):
+    def test_calc_fitness(self):
+        fitness_function = SampleFitnessFunction()
         self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50)], population=10, elite_num=2)
+        geno_type = np.asarray([[1, 2], [3, 4], [5, 6]])
+        fitness = self.ga.calc_fitness(geno_type, fitness_function)
+        self.assertEqual(fitness[0][0], 1)
+        self.assertEqual(fitness[0][1], 2)
+        self.assertEqual(fitness[1][0], 3)
+        self.assertEqual(fitness[1][1], 4)
+        self.assertEqual(fitness[2][0], 5)
+        self.assertEqual(fitness[2][1], 6)
+        del self.ga
+
+    def test_determine_next_generation(self):
+        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50), (1, 50)], population=4, elite_num=2)
+        geno_type = np.asarray([[1, 10], [2, 20], [3, 30], [4, 40]])
+        fitness = np.asarray([10, 20, 30, 40])
+        geno_type = self.ga.determine_next_generation(geno_type, fitness)
+        self.assertIsInstance(geno_type, type(np.asarray([])))
+        self.assertIsInstance(geno_type[0], type(np.asarray([])))
+        self.assertIsInstance(geno_type[0][0], type(np.asarray([1])[0]))
+        self.assertEqual(len(geno_type), 4)
+        del self.ga
+
+    def test_select_elites(self):
+        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50), (1, 50)], population=4, elite_num=2)
+        geno_type = np.asarray([[1, 10], [2, 20], [3, 30], [4, 40]])
+        fitness = np.asarray([10, 20, 30, 40])
+        elites = self.ga.select_elites(geno_type, fitness)
+        self.assertIsInstance(elites, type(np.asarray([])))
+        self.assertIsInstance(elites[0], type(np.asarray([])))
+        self.assertEqual(elites[0][0], 4)
+        self.assertEqual(elites[0][1], 40)
+        self.assertEqual(elites[1][0], 3)
+        self.assertEqual(elites[1][1], 30)
 
     def tearDown(self):
         pass
+
+
+class SampleFitnessFunction:
+
+    @staticmethod
+    def calc_fitness(geno_type):
+        return geno_type
 
 
 if __name__ == '__main__':
