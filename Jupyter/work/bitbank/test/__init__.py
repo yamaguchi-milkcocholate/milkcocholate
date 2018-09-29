@@ -1,2 +1,2 @@
 from . import test_sample
-from . import test_sga
+from test.ga import test_sga
