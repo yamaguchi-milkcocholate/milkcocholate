@@ -1,23 +1,23 @@
-from flask import Flask, jsonify, request
-import sys, os
-sys.path.append(os.getcwd()+'/sample')
+from flask import Flask, jsonify, request, render_template
 app = Flask(__name__)
 
 
 @app.route("/", methods=['GET'])
-def hello():
-    return "Hello World"
-
-
-@app.route('/reply', methods=['GET'])
-def reply():
-    return "reply"
-
-
-@app.route('/sample', methods=['GET'])
-def sample():
-    sam = Sample()
-    return sam.print_str()
+def index():
+    prefectures = list()
+    prefectures.append(('hokkaido', 1))
+    prefectures.append(('aomori', 2))
+    prefectures.append(('iwate', 3))
+    prefectures.append(('miyagi', 4))
+    prefectures.append(('akita', 5))
+    prefectures.append(('yamagata', 6))
+    prefectures.append(('fukusima', 7))
+    prefectures.append(('ibaraki', 8))
+    prefectures.append(('tochigi', 9))
+    prefectures.append(('gunma', 10))
+    prefectures.append(('chiba', 11))
+    prefectures.append(('kanagawa', 12))
+    return render_template('index.html', prefectures=prefectures)
 
 
 if __name__ == "__main__":
