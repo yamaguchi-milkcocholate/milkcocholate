@@ -24,6 +24,7 @@ class Scheduler:
 
     def processing(self, *args):
         self.runner.processing(*args)
+        print(*args)
 
     def schedule(self):
         print('start', self.start)
@@ -37,4 +38,3 @@ class Scheduler:
             time_i += span
         print(type(self.scheduler.queue))
         self.scheduler.run()
-

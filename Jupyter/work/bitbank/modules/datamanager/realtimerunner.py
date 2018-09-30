@@ -22,9 +22,11 @@ class RealTimeRunner:
             body = res.read()
         self.depth_list.append(json.loads(body.decode('utf-8')))
 
+        pprint.pprint(self.ticker_list[len(self.ticker_list) - 1])
+        pprint.pprint(self.depth_list[len(self.depth_list) - 1])
+
     def show_ticker_list(self):
         pprint.pprint(self.ticker_list)
 
     def show_depth_list(self):
         pprint.pprint(self.depth_list)
-
