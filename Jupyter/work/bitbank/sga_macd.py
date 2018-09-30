@@ -17,6 +17,9 @@ class SgaMacd:
     def back_test(self, steps=DEFAULT_STEPS):
         self.ga(steps)
 
+    def processing(self):
+        pass
+
 
 if __name__ == '__main__':
     sga_macd = SgaMacd()
