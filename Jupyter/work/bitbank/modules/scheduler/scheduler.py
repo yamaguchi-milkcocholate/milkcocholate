@@ -20,9 +20,10 @@ class Scheduler:
 
     def __call__(self):
         self.schedule()
+        return self.runner
 
-    def processing(self, time_at):
-        self.runner.processing(time_at)
+    def processing(self, *args):
+        self.runner.processing(*args)
 
     def schedule(self):
         print('start', self.start)
@@ -34,5 +35,6 @@ class Scheduler:
         while time_i <= int(time.mktime(self.end.timetuple())):
             self.scheduler.enterabs(time_i, 1, self.processing, argument=(datetime.datetime.fromtimestamp(time_i),))
             time_i += span
+        print(type(self.scheduler.queue))
         self.scheduler.run()
 
