@@ -18,8 +18,7 @@ class TestScheduler(unittest.TestCase):
         end = (now.year, now.month, now.day, now.hour, now.minute, now.second + 3)
         second = (now.year, now.month, now.day, now.hour, now.minute, now.second + 1)
         sche = scheduler.Scheduler(self.runner, start, end, second)
-        sche()
-        self.runner = sche.runner
+        self.runner = sche()
         print(self.runner.tracker)
         self.assertEqual(self.runner.tracker[0].strftime('%Y-%m-%d %H:%M:%S'),
                          str(now.year) + '-' + str(now.month).zfill(2) + '-' + str(now.day).zfill(2) + ' '
