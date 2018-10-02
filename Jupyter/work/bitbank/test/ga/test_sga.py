@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 import numpy as np
-sys.path.append(os.pardir)
+sys.path.append(os.pardir+'/../')
 from modules.ga import sga
 
 
