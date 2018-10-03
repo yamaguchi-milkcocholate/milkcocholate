@@ -1,24 +1,24 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: flask_web_app
+  name: flask-web-app
 spec:
   replicas: 2
   template:
     metadata:
       labels:
-        app: flask_web_app
+        app: flask-web-app
     spec:
       containers:
-        - image: gcr.io/invertible-star-216603/flask_web_app:latest
-          name: flask_web_app
+        - image: gcr.io/invertible-star-216603/flask-web-app:latest
+          name: flask-web-app
           volumeMounts:
             - mountPath: /home/app
-              name: flask_web_app-volume
+              name: flask-web-app-volume
             ports:
               - containerPort: 5000
       volumes:
-        - name: flask_web_app-volume
+        - name: flask-web-app-volume
           hostPath:
             path: ./Flask_Web_App
             type: Directory
