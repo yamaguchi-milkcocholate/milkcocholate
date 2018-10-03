@@ -1,5 +1,28 @@
 # milkcocholate
 
+# Docker
+flask_web_app
+```console
+cd Flask_Web_App
+docker build -t flask_web_app:latest .
+docker run -d -v $PWD:/home/app -p 5000:5000 --restart=always --name "FlaskWebApp" flask_web_app
+```
+
+jupyter
+```console
+cd Jupyter
+docker build -t jupyter:latest .
+docker run -d -v $PWD:/home/jovyan/work -p 8888:8888 --name "Jupyter" jupyter
+```
+
+bitbank
+```console
+cd BitBank
+docker build -t bitbank:latest .
+docker run -d -v $PWD:/home/bitbank -p 10080:10080 --restart=always --name "BitBank" bitbank
+```
+
+
 # Modules
 
 ```console

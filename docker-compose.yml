@@ -1,27 +1,12 @@
 version: '2'
 services:
-  data:
-    container_name: flask_data
-    image: busybox
-    stdin_open: true
-    tty: false
-    volumes:
-      - ./Flask_Web_App:/home/app
-      - ./Jupyter/work:/home/jovyan/work
-      - ./BitBank:/home/bitbank
-    command: /bin/sh
-
   flask_web_app:
     container_name: flask_web_app
     build: ./Flask_Web_App
-    tty: false
-    volumes_from:
-      - data
+    volumes:
+      - ./Flask_Web_App:/home/app
     ports:
       - "5000:5000"
-    depends_on:
-      - data
-    command: python /home/app/app.py
     restart: always
 
   jupyter:
@@ -29,19 +14,13 @@ services:
     build: ./Jupyter
     ports:
       - "8888:8888"
-    volumes_from:
-      - data
-    command: start.sh jupyter lab --NotebookApp.password='sha1:c5b53f77b829:c9a1bb2b62071482b4d09cf99fc0f5baffe57755'
-    depends_on:
-    - data
+    volumes:
+      - ./Jupyter/work:/home/jovyan/work
 
   bitbank:
     build: ./BitBank
     ports:
       - "10080:10080"
-    volumes_from:
-      - data
-    depends_on:
-    - data
-    command: python /home/bitbank/bitbank.py
+    volumes:
+      - ./BitBank:/home/bitbank
     restart: always
