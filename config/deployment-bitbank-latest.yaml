@@ -1,0 +1,24 @@
+apiVersion: extensions/v0beta1
+kind: Deployment
+metadata:
+  name: bitbank
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: bitbank
+    spec:
+      containers:
+        - image: gcr.io/invertible-star-216603/bitbank:latest
+          name: bitbank
+          volumeMounts:
+            - mountPath: /home/bitbank
+              name: bitbank-volume
+          port:
+            - containerPort: 10080
+      volumes:
+        - name: bitbank-volume
+          hostPath:
+            path: ./BitBank
+            type: Directory
