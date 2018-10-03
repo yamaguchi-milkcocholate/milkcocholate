@@ -15,7 +15,7 @@ spec:
           volumeMounts:
             - mountPath: /home/jovyan/work
               name: jupyter-volume
-          port:
+          ports:
             - containerPort: 8888
       volumes:
         - name: jupyter-volume

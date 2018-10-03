@@ -15,7 +15,7 @@ spec:
           volumeMounts:
             - mountPath: /home/bitbank
               name: bitbank-volume
-          port:
+          ports:
             - containerPort: 10080
       volumes:
         - name: bitbank-volume
