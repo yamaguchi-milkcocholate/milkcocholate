@@ -15,8 +15,8 @@ spec:
           volumeMounts:
             - mountPath: /home/app
               name: flask-web-app-volume
-            ports:
-              - containerPort: 5000
+          ports:
+            - containerPort: 5000
       volumes:
         - name: flask-web-app-volume
           hostPath:

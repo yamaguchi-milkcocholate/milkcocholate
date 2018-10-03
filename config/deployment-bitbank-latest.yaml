@@ -21,4 +21,4 @@ spec:
         - name: bitbank-volume
           hostPath:
             path: ./BitBank
-            type: Directory
+              type: Directory
