@@ -20,5 +20,5 @@ spec:
       volumes:
         - name: bitbank-volume
           hostPath:
-            path: ./BitBank
+            path: /home/zuuuubo_tetsu/milkcocholate/BitBank
               type: Directory

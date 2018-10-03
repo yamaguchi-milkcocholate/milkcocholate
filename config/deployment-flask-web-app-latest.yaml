@@ -20,5 +20,5 @@ spec:
       volumes:
         - name: flask-web-app-volume
           hostPath:
-            path: ./Flask_Web_App
+            path: /home/zuuuubo_tetsu/milkcocholate/Flask_Web_App
             type: Directory
