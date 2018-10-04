@@ -12,7 +12,7 @@ spec:
         app: jupyter
     spec:
       containers:
-        - image: gcr.io/milkcocholate/jupyter:latest
+        - image: milkchocolate22/jupyter:latest
           name: bitbank
           volumeMounts:
             - mountPath: /home/jovyan/work

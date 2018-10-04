@@ -12,7 +12,7 @@ spec:
         app: bitbank
     spec:
       containers:
-        - image: milkcholate/bitbank:latest
+        - image: milkchocolate22/bitbank:latest
           name: bitbank
           volumeMounts:
             - mountPath: /home/bitbank
