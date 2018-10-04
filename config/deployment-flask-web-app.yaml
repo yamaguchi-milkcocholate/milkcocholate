@@ -4,6 +4,8 @@ metadata:
   name: flask-web-app
 spec:
   replicas: 2
+  strategy:
+    type: PollingUpdate
   template:
     metadata:
       labels:
@@ -17,6 +19,8 @@ spec:
               name: flask-web-app-volume
           ports:
             - containerPort: 5000
+              protocol: TCP
+          imagePullPolicy: Always
       volumes:
         - name: flask-web-app-volume
           hostPath:

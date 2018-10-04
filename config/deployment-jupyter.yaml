@@ -4,6 +4,8 @@ metadata:
   name: jupyter
 spec:
   replicas: 2
+  strategy:
+    type: PollingUpdate
   template:
     metadata:
       labels:
@@ -17,6 +19,8 @@ spec:
               name: jupyter-volume
           ports:
             - containerPort: 8888
+              protocol: TCP
+          imagePullPolicy: Always
       volumes:
         - name: jupyter-volume
           hostPath:

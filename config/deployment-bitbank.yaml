@@ -4,6 +4,8 @@ metadata:
   name: bitbank
 spec:
   replicas: 2
+  strategy:
+    type: PollingUpdate
   template:
     metadata:
       labels:
@@ -17,6 +19,8 @@ spec:
               name: bitbank-volume
           ports:
             - containerPort: 10080
+              protocol: TCP
+          imagePullPolicy: Always
       volumes:
         - name: bitbank-volume
           hostPath:
