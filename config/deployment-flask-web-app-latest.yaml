@@ -10,7 +10,7 @@ spec:
         app: flask-web-app
     spec:
       containers:
-        - image: gcr.io/invertible-star-216603/flask-web-app:latest
+        - image: gcr.io/invertible-star-216603/flask_web_app:latest
           name: flask-web-app
           volumeMounts:
             - mountPath: /home/app
