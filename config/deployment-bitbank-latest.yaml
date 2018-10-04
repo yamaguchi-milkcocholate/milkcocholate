@@ -10,7 +10,7 @@ spec:
         app: bitbank
     spec:
       containers:
-        - image: gcr.io/milkcocholate/bitbank:ver2
+        - image: gcr.io/invertible-star-216603/bitbank:ver2
           name: bitbank
           volumeMounts:
             - mountPath: /home/bitbank
