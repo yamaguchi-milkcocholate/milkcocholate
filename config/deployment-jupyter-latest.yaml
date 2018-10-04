@@ -20,5 +20,5 @@ spec:
       volumes:
         - name: jupyter-volume
           hostPath:
-            path: /home/zuuuubo_tetsu/milkcocholate/Jupyter/work
-            type: Directory
+            path: /home/jovyan/work
+            type: DirectoryOrCreate
