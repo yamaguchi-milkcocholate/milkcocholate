@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flask-web-app
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
   template:
@@ -12,7 +12,7 @@ spec:
         app: flask-web-app
     spec:
       containers:
-        - image: gcr.io/milkcocholate/flask_web_app:ver2
+        - image: milkchocolate22/flask_web_app:latest
           name: flask-web-app
           volumeMounts:
             - mountPath: /home/app

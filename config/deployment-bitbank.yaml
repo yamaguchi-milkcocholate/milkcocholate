@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: bitbank
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
   template:
@@ -12,7 +12,7 @@ spec:
         app: bitbank
     spec:
       containers:
-        - image: gcr.io/milkcocholate/bitbank:ver2
+        - image: milkcholate/bitbank:latest
           name: bitbank
           volumeMounts:
             - mountPath: /home/bitbank
