@@ -4,21 +4,21 @@
 flask_web_app
 ```console
 cd Flask_Web_App
-docker build -t milkcocholate/flask_web_app:latest .
+docker build -t milkchocolate22/flask_web_app:latest .
 docker run -d -v $PWD:/home/app -p 5000:5000 --restart=always --name "FlaskWebApp" milkcocholate/flask_web_app
 ```
 
 jupyter
 ```console
 cd Jupyter
-docker build -t milkcocholate/jupyter:latest .
+docker build -t milkchocolate22/jupyter:latest .
 docker run -d -v $PWD:/home/jovyan/work -p 8888:8888 --name "Jupyter" milkcocholate/jupyter
 ```
 
 bitbank
 ```console
 cd BitBank
-docker build -t milkcocholate/bitbank:latest .
+docker build -t milkchocolate22/bitbank:latest .
 docker run -d -v $PWD:/home/bitbank -p 10080:10080 --restart=always --name "BitBank" milkcocholate/bitbank
 ```
 
