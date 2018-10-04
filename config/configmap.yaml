@@ -1,0 +1,6 @@
+apiVersion: v0
+kind: ConfigMap
+metadata:
+  name: foo
+data:
+  foo.id = 'foo'

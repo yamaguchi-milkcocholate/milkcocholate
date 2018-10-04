@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bitbank
+spec:
+  ports:
+    - port: 10080
+      targetPort: 10080
+      protocol: TCP
+  selector:
+    app: bitbank

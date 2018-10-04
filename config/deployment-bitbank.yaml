@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bitbank
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: bitbank
+    spec:
+      containers:
+        - image: milkchocolate22/bitbank:latest
+          name: bitbank
+          volumeMounts:
+            - mountPath: /home/bitbank
+              name: bitbank-volume
+          ports:
+            - containerPort: 10080
+              protocol: TCP
+          imagePullPolicy: Always
+      volumes:
+        - name: bitbank-volume
+          hostPath:
+            path: /home/bitbank
+            type: DirectoryOrCreate

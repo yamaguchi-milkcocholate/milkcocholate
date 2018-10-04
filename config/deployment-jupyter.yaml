@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jupyter
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: jupyter
+    spec:
+      containers:
+        - image: milkchocolate22/jupyter:latest
+          name: bitbank
+          volumeMounts:
+            - mountPath: /home/jovyan/work
+              name: jupyter-volume
+          ports:
+            - containerPort: 8888
+              protocol: TCP
+          imagePullPolicy: Always
+      volumes:
+        - name: jupyter-volume
+          hostPath:
+            path: /home/jovyan/work
+            type: DirectoryOrCreate

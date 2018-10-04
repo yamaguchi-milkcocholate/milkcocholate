@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: flask-web-app
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: flask-web-app
+    spec:
+      containers:
+        - image: milkchocolate22/flask_web_app:latest
+          name: flask-web-app
+          volumeMounts:
+            - mountPath: /home/app
+              name: flask-web-app-volume
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          imagePullPolicy: Always
+      volumes:
+        - name: flask-web-app-volume
+          hostPath:
+            path: /home/app
+            type: DirectoryOrCreate

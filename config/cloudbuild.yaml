@@ -1,0 +1,8 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/invertible-star-216603/bitbank:ver2', './BitBank']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/invertible-star-216603/flask_web_app:ver2', './Flask_Web_App']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/invertible-star-216603/jupyter:ver2', './Jupyter']
+images: ['gcr.io/invertible-star-216603/bitbank:ver2','gcr.io/invertible-star-216603/flask_web_app:ver2', 'gcr.io/invertible-star-216603/jupyter:ver2']
