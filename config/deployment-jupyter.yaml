@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 2
   strategy:
-    type: PullingUpdate
+    type: RollingUpdate
   template:
     metadata:
       labels:
