@@ -12,7 +12,7 @@ spec:
         app: jupyter
     spec:
       containers:
-        - image: gcr.io/invertible-star-216603/jupyter:ver2
+        - image: gcr.io/milkcocholate/jupyter:ver2
           name: bitbank
           volumeMounts:
             - mountPath: /home/jovyan/work
