@@ -1,3 +1,4 @@
+# coding:utf-8
 import unittest
 import sys
 import os
@@ -8,6 +9,9 @@ from modules.datamanager import realtimerunner
 
 
 class TestRealTimeRunner(unittest.TestCase):
+    """
+    スケジューラでRunnerクラスが実行できるかのチェック
+    """
 
     def setUp(self):
         self.runner = realtimerunner.RealTimeRunner('btc_jpy')

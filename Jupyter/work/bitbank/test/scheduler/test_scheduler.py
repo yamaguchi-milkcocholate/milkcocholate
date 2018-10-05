@@ -1,3 +1,4 @@
+# coding:utf-8
 import unittest
 import sys
 import os
@@ -12,6 +13,10 @@ class TestScheduler(unittest.TestCase):
         pass
 
     def test_schedule(self):
+        """
+        現在時刻を含めて3秒後まで1秒間隔で実行
+        :return:
+        """
         self.runner = SampleRunner()
         now = datetime.datetime.now()
         start = (now.year, now.month, now.day, now.hour, now.minute, now.second)
