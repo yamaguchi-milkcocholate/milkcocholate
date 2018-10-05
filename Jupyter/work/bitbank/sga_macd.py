@@ -3,7 +3,7 @@ from modules.fitnessfunction import simple_macd_params
 
 
 class SgaMacd:
-    DEFAULT_STEPS = 10000
+    DEFAULT_STEPS = 300
 
     def __init__(self):
         situation = list()
