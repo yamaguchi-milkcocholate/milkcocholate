@@ -92,7 +92,7 @@ class UniformCrossover:
     def save_geno_type(self):
         """
         遺伝子の保存
-        :return: 
+        :return:
         """
         fitness_function = self.fitness_function.__class__.__name__
         ga_name = self.__class__.__name__

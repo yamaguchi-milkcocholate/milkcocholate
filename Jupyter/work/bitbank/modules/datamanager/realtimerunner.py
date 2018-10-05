@@ -1,3 +1,4 @@
+# coding:utf-8
 import urllib.request
 import json
 import pprint
@@ -12,6 +13,12 @@ class RealTimeRunner:
         self.depth_list = list()
 
     def processing(self, *args):
+        """
+        スケジューラで実行する処理
+        現在の板情報とティッカーのAPIをたたく
+        :param args:
+        :return:
+        """
         req_ticker = urllib.request.Request(self.ticker_url)
         req_depth = urllib.request.Request(self.depth_url)
         with urllib.request.urlopen(req_ticker) as res:
