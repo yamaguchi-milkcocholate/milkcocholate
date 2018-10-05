@@ -1,3 +1,4 @@
+# coding:utf-8
 from . import ga
 import pickle
 import numpy as np
@@ -5,6 +6,9 @@ import random
 
 
 class SimpleGeneticAlgorithm:
+    """
+    一点交叉を行う遺伝的アルゴリズム
+    """
 
     def __init__(self, situation, fitness_function, population=100, mutation=2, cross=70, elite_num=1):
         self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num=elite_num, population=population)
@@ -18,16 +22,36 @@ class SimpleGeneticAlgorithm:
         self.fitness = None
 
     def __call__(self, steps):
+        """
+        学習
+        :param steps: 世代交代数
+        :return:
+        """
         self.init_population()
         self.generation(steps)
 
     def init_population(self):
+        """
+        遺伝子初期化
+        :return:
+        """
         self.geno_type = self.ga.init_population()
 
     def generation(self, steps):
+        """
+        世代交代
+        :param steps: 世代交代数
+        :return:
+        """
         self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function, self)
 
     def determine_next_generation(self, geno_type, fitness):
+        """
+        次の世代を決定する
+        :param geno_type: numpy   遺伝子
+        :param fitness:   numpy   適応度
+        :return:
+        """
         sum_fitness = 0
         population = geno_type.shape[0]
         situations = geno_type.shape[1]
@@ -68,6 +92,10 @@ class SimpleGeneticAlgorithm:
         return geno_type
 
     def save_geno_type(self):
+        """
+        遺伝子の保存
+        :return:
+        """
         fitness_function = self.fitness_function.__class__.__name__
         ga_name = self.__class__.__name__
         save_file = 'geno_type_'+ga_name+'_'+fitness_function+'.pkl'

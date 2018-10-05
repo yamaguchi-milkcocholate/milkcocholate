@@ -4,6 +4,9 @@ from modules.fitnessfunction import simple_macd_params
 
 
 class SgaMacd:
+    """
+    SGAを使って、MACDのパラメータを最適化する
+    """
     DEFAULT_STEPS = 300
 
     def __init__(self):
@@ -16,9 +19,18 @@ class SgaMacd:
         self.ga = sga.SimpleGeneticAlgorithm(situation, population=11, fitness_function=fitness_function)
 
     def back_test(self, steps=DEFAULT_STEPS):
+        """
+        バックテスト
+        :param steps: int 世代交代数
+        :return:
+        """
         self.ga(steps)
 
     def processing(self):
+        """
+        スケジューラによる実行処理
+        :return:
+        """
         pass
 
 

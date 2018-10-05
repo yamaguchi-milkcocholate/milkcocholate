@@ -4,6 +4,9 @@ from modules.fitnessfunction import simple_macd_params
 
 
 class UniformCrossoverMacd:
+    """
+    一様交叉を使って、MACDのパラメータを最適化する
+    """
     DEFAULT_STEPS = 300
 
     def __init__(self):
@@ -17,9 +20,18 @@ class UniformCrossoverMacd:
                                                     mutation=2, cross=50, elite_num=1)
 
     def back_test(self, steps=DEFAULT_STEPS):
+        """
+        バックテスト
+        :param steps: int 世代交代数
+        :return:
+        """
         self.ga(steps)
 
     def procession(self):
+        """
+        スケジューラによる実行処理
+        :return:
+        """
         pass
 
 

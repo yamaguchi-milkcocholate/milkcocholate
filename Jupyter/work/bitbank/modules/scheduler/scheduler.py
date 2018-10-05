@@ -1,3 +1,4 @@
+# coding:utf-8
 import sched
 import datetime
 import time
@@ -19,14 +20,27 @@ class Scheduler:
         self.scheduler = sched.scheduler(time.time, time.sleep)
 
     def __call__(self):
+        """
+        スケジューラ実行
+        :return: Runnerクラス(定期実行で実際に実行するprocessingメソッドをもつクラスのインスタンス)
+        """
         self.schedule()
         return self.runner
 
     def processing(self, *args):
+        """
+        定期実行で実際に実行する処理
+        :param args:
+        :return:
+        """
         self.runner.processing(*args)
         print(*args)
 
     def schedule(self):
+        """
+        スケジュールを設定
+        :return:
+        """
         print('start', self.start)
         print('second', self.second)
         print('end', self.end)
