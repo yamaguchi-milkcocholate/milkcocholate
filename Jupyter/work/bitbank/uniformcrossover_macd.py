@@ -1,3 +1,4 @@
+# coding:utf-8
 from modules.ga import uniformcrossover
 from modules.fitnessfunction import simple_macd_params
 

@@ -1,3 +1,4 @@
+# coding:utf-8
 from modules.datamanager import realtimerunner
 from modules.scheduler import scheduler
 import datetime
