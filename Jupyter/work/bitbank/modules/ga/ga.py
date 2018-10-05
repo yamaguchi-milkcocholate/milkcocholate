@@ -3,6 +3,7 @@ import numpy as np
 import random
 import pickle
 import pprint
+import os
 
 
 class GeneticAlgorithm:
@@ -86,7 +87,7 @@ class GeneticAlgorithm:
         :param geno_type:      numpy  遺伝子
         :return:
         """
-        save_file = 'geno_type.pkl'
+        save_file = os.path.dirname(os.path.dirname(__file__) + '/../../results/') + '/geno_type.pkl'
         with open(save_file, 'wb') as f:
             pickle.dump(geno_type, f)
         print('saved geno_type')
