@@ -5,24 +5,21 @@
 # Docker
 flask_web_app
 ```console
-cd Flask_Web_App
-docker build -t milkchocolate22/flask_web_app:latest .
+docker build -t milkchocolate22/flask_web_app:latest ./Flask_Web_App
 (or 'docker pull milkchocolate22/flask_web_app:latest')
 docker run -d -v $PWD:/home/app -p 5000:5000 --restart=always --name "FlaskWebApp" milkchocolate22/flask_web_app
 ```
 
 jupyter
 ```console
-cd Jupyter
-docker build -t milkchocolate22/jupyter:latest .
+docker build -t milkchocolate22/jupyter:latest ./Jupyter
 (or 'docker pull milkchocolate22/jupyter:latest')
 docker run -d -v $PWD:/home/jovyan/work -p 8888:8888 --name "Jupyter" milkchocolate22/jupyter
 ```
 
 bitbank
 ```console
-cd BitBank
-docker build -t milkchocolate22/bitbank:latest .
+docker build -t milkchocolate22/bitbank:latest ./BitBank
 (or 'docker pull milkchocolate22/bitbank:latest')
 docker run -d -v $PWD:/home/bitbank -p 10080:10080 --restart=always --name "BitBank" milkchocolate22/bitbank
 ```
