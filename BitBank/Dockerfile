@@ -9,7 +9,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/bitbankinc/python-bitbankcc.git
 
-COPY . /home/bitbank/
+COPY ./BitBank/ /home/bitbank/
 EXPOSE 10080
 
 ENTRYPOINT python /home/bitbank/bitbank.py
