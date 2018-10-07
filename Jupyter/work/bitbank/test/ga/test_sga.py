@@ -1,3 +1,4 @@
+# coding:utf-8
 import unittest
 import sys
 import os
@@ -11,6 +12,10 @@ class TestSga(unittest.TestCase):
         pass
 
     def test_determine_next_generation(self):
+        """
+        遺伝子の次元が変わっていないかチェックする
+        :return:
+        """
         fitness_function = SampleFitnessFunction()
         self.ga = sga.SimpleGeneticAlgorithm(fitness_function=fitness_function, mutation=2, cross=70,
                                              situation=[(1, 50), (1, 50)], population=4, elite_num=2)
@@ -28,6 +33,9 @@ class TestSga(unittest.TestCase):
 
 
 class SampleFitnessFunction:
+    """
+    テスト用の適応度関数
+    """
 
     @staticmethod
     def calc_fitness(geno_type):

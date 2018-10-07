@@ -1,3 +1,4 @@
+# coding:utf-8
 import unittest
 import sys
 import os
@@ -12,6 +13,11 @@ class TestGa(unittest.TestCase):
         pass
 
     def test__init__(self):
+        """
+        1. 遺伝子の取り得る範囲(situation)のチェック
+        2. 世代数とエリート数のチェック
+        :return:
+        """
         situation = list()
         situation.append((1, 10))
         elite_num = 1
@@ -37,6 +43,10 @@ class TestGa(unittest.TestCase):
         del temp_ga
 
     def test_init_population(self):
+        """
+        遺伝子初期化時に次元が適当かどうかのチェック
+        :return:
+        """
         self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50)], population=10, elite_num=2)
         result = self.ga.init_population()
         self.assertIsInstance(result, type(np.asarray([1])))
@@ -48,6 +58,10 @@ class TestGa(unittest.TestCase):
         del self.ga
 
     def test_calc_fitness(self):
+        """
+        適応度の次元が適当かどうかのチェック
+        :return:
+        """
         fitness_function = SampleFitnessFunction()
         self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50)], population=10, elite_num=2)
         geno_type = np.asarray([[1, 2], [3, 4], [5, 6]])
@@ -61,6 +75,10 @@ class TestGa(unittest.TestCase):
         del self.ga
 
     def test_select_elites(self):
+        """
+        エリート個体を選択できているかチェック
+        :return:
+        """
         self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50), (1, 50)], population=4, elite_num=2)
         geno_type = np.asarray([[1, 10], [2, 20], [3, 30], [4, 40]])
         fitness = np.asarray([10, 20, 30, 40])
@@ -77,6 +95,9 @@ class TestGa(unittest.TestCase):
 
 
 class SampleFitnessFunction:
+    """
+    テスト用の適応度関数
+    """
 
     @staticmethod
     def calc_fitness(geno_type):

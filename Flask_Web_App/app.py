@@ -1,3 +1,4 @@
+# coding:utf-8
 from flask import Flask, jsonify, request, render_template
 app = Flask(__name__)
 
@@ -5,7 +6,7 @@ app = Flask(__name__)
 @app.route("/", methods=['GET'])
 def index():
     prefectures = list()
-    prefectures.append(('hokkaido', 1))
+    prefectures.append(('北海度', 1))
     prefectures.append(('aomori', 2))
     prefectures.append(('iwate', 3))
     prefectures.append(('miyagi', 4))

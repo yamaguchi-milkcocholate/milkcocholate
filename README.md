@@ -16,7 +16,7 @@ jupyter
 cd Jupyter
 docker build -t milkchocolate22/jupyter:latest .
 (or 'docker pull milkchocolate22/jupyter:latest')
-docker run -d -v $PWD:/home/jovyan/work -p 8888:8888 --name "Jupyter" milkchocolate22/jupyter
+docker run -d --rm -v $PWD:/home/jovyan/work -p 8888:8888 --name "Jupyter" milkchocolate22/jupyter
 ```
 
 bitbank
