@@ -50,5 +50,4 @@ class Scheduler:
         while time_i <= int(time.mktime(self.end.timetuple())):
             self.scheduler.enterabs(time_i, 1, self.processing, argument=(datetime.datetime.fromtimestamp(time_i),))
             time_i += span
-        print(type(self.scheduler.queue))
         self.scheduler.run()

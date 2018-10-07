@@ -1,7 +1,6 @@
 # coding:utf-8
-import urllib.request
-import json
 import pprint
+from modules.datamanager import apigateway
 
 
 class RealTimeRunner:
@@ -11,26 +10,17 @@ class RealTimeRunner:
         self.depth_url = 'http://192.168.99.100:10080/public/depth/' + pair
         self.ticker_list = list()
         self.depth_list = list()
+        self.api_gateway = apigateway.ApiGateway('http://192.168.99.100:10080', 'btc_jpy')
 
     def processing(self, *args):
         """
         スケジューラで実行する処理
-        現在の板情報とティッカーのAPIをたたく
+        現在の板情報とティッカーを取り出す
         :param args:
         :return:
         """
-        req_ticker = urllib.request.Request(self.ticker_url)
-        req_depth = urllib.request.Request(self.depth_url)
-        with urllib.request.urlopen(req_ticker) as res:
-            body = res.read()
-        self.ticker_list.append(json.loads(body.decode('utf-8')))
-
-        with urllib.request.urlopen(req_depth) as res:
-            body = res.read()
-        self.depth_list.append(json.loads(body.decode('utf-8')))
-
-        pprint.pprint(self.ticker_list[len(self.ticker_list) - 1])
-        pprint.pprint(self.depth_list[len(self.depth_list) - 1])
+        self.ticker_list.append(self.api_gateway.use_ticker())
+        self.depth_list.append(self.api_gateway.use_depth())
 
     def show_ticker_list(self):
         pprint.pprint(self.ticker_list)

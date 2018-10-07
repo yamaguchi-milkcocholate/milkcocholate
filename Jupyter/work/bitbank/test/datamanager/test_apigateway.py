@@ -79,7 +79,6 @@ class TestApiGateway(unittest.TestCase):
                                          "timestamp": 1538783999930}
         self.assertDictEqual(candlestick, test_dict)
 
-
     def tearDown(self):
         pass
 
