@@ -1,5 +1,6 @@
 import os
 import sys
+import pprint
 sys.path.append(os.pardir)
 from modules.ga import uniformcrossover
 from modules.fitnessfunction import simple_macd_params
@@ -28,3 +29,7 @@ class UniformCrossoverMacd:
        :return:
        """
         self.ga(steps)
+        print('geno_type')
+        pprint.pprint(self.ga.geno_type)
+        print('fitness')
+        pprint.pprint(self.ga.fitness)

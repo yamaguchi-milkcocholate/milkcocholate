@@ -1,6 +1,5 @@
 import os
 import sys
-import datetime
 sys.path.append(os.pardir)
 from modules.datamanager import realtimerunner
 from modules.scheduler import scheduler
