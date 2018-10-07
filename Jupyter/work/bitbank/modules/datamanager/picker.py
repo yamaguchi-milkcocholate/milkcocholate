@@ -21,7 +21,8 @@ class Picker:
         """
         if not (span is '5min' or span is '15min' or span is '1hour'):
             raise FileNotFoundError("'5min' or '15min' or '1hour'")
-        files_path = os.path.abspath(__file__) + '/../../../' + span + '/data'
+        cur = os.path.dirname(os.path.abspath(__file__))
+        files_path = os.path.abspath(cur + '/../../') + '/' + span + '/data'
         files = os.listdir(files_path)
 
         candlestick = []

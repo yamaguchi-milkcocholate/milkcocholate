@@ -9,8 +9,8 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install git+https://github.com/bitbankinc/python-bitbankcc.git
 
-CMD . /home/bitbank/
 EXPOSE 10080
-
+COPY . /home/bitbank/
+RUN cd /home/bitbank/ && pwd && ls
 ENTRYPOINT python /home/bitbank/bitbank.py
 

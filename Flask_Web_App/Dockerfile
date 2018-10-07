@@ -8,8 +8,7 @@ COPY ./requirements.txt /requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-COPY . /home/app/
-
 EXPOSE 5000
-
+COPY . /home/app/
+RUN cd /home/app/ && pwd && ls
 ENTRYPOINT python /home/app/app.py

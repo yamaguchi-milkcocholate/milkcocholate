@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - image: milkchocolate22/jupyter:latest
-          name: bitbank
+          name: jupyter
           volumeMounts:
             - mountPath: /home/jovyan/work
               name: jupyter-volume
