@@ -12,14 +12,11 @@ class SgaMacd:
     """
     DEFAULT_STEPS = 300
 
-    def __init__(self):
-        situation = list()
-        situation.append((1, 50))
-        situation.append((2, 100))
-        situation.append((1, 50))
-        candle_type = '1hour'
+    def __init__(self, situation, candle_type, population, mutation, cross, elite_num):
         fitness_function = simple_macd_params.SimpleMacDParams(candle_type)
-        self.ga = sga.SimpleGeneticAlgorithm(situation, population=11, fitness_function=fitness_function)
+        self.ga = sga.SimpleGeneticAlgorithm(situation=situation, population=population,
+                                             fitness_function=fitness_function, mutation=mutation,
+                                             cross=cross, elite_num=elite_num)
 
     def __call__(self, steps=DEFAULT_STEPS):
         """
