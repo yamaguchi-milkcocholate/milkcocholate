@@ -1,4 +1,6 @@
-# coding:utf-8
+import os
+import sys
+sys.path.append(os.pardir)
 from modules.ga import uniformcrossover
 from modules.fitnessfunction import simple_macd_params
 
@@ -19,24 +21,10 @@ class UniformCrossoverMacd:
         self.ga = uniformcrossover.UniformCrossover(situation, fitness_function, population=15,
                                                     mutation=2, cross=50, elite_num=1)
 
-    def back_test(self, steps=DEFAULT_STEPS):
+    def __call__(self, steps=DEFAULT_STEPS):
         """
-        バックテスト
-        :param steps: int 世代交代数
-        :return:
-        """
+       バックテスト
+       :param steps: int 世代交代数
+       :return:
+       """
         self.ga(steps)
-
-    def procession(self):
-        """
-        スケジューラによる実行処理
-        :return:
-        """
-        pass
-
-
-if __name__ == '__main__':
-    uniformcrossover_macd = UniformCrossoverMacd()
-    uniformcrossover_macd.back_test()
-    print(uniformcrossover_macd.ga.geno_type)
-    print(uniformcrossover_macd.ga.fitness)
