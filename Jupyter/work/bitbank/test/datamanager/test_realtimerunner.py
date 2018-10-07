@@ -14,7 +14,7 @@ class TestRealTimeRunner(unittest.TestCase):
     """
 
     def setUp(self):
-        self.runner = realtimerunner.RealTimeRunner('btc_jpy')
+        self.runner = realtimerunner.RealTimeRunner('http://192.168.99.100:10080', 'btc_jpy')
 
     def test_schedule(self):
         now = datetime.datetime.now()
