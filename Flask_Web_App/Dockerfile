@@ -9,7 +9,8 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY . /home/app/
-
+RUN pwd
+RUN ls
 EXPOSE 5000
 
 ENTRYPOINT python /home/app/app.py
