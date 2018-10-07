@@ -50,7 +50,7 @@ class GeneticAlgorithm:
             print('No. ', step_i + 1)
             geno_type = selected_ga.determine_next_generation(geno_type, fitness)
             fitness = self.calc_fitness(geno_type, fitness_function)
-            self.save_geno_type(geno_type)
+            # self.save_geno_type(geno_type)
         self.geno_type = geno_type
         self.fitness = fitness
         self.show_geno_type()
