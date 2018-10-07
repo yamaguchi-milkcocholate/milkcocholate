@@ -7,7 +7,7 @@ import pickle
 
 class UniformCrossover:
 
-    def __init__(self, situation, fitness_function, population=100, mutation=2, cross=50, elite_num=1):
+    def __init__(self, situation, fitness_function, population, mutation, cross, elite_num):
         self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num=elite_num, population=population)
         self.fitness_function = fitness_function
         self.population = population
