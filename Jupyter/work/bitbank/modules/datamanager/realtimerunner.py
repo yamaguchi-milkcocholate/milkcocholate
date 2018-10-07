@@ -1,29 +1,24 @@
-import urllib.request
-import json
+# coding:utf-8
 import pprint
+from modules.datamanager import apigateway
 
 
 class RealTimeRunner:
 
-    def __init__(self, pair):
-        self.ticker_url = 'http://192.168.99.100:10080/public/ticker/' + pair
-        self.depth_url = 'http://192.168.99.100:10080/public/depth/' + pair
+    def __init__(self, url_header, pair):
         self.ticker_list = list()
         self.depth_list = list()
+        self.api_gateway = apigateway.ApiGateway(url_header, pair)
 
     def processing(self, *args):
-        req_ticker = urllib.request.Request(self.ticker_url)
-        req_depth = urllib.request.Request(self.depth_url)
-        with urllib.request.urlopen(req_ticker) as res:
-            body = res.read()
-        self.ticker_list.append(json.loads(body.decode('utf-8')))
-
-        with urllib.request.urlopen(req_depth) as res:
-            body = res.read()
-        self.depth_list.append(json.loads(body.decode('utf-8')))
-
-        pprint.pprint(self.ticker_list[len(self.ticker_list) - 1])
-        pprint.pprint(self.depth_list[len(self.depth_list) - 1])
+        """
+        スケジューラで実行する処理
+        現在の板情報とティッカーを取り出す
+        :param args:
+        :return:
+        """
+        self.ticker_list.append(self.api_gateway.use_ticker())
+        self.depth_list.append(self.api_gateway.use_depth())
 
     def show_ticker_list(self):
         pprint.pprint(self.ticker_list)
