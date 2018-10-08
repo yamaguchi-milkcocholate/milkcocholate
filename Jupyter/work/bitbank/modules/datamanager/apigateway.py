@@ -40,6 +40,10 @@ class ApiGateway:
     def use_candlestick(self, time, candle_type):
         """
         BitBankのロウソク足apiをたたく
+        timeとcandle_typeの組み合わせによってはBitBankのAPIはnullを返すことがある。
+        日付を指定するときは'8hour'よりも短い間隔である必要がある
+        :param time:        string ex) 20180901
+        :param candle_type: string
         :return:
         """
         url = self.url_header + '/public/candlestick/' + self.pair + '/'+candle_type+'?time=' + time
