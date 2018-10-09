@@ -12,15 +12,15 @@ class ApiGateway:
         :param url_header: string urlの先頭(クラウド or ローカル)
         :param pair:       string コインの種類
         """
-        self.url_header = url_header
-        self.pair = pair
+        self._url_header = url_header
+        self._pair = pair
 
     def use_ticker(self):
         """
         BitBankのティッカーapiをたたく
         :return: dict ティッカー
         """
-        ticker_url = self.url_header + '/public/ticker/' + self.pair
+        ticker_url = self._url_header + '/public/ticker/' + self._pair
         req_ticker = urllib.request.Request(ticker_url)
         with urllib.request.urlopen(req_ticker) as res:
             body = res.read()
@@ -31,7 +31,7 @@ class ApiGateway:
         BitBankの板情報apiをたたく
         :return: dict 板情報
         """
-        depth_url = self.url_header + '/public/depth/' + self.pair
+        depth_url = self._url_header + '/public/depth/' + self._pair
         req_depth = urllib.request.Request(depth_url)
         with urllib.request.urlopen(req_depth) as res:
             body = res.read()
@@ -46,7 +46,7 @@ class ApiGateway:
         :param candle_type: string
         :return:
         """
-        url = self.url_header + '/public/candlestick/' + self.pair + '/'+candle_type+'?time=' + time
+        url = self._url_header + '/public/candlestick/' + self._pair + '/'+candle_type+'?time=' + time
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as res:
             body = res.read()

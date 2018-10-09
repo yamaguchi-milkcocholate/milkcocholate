@@ -29,8 +29,8 @@ class StorageGateway:
         with open(api_file, 'w') as f:
             json.dump(api_key_dict, f, indent=2)
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = api_file
-        self.client = storage.Client()
-        self.bucket = self.client.get_bucket(bucket_name)
+        self._client = storage.Client()
+        self._bucket = self._client.get_bucket(bucket_name)
         self.bucket_name = bucket_name
         os.remove(api_file)
 
@@ -40,7 +40,7 @@ class StorageGateway:
         :param new_file:    GCP ストレージで作成されるファイルの名前(ディレクトリ + ファイル)
         :param local_file:  GCP ストレージで作成されるファイルの内容
         """
-        blob = self.bucket.blob(new_file)
+        blob = self._bucket.blob(new_file)
         blob.upload_from_filename(filename=local_file)
         print('Success!! upload "' + local_file + '" as name: "' + new_file + '" in bucket: [' + self.bucket_name + ']')
 
