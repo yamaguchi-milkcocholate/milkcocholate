@@ -1,0 +1,31 @@
+version: '2'
+services:
+  mariadb:
+    build: ./MariaDB
+    image: milkchocolate22/mariadb:latest
+    volumes:
+      - ./database:/var/lib/mariadb
+    environment:
+        MYSQL_DATABASE: "milkcocholate"
+        MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+        MYSQL_USER: milkcocholate
+        MYSQL_PASSWORD: milkchocolate22
+        TZ: "Asia/Tokyo"
+  phpmyadmin:
+    build: ./phpMyAdmin
+    image: milkchocolate22/phpmyadmin:latest
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+      - PMA_USER=milkcocholate
+      - PMA_PASSWORD=milkchocolate22
+    restart: always
+    links:
+      - mariadb
+    ports:
+       - 8080:80
+    volumes:
+       - /sessions
+    depends_on:
+      - mariadb
+
