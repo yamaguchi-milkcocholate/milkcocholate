@@ -41,7 +41,7 @@ spec:
       volumes:
         - name: bitbank-volume
           hostPath:
-            path: /data/bitbank
+            path: /data
             type: DirectoryOrCreate
       dnsPolicy: ClusterFirst
       restartPolicy: Always

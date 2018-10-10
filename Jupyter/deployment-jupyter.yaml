@@ -41,7 +41,7 @@ spec:
       volumes:
       - name: jupyter-volume
         hostPath:
-          path: /data/jupyter
+          path: /data
           type: DirectoryOrCreate
       dnsPolicy: ClusterFirst
       restartPolicy: Always

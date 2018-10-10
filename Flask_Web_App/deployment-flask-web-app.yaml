@@ -41,7 +41,7 @@ spec:
       volumes:
       - name: flask_web_app-volume
         hostPath:
-          path: /data/flask_web_app
+          path: /data
           type: DirectoryOrCreate
       dnsPolicy: ClusterFirst
       restartPolicy: Always
