@@ -1,12 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jupyter
+  name: jupyter-https
   labels:
     run: jupyter
+  namespace: default
 spec:
   ports:
-    - port: 8888
+    - name: https
+      port: 443
       protocol: TCP
+      targetPort: 8888
   selector:
     run: jupyter
+  sessionAffinity: None
+  type: LoadBalancer
