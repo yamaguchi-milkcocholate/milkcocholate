@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: jupyter
         volumeMounts:
-        - mountPath: /home/jovyan/work
+        - mountPath: /home/jovyan/work/new
           name: jupyter-volume
         ports:
         - containerPort: 8888

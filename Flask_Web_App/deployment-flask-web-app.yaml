@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: flask_web_app
         volumeMounts:
-        - mountPath: /home/app
+        - mountPath: /home/app/new
           name: flask_web_app-volume
         ports:
         - containerPort: 5000
