@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: flask_web_app
         volumeMounts:
-        - mountPath: /home/app
+        - mountPath: /home/app/new
           name: flask_web_app-volume
         ports:
         - containerPort: 5000
@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
       - name: flask_web_app-volume
-        hostPath:
-          path: /data/flask_web_app
-          type: DirectoryOrCreate
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

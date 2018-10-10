@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: bitbank
         volumeMounts:
-          - mountPath: /home/bitbank
+          - mountPath: /home/bitbank/new
             name: bitbank-volume
         ports:
         - containerPort: 10080
@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
         - name: bitbank-volume
-          hostPath:
-            path: /data/bitbank
-            type: DirectoryOrCreate
+          emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

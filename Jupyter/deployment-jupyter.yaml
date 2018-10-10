@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: jupyter
         volumeMounts:
-        - mountPath: /home/jovyan/work
+        - mountPath: /home/jovyan/work/new
           name: jupyter-volume
         ports:
         - containerPort: 8888
@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
       - name: jupyter-volume
-        hostPath:
-          path: /data/jupyter
-          type: DirectoryOrCreate
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
