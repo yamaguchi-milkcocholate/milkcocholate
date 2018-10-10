@@ -2,10 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: jupyter
+  labels:
+    run: jupyter
 spec:
   ports:
     - port: 8888
-      targetPort: 8888
       protocol: TCP
   selector:
-    app: jupyter
+    run: jupyter

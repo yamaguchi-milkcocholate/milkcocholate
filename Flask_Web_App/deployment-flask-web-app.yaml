@@ -1,28 +1,50 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: flask-web-app
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  generation: 1
+  labels:
+    run: flask_web_app
+  name: flask_web_app
+  namespace: default
+  resourceVersion: "44093"
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      run: flask_web_app
   strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
+      creationTimestamp: null
       labels:
-        app: flask-web-app
+        run: flask_web_app
     spec:
       containers:
-        - image: milkchocolate22/flask_web_app:latest
-          name: flask-web-app
-          volumeMounts:
-            - mountPath: /home/app
-              name: flask-web-app-volume
-          ports:
-            - containerPort: 5000
-              protocol: TCP
-          imagePullPolicy: Always
+      - image: milkchocolate22/flask_web_app:latest
+        imagePullPolicy: Always
+        name: flask_web_app
+        volumeMounts:
+        - mountPath: /home/app
+          name: flask_web_app-volume
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
       volumes:
-        - name: flask-web-app-volume
-          hostPath:
-            path: /home/app
-            type: DirectoryOrCreate
+      - name: flask_web_app-volume
+        hostPath:
+          path: /data/flask_web_app
+          type: DirectoryOrCreate
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
