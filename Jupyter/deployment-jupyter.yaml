@@ -29,12 +29,20 @@ spec:
       - image: milkchocolate22/jupyter:latest
         imagePullPolicy: Always
         name: jupyter
+        volumeMounts:
+        - mountPath: /home/jovyan/work
+          name: jupyter-volume
         ports:
         - containerPort: 8888
           protocol: TCP
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+      volumes:
+      - name: jupyter-volume
+        hostPath:
+          path: /data/jupyter
+          type: DirectoryOrCreate
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
