@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: Always
         name: bitbank
         volumeMounts:
-          - mountPath: /home/bitbank/
+          - mountPath: /home/bitbank/empty
             name: bitbank-volume
         ports:
         - containerPort: 10080
