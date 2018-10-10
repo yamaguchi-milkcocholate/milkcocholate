@@ -1,12 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: bitbank
+  name: bitbank-http
   labels:
     run: bitbank
+  namespace: default
 spec:
   ports:
-    - port: 10080
+    - name: http
+      port: 10080
       protocol: TCP
+      targetPort: 10080
   selector:
     run: bitbank
+  sessionAffinity: None
+  type: LoadBalancer
