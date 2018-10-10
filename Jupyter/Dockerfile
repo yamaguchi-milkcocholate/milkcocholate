@@ -6,6 +6,7 @@ LABEL titile     = "Jupyter"
 # jupyterlabをインストールする
 RUN pip install --upgrade pip
 RUN pip install jupyterlab jsonify
+RUN pip install --upgrade google-cloud-storage
 RUN jupyter serverextension enable --py jupyterlab
 
 EXPOSE 8888
