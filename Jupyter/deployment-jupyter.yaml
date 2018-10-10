@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
       - name: jupyter-volume
-        hostPath:
-          path: /data
-          type: DirectoryOrCreate
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

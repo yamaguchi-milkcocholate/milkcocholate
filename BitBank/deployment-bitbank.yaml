@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
         - name: bitbank-volume
-          hostPath:
-            path: /data
-            type: DirectoryOrCreate
+          emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

@@ -40,9 +40,7 @@ spec:
         terminationMessagePolicy: File
       volumes:
       - name: flask_web_app-volume
-        hostPath:
-          path: /data
-          type: DirectoryOrCreate
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
