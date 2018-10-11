@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: 2018 年 10 月 10 日 06:43
+-- Generation Time: 2018 年 10 月 11 日 16:36
 -- サーバのバージョン： 10.3.10-MariaDB-1:10.3.10+maria~bionic
 -- PHP Version: 7.2.8
 
@@ -77,7 +77,7 @@ CREATE TABLE `logs` (
   `experiment_id` int(11) NOT NULL,
   `position` int(11) NOT NULL,
   `price` int(11) NOT NULL,
-  `loged_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `logged_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
