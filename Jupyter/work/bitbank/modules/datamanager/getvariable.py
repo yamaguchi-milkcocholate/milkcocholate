@@ -17,7 +17,7 @@ class GetVariable:
     def __init__(self):
         self.test_list = list()
 
-    def get_variable(self, timespace, start_day, finish_day,url_header,pair):
+    def get_variable(self, timespace, start_day, finish_day, url_header, pair):
         save_dir = './data/'
         dayformat = '%Y%m%d'
         day = datetime.datetime.strptime(start_day, dayformat)
@@ -26,10 +26,6 @@ class GetVariable:
         gateway = apigateway.ApiGateway(url_header, pair)
         while iteration < 5000:
             day_str = day.strftime(dayformat)
-            print(day_str)
-            print(timespace)
-            print(type(day_str))
-            print(type(timespace))
             my_dict = gateway.use_candlestick(day_str, timespace)
             candlestick = my_dict['candlestick'][0]['ohlcv']
 
