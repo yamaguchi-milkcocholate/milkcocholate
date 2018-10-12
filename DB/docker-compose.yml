@@ -12,6 +12,8 @@ services:
         MYSQL_USER: milkcocholate
         MYSQL_PASSWORD: milkchocolate22
         TZ: "Asia/Tokyo"
+    ports:
+      - 3306:3306
   phpmyadmin:
     build: ./phpMyAdmin
     image: milkchocolate22/phpmyadmin:latest
