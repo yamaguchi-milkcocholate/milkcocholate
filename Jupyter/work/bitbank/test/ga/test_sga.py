@@ -36,6 +36,9 @@ class SampleFitnessFunction:
     """
     テスト用の適応度関数
     """
+    
+    def __init__(self):
+        pass
 
     @staticmethod
     def calc_fitness(geno_type):
