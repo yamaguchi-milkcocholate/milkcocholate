@@ -19,8 +19,17 @@ class TestWriter(unittest.TestCase):
     def test_rollback(self):
         self.writer.begin_transaction()
         table = 'genetic_algorithms'
+        columns = ['name', 'spec']
+        value = ['test', 'test']
+        self.writer.write(table, columns, value)
         columns = ['id', 'name', 'spec']
+        value = ['test', 'test']
+        self.writer.write(table, columns, value)
+        columns = ['name', 'spec']
         value = [1, 'test', 'test']
+        self.writer.write(table, columns, value)
+        columns = ['id', 'name', 'spec']
+        value = [10, 'test', 'test']
         self.writer.write(table, columns, value)
         self.writer.rollback()
 

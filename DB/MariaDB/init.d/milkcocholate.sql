@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: 2018 年 10 月 11 日 16:36
+-- Generation Time: 2018 年 10 月 12 日 08:02
 -- サーバのバージョン： 10.3.10-MariaDB-1:10.3.10+maria~bionic
 -- PHP Version: 7.2.8
 
@@ -66,6 +66,16 @@ CREATE TABLE `genetic_algorithms` (
   `spec` char(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- テーブルのデータのダンプ `genetic_algorithms`
+--
+
+INSERT INTO `genetic_algorithms` (`id`, `name`, `spec`) VALUES
+(10, 'test', 'test'),
+(12, 'test', 'test'),
+(13, 'test', 'test'),
+(14, 'test', 'test');
+
 -- --------------------------------------------------------
 
 --
@@ -77,7 +87,7 @@ CREATE TABLE `logs` (
   `experiment_id` int(11) NOT NULL,
   `position` int(11) NOT NULL,
   `price` int(11) NOT NULL,
-  `logged_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `loged_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -107,6 +117,34 @@ ALTER TABLE `genetic_algorithms`
 --
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `experiments`
+--
+ALTER TABLE `experiments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `fitness_functions`
+--
+ALTER TABLE `fitness_functions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `genetic_algorithms`
+--
+ALTER TABLE `genetic_algorithms`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `logs`
+--
+ALTER TABLE `logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
