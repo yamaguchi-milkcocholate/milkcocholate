@@ -6,7 +6,6 @@ class ExperimentLogsDepartment:
     def __init__(self, host):
         self._table = 'experiment_logs'
         self._columns = [
-            'id',
             'experiment_id',
             'position',
             'price',
@@ -14,5 +13,6 @@ class ExperimentLogsDepartment:
         ]
         self._writer = writer.Writer(host)
 
-    def give_writer_task(self, columns, values):
-        self._writer.write(self._table, columns, values)
+    def give_writer_task(self, values):
+        self._writer.connect()
+        self._writer.write_with_auto_increment_id(self._table, self._columns, values)
