@@ -10,14 +10,16 @@ class TestWriter(unittest.TestCase):
     def setUp(self):
         self.writer = writer.Writer('localhost')
 
-    def test_write(self):
-        table = ''
-        columns = []
-        value = []
-        #self.writer.write(table, columns, value)
+    def test_write_chunk_with_auto_increment_id(self):
+        table = 'genetic_algorithms'
+        columns = ['name', 'spec']
+        value = [
+            ['chunk1', 'chunk2'],
+            ['chunk1', 'chunk2'],
+        ]
+        self.writer.write_chunk_with_auto_increment_id(table, columns, value)
 
-    def test_rollback(self):
-        self.writer.begin_transaction()
+    def test_write(self):
         table = 'genetic_algorithms'
         columns = ['name', 'spec']
         value = ['test', 'test']
@@ -29,9 +31,8 @@ class TestWriter(unittest.TestCase):
         value = [1, 'test', 'test']
         self.writer.write(table, columns, value)
         columns = ['id', 'name', 'spec']
-        value = [10, 'test', 'test']
+        value = [1000, 'test', 'test']
         self.writer.write(table, columns, value)
-        self.writer.rollback()
 
     def tearDown(self):
         pass
