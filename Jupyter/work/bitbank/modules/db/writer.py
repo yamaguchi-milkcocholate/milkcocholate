@@ -5,35 +5,22 @@ class Writer:
     USER = 'milkcocholate'
     PASSWORD = 'milkchocolate22'
     DB = 'milkcocholate'
-    CHARSET = 'utf8mb4'
+    CHARSET = 'utf8'
 
     def __init__(self, host):
+        self._host = host
+        self._connection = None
+
+    def connect(self):
         self._connection = pymysql.connect(
-            host=host,
+            host=self._host,
             user=self.USER,
             db=self.DB,
             password=self.PASSWORD,
             charset=self.CHARSET
         )
 
-    def __del__(self):
-        self._connection.close()
-
-    def write(self, table, columns, values):
-        """
-        一行を書き込む
-        :param table:   string  テーブル名
-        :param columns: array   テーブルのカラム
-        :param values:   array   挿入する一行の値
-        """
-        columns, values = self._auto_increment_id_check(columns, values)
-        columns_str, value_str = self._make_placeholder_str(columns)
-        with self._connection.cursor() as cursor:
-            sql = "INSERT INTO `" + table + "` " + columns_str + " VALUES " + value_str + ';'
-            cursor.execute(sql, values)
-            self._connection.commit()
-
-    def write_chunk_with_auto_increment_id(self, table, columns, chunk):
+    def write_with_auto_increment_id(self, table, columns, chunk):
         """
         複数行をauto_incrementで書き込む
         :param table:     string  テーブル名
@@ -51,6 +38,16 @@ class Writer:
             raise
         finally:
             self._connection.commit()
+            self._connection.close()
+
+    def get_connection(self):
+        return self._connection
+
+    def get_host(self):
+        return self._host
+
+    def set_host(self, host):
+        self._host = host
 
     def _make_chunk_placeholder_str_with_auto_increment_id(self, columns, chunk):
         """
@@ -78,31 +75,3 @@ class Writer:
                 column_str = column_str + "`, `" + columns[i]
                 value_str = value_str + ", %s"
             return column_str + "`)", value_str + ")"
-
-    def get_connection(self):
-        return self._connection
-
-    @staticmethod
-    def _auto_increment_id_check(columns, values):
-        if 'id' in columns:
-            # id指定されているとき
-            if len(columns) is len(values):
-                return columns, values
-            # 誤ってidをcolumnに追加したとする
-            elif len(columns) is (len(values) + 1):
-                columns.remove('id')
-                return columns, values
-            else:
-                raise TypeError('list length is not match...')
-        else:
-            # id指定せずにauto_incrementを利用するとき
-            if len(columns) is len(values):
-                return columns, values
-            # 誤ってidの値を入れてしまったとする
-            elif (len(columns) + 1) is len(values):
-                values.pop(0)
-                return columns, values
-            else:
-                raise TypeError('list length is not math...')
-
-

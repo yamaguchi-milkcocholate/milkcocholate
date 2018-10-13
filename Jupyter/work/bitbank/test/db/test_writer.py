@@ -10,7 +10,7 @@ class TestWriter(unittest.TestCase):
     def setUp(self):
         self.writer = writer.Writer('localhost')
 
-    def test_write_chunk_with_auto_increment_id(self):
+    def test_write_with_auto_increment_id(self):
         table = 'genetic_algorithms'
         columns = ['name', 'spec']
         value = [
@@ -18,24 +18,6 @@ class TestWriter(unittest.TestCase):
             ['chunk1', 'chunk2'],
         ]
         self.writer.write_chunk_with_auto_increment_id(table, columns, value)
-
-    def test_write(self):
-        table = 'genetic_algorithms'
-        columns = ['name', 'spec']
-        value = ['test', 'test']
-        self.writer.write(table, columns, value)
-        columns = ['id', 'name', 'spec']
-        value = ['test', 'test']
-        self.writer.write(table, columns, value)
-        columns = ['name', 'spec']
-        value = [1, 'test', 'test']
-        self.writer.write(table, columns, value)
-        columns = ['id', 'name', 'spec']
-        value = [1000, 'test', 'test']
-        self.writer.write(table, columns, value)
-
-    def tearDown(self):
-        pass
 
 
 if __name__ == '__main__':
