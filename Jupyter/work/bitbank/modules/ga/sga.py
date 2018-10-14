@@ -28,14 +28,17 @@ class SimpleGeneticAlgorithm:
         self.elite_num = elite_num
         self.geno_type = None
         self.fitness = None
+        self.db_facade = None
 
-    def __call__(self, steps):
+    def __call__(self, steps, db_facade, log_span):
         """
         学習
-        :param steps: 世代交代数
+        :param steps:      int     世代交代数
+        :param db_facade:  Facade  データベース処理の受付
+        :param log_span:   int     log_span世代に一回記録する
         """
         self.init_population()
-        self.generation(steps)
+        self.generation(steps=steps, log_span=log_span, db_facade=db_facade)
 
     def init_population(self):
         """
@@ -43,11 +46,14 @@ class SimpleGeneticAlgorithm:
         """
         self.geno_type = self.ga.init_population()
 
-    def generation(self, steps):
+    def generation(self, steps, log_span, db_facade):
         """
         世代交代
-        :param steps: 世代交代数
+        :param steps:     世代交代数
+        :param log_span:  log_spanに一回記録する
+        :param db_facade: データベース操作の受付
         """
+        self.ga.log_setting(db_facade=db_facade, log_span=log_span)
         self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function, self)
 
     def determine_next_generation(self, geno_type, fitness):
