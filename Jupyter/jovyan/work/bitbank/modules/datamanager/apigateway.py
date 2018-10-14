@@ -43,6 +43,7 @@ class ApiGateway:
         :return:
         """
         url = self.url_header + '/public/candlestick/' + self.pair + '/'+candle_type+'?time=' + time
+        print(url)
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as res:
             body = res.read()
