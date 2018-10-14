@@ -4,6 +4,7 @@ import random
 import pickle
 import pprint
 import os
+from modules.feature import genofeature
 
 
 class GeneticAlgorithm:
@@ -11,9 +12,8 @@ class GeneticAlgorithm:
     def __init__(self, mutation, cross, situation, elite_num, population):
         self.mutation = mutation
         self.cross = cross
-        for i in situation:
-            if type(i) is not tuple:
-                raise TypeError('need tuple')
+        if not isinstance(situation, genofeature.Situation):
+            raise TypeError("situation must be an instance of 'Situation'")
         self.situation = situation
         if population < elite_num:
             raise ArithmeticError('population must be larger than elite_num')
@@ -30,8 +30,9 @@ class GeneticAlgorithm:
         pop_list = []
         for pop_i in range(self.population):
             inter_list = []
-            for situ_i in range(len(self.situation)):
-                value = self.situation[situ_i]
+            range_tuple_list = self.situation.range_to_tuple_list()
+            for situ_i in range(len(range_tuple_list)):
+                value = range_tuple_list[situ_i]
                 inter_list.append(random.randint(value[0], value[1]))
             pop_list.append(np.asarray(inter_list, int))
         return np.asarray(pop_list, int)

@@ -5,6 +5,7 @@ import os
 import numpy as np
 sys.path.append(os.pardir+'/../')
 from modules.ga import ga
+from modules.feature import genofeature
 
 
 class TestGa(unittest.TestCase):
@@ -18,8 +19,13 @@ class TestGa(unittest.TestCase):
         2. 世代数とエリート数のチェック
         :return:
         """
-        situation = list()
-        situation.append((1, 10))
+        situation = genofeature.Situation()
+        situation.set_fitness_function_id(1000)
+        situation.set_genome_ranges(
+            param_1=(1, 50),
+            param_2=(50, 100),
+            param_3=(1, 20),
+        )
         elite_num = 1
         population = 101
         try:
@@ -47,7 +53,12 @@ class TestGa(unittest.TestCase):
         遺伝子初期化時に次元が適当かどうかのチェック
         :return:
         """
-        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50)], population=10, elite_num=2)
+        situation = genofeature.Situation()
+        situation.set_fitness_function_id(1000)
+        situation.set_genome_ranges(
+            param_1=(1, 50),
+        )
+        self.ga = ga.GeneticAlgorithm(2, 70, situation=situation, population=10, elite_num=2)
         result = self.ga.init_population()
         self.assertIsInstance(result, type(np.asarray([1])))
         for i in result:
@@ -62,8 +73,13 @@ class TestGa(unittest.TestCase):
         適応度の次元が適当かどうかのチェック
         :return:
         """
+        situation = genofeature.Situation()
+        situation.set_fitness_function_id(1000)
+        situation.set_genome_ranges(
+            param_1=(1, 50),
+        )
         fitness_function = SampleFitnessFunction()
-        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50)], population=10, elite_num=2)
+        self.ga = ga.GeneticAlgorithm(2, 70, situation=situation, population=10, elite_num=2)
         geno_type = np.asarray([[1, 2], [3, 4], [5, 6]])
         fitness = self.ga.calc_fitness(geno_type, fitness_function)
         self.assertEqual(fitness[0][0], 1)
@@ -79,7 +95,13 @@ class TestGa(unittest.TestCase):
         エリート個体を選択できているかチェック
         :return:
         """
-        self.ga = ga.GeneticAlgorithm(2, 70, situation=[(1, 50), (1, 50)], population=4, elite_num=2)
+        situation = genofeature.Situation()
+        situation.set_fitness_function_id(1000)
+        situation.set_genome_ranges(
+            param_1=(1, 50),
+            param_2=(1, 50),
+        )
+        self.ga = ga.GeneticAlgorithm(2, 70, situation=situation, population=4, elite_num=2)
         geno_type = np.asarray([[1, 10], [2, 20], [3, 30], [4, 40]])
         fitness = np.asarray([10, 20, 30, 40])
         elites = self.ga.select_elites(geno_type, fitness)
@@ -89,9 +111,6 @@ class TestGa(unittest.TestCase):
         self.assertEqual(elites[0][1], 40)
         self.assertEqual(elites[1][0], 3)
         self.assertEqual(elites[1][1], 30)
-
-        def tearDown(self):
-            pass
 
 
 class SampleFitnessFunction:
