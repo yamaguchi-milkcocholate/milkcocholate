@@ -100,3 +100,20 @@ class GeneticAlgorithm:
     def show_fitness(self):
         pprint.pprint(self.fitness)
         print('count: ', len(self.fitness))
+
+    def _log_population(self, generation_number, geno_type, fitness):
+        """
+        テーブル'populations'に書き込むメソッド
+        :param generation_number: int   書き込む個体の世代数
+        :param geno_type:         numpy 遺伝子
+        :param fitness:           numpy 適応度
+        """
+        dept = self._db_facade.select_department(self.POPULATION_TABLE)
+        dept.give_writer_task(values=[
+            [
+                self._experiment_id,
+                generation_number,
+                pickle.dumps(geno_type),
+                pickle.dumps(fitness),
+            ],
+        ])
