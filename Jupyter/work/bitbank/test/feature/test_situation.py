@@ -2,13 +2,13 @@ import os
 import sys
 import unittest
 sys.path.append(os.path.pardir + '/../')
-from modules.situation import situation
+from modules.feature import genofeature
 
 
 class TestSituation(unittest.TestCase):
 
     def setUp(self):
-        self.situation = situation.Situation()
+        self.situation = genofeature.Situation()
         self.situation.set_fitness_function_id(1000)
         self.situation.set_genome_ranges(
             short_term=(1, 50),

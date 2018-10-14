@@ -5,7 +5,7 @@ import pickle
 import datetime
 sys.path.append(os.path.pardir + '/../')
 from modules.db import writer
-from modules.situation import situation
+from modules.feature import genofeature
 
 
 class TestWriter(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestWriter(unittest.TestCase):
         columns = ['name', 'object', 'time']
         now = datetime.datetime.now()
         str_format = '%Y-%m-%d %H:%M:%S'
-        situation_test = situation.Situation()
+        situation_test = genofeature.Situation()
         situation_test.set_fitness_function_id(1000)
         situation_test.set_genome_ranges(
             short_term=(1, 50),
