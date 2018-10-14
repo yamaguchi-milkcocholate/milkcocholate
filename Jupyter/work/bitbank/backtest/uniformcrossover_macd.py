@@ -14,6 +14,7 @@ class UniformCrossoverMacd:
     一様交叉を使って、MACDのパラメータを最適化する
     """
     DEFAULT_STEPS = 300
+    DEFAULT_LOG_SPAN = 20
     GENETIC_ALGORITHM_id = 2
     FITNESS_FUNCTION_ID = 1
 
@@ -35,21 +36,21 @@ class UniformCrossoverMacd:
         self._cross = cross
         self._elite_num = elite_num
 
-    def __call__(self, host, steps=DEFAULT_STEPS):
+    def __call__(self, host, steps=DEFAULT_STEPS, log_span=DEFAULT_LOG_SPAN):
         """
        バックテスト
-       :param steps: int     世代交代数
        :param host:  string  dbの接続先
+       :param steps: int     世代交代数
        """
+        db_facade = facade.Facade(host)
         str_format = '%Y-%m-%d %H:%M:%S'
         start_at = datetime.datetime.now()
-        self.ga(steps)
+        self.ga(steps=steps, db_facade=db_facade, log_span=log_span)
         end_at = datetime.datetime.now()
         print('geno_type')
         pprint.pprint(self.ga.geno_type)
         print('fitness')
         pprint.pprint(self.ga.fitness)
-        db_facade = facade.Facade(host)
         # 実験を記録
         dept = db_facade.select_department('experiments')
         execute_time = int(start_at.strftime('%s')) - int(end_at.strftime('%s'))
