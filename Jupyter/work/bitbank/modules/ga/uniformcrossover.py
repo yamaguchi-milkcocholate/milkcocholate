@@ -8,6 +8,14 @@ import pickle
 class UniformCrossover:
 
     def __init__(self, situation, fitness_function, population, mutation, cross, elite_num):
+        """
+        :param situation:          genofeature.Situation      特徴量を表すクラスのインスタンス
+        :param fitness_function:   fitnessfunction.object     適応度関数を表すクラスのインスタンス
+        :param population:         int                        個体数
+        :param mutation:           int                        突然変異を起こすパーセンテージ
+        :param cross:              int                        交叉が起きるパーセンテージ
+        :param elite_num:          int                        次の世代に残すエリートの個体数
+        """
         self.ga = ga.GeneticAlgorithm(mutation, cross, situation, elite_num=elite_num, population=population)
         self.fitness_function = fitness_function
         self.population = population
@@ -22,7 +30,6 @@ class UniformCrossover:
         """
         学習
         :param steps: 世代交代数
-        :return:
         """
         self.init_population()
         self.generation(steps)
@@ -30,7 +37,6 @@ class UniformCrossover:
     def init_population(self):
         """
         遺伝子初期化
-        :return:
         """
         self.geno_type = self.ga.init_population()
 
@@ -38,7 +44,6 @@ class UniformCrossover:
         """
         世代交代
         :param steps: 世代交代数
-        :return:
         """
         self.geno_type, self.fitness = self.ga.generation(steps, self.geno_type, self.fitness_function, self)
 
@@ -51,13 +56,13 @@ class UniformCrossover:
         """
         sum_fitness = 0
         population = geno_type.shape[0]
-        situations = geno_type.shape[1]
+        feature_num = geno_type.shape[1]
         field = []
         for pop_i in range(population):
             sum_fitness += fitness[pop_i]
             field.append(sum_fitness)
         field = np.asarray(field, int)
-        new_geno_type = np.empty((0, situations), int)
+        new_geno_type = np.empty((0, feature_num), int)
         elites = self.ga.select_elites(geno_type, fitness)
 
         for geno_i in range(0, population):
@@ -69,7 +74,7 @@ class UniformCrossover:
             pair_i = geno_i + 1
             geno_type[geno_i] = new_geno_type[geno_i]
             geno_type[pair_i] = new_geno_type[pair_i]
-            for situ_i in range(0, situations):
+            for situ_i in range(0, feature_num):
                 rand = random.randrange(0, 100)
                 if rand >= self.cross:
                     continue
@@ -77,12 +82,13 @@ class UniformCrossover:
                 geno_type[geno_i][situ_i] = geno_type[pair_i][situ_i]
                 geno_type[pair_i][situ_i] = tmp
 
+        range_tuple_list = self.situation.range_to_tuple_list()
         for geno_i in range(0, population):
-            for situ_i in range(0, situations):
+            for situ_i in range(0, feature_num):
                 rand = random.randrange(0, 100)
                 if rand >= self.mutation:
                     continue
-                value = self.situation[situ_i]
+                value = range_tuple_list[situ_i]
                 geno_type[geno_i][situ_i] = random.randrange(value[0], value[1])
 
         rest = geno_type[self.elite_num:]
@@ -92,7 +98,6 @@ class UniformCrossover:
     def save_geno_type(self):
         """
         遺伝子の保存
-        :return:
         """
         fitness_function = self.fitness_function.__class__.__name__
         ga_name = self.__class__.__name__
