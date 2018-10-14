@@ -20,7 +20,8 @@ class Writer:
             user=self.USER,
             db=self.DB,
             password=self.PASSWORD,
-            charset=self.CHARSET
+            charset=self.CHARSET,
+            cursorclass=pymysql.cursors.DictCursor
         )
 
     def write_with_auto_increment_id(self, table, columns, chunk):
@@ -42,6 +43,14 @@ class Writer:
         finally:
             self._connection.commit()
             self._connection.close()
+
+    def next_auto_increment_id(self, table):
+        with self._connection.cursor() as cursor:
+            sql = "SHOW TABLE STATUS LIKE '" + table + "';"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+        self._connection.close()
+        return results[0]['Auto_increment']
 
     def get_connection(self):
         return self._connection

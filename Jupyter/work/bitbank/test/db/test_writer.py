@@ -12,9 +12,9 @@ class TestWriter(unittest.TestCase):
 
     def setUp(self):
         self.writer = writer.Writer('localhost')
-        self.writer.connect()
 
     def test_write_with_auto_increment_id(self):
+        self.writer.connect()
         table = 'test'
         columns = ['name', 'object', 'time']
         now = datetime.datetime.now()
@@ -31,6 +31,11 @@ class TestWriter(unittest.TestCase):
             ['test_2', pickle.dumps(situation_test), now.strftime(str_format)],
         ]
         self.writer.write_with_auto_increment_id(table, columns, value)
+
+    def test_next_auto_increment_id(self):
+        self.writer.connect()
+        auto_increment_id = self.writer.next_auto_increment_id('test')
+        print(auto_increment_id)
 
 
 if __name__ == '__main__':
