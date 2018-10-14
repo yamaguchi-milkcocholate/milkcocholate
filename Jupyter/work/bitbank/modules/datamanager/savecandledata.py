@@ -1,4 +1,7 @@
 import pickle
+import urllib.request
+import json
+import pprint
 import pandas as pd
 from modules.datamanager import apigateway
 import os
@@ -16,16 +19,11 @@ class SaveCandleData:
 
     def save_candledata(self, timespace, start_day, finish_day, url_header, pair):
         """
-        指定した日付のろうそく足データを取得する
-        引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,urlヘッダー,仮想通貨の名前）
-        :param timespace:
-        :param start_day:
-        :param finish_day:
-        :param url_header:
-        :param pair:
-        """
+           指定した日付のろうそく足データを取得する
+           引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,urlヘッダー,仮想通貨の名前）
+           """
 
-        save_dir = '/data/'
+        save_dir = './data/'
         dayformat = '%Y%m%d'
         day = datetime.datetime.strptime(start_day, dayformat)
         end_day = datetime.datetime.strptime(finish_day, dayformat)
@@ -59,17 +57,3 @@ class SaveCandleData:
 
     def get_test_list(self):
         return self.test_list
-
-
-if __name__ == '__main__':
-    save_candle_data = SaveCandleData()
-    pair = 'btc_jpy'
-    url_header = 'http://localhost:10080'
-    start_day = '20180201'
-    finish_day = '20181013'
-    save_candle_data.save_candledata("1hour", start_day=start_day,
-                                     finish_day=finish_day, url_header=url_header, pair=pair)
-    save_candle_data.save_candledata("15min", start_day=start_day,
-                                     finish_day=finish_day, url_header=url_header, pair=pair)
-    save_candle_data.save_candledata("5min", start_day=start_day,
-                                     finish_day=finish_day, url_header=url_header, pair=pair)
