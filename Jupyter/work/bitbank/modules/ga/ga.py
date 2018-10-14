@@ -8,8 +8,18 @@ from modules.feature import genofeature
 
 
 class GeneticAlgorithm:
+    EXPERIMENT_TABLE = 'experiments'
+    POPULATION_TABLE = 'populations'
+    LOG_TABLE = 'logs'
 
     def __init__(self, mutation, cross, situation, elite_num, population):
+        """
+        :param mutation:    int        突然変異が起きるパーセンテージ
+        :param cross:       int        交叉を起こすパーセンテージ
+        :param situation:   Situation  特徴量の情報を持つクラスのインスタンス
+        :param elite_num:   int        次の世代に残すエリートの個体数
+        :param population:  int        個体数
+        """
         self.mutation = mutation
         self.cross = cross
         if not isinstance(situation, genofeature.Situation):
@@ -21,6 +31,15 @@ class GeneticAlgorithm:
         self.elite_num = elite_num
         self.geno_type = None
         self.fitness = None
+        self._log_span = None
+        self._experiment_id = None
+        self._db_facade = None
+
+    def log_setting(self, db_facade, log_span):
+        self._db_facade = db_facade
+        dept = self._db_facade.select_department(self.EXPERIMENT_TABLE)
+        self._experiment_id = dept.make_writer_find_next_id()
+        self._log_span = log_span
 
     def init_population(self):
         """
@@ -50,8 +69,11 @@ class GeneticAlgorithm:
         for step_i in range(steps):
             print('No. ', step_i + 1)
             geno_type = selected_ga.determine_next_generation(geno_type, fitness)
-            fitness = self.calc_fitness(geno_type, fitness_function)
-            # self.save_geno_type(geno_type)
+            if step_i % self._log_span is 0:
+                fitness = self.calc_fitness(geno_type, fitness_function)
+                self._log_population(generation_number=step_i, geno_type=geno_type, fitness=fitness)
+            else:
+                fitness = self.calc_fitness(geno_type, fitness_function)
         self.geno_type = geno_type
         self.fitness = fitness
         self.show_geno_type()
