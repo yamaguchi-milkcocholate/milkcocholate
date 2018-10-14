@@ -12,6 +12,9 @@ class Writer:
         self._connection = None
 
     def connect(self):
+        """
+        データベースに接続
+        """
         self._connection = pymysql.connect(
             host=self._host,
             user=self.USER,
@@ -54,7 +57,7 @@ class Writer:
         auto_incrementで複数行を挿入するsql文に使う文字列を生成
         :param columns: string    挿入するテーブルのカラム
         :param chunk:   array     挿入する複数行の値
-        :return: string, string:  COLUMNS部分, VALUES部分
+        :return: string, string   COLUMNS部分, VALUES部分
         """
         if 'id' in columns:
             raise TypeError('auto_increment mode has no "id"...')
@@ -65,6 +68,11 @@ class Writer:
 
     @staticmethod
     def _make_placeholder_str(columns):
+        """
+        テーブルのカラムから一行分挿入するためのsql文のプレースホルダーを作成
+        :param columns:  array          テーブルのカラム
+        :return:         string, string COLUMNS部分, VALUES部分の一行分
+        """
         column_str = "(`" + columns[0]
         value_str = "(%s"
         array_len = len(columns)

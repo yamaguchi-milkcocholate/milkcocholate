@@ -50,7 +50,7 @@ class UniformCrossoverMacd:
         print('fitness')
         pprint.pprint(self.ga.fitness)
         db_facade = facade.Facade(host)
-        # 実権を記録
+        # 実験を記録
         dept = db_facade.select_department('experiments')
         execute_time = int(start_at.strftime('%s')) - int(end_at.strftime('%s'))
         values = [

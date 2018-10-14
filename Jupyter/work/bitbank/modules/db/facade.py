@@ -13,6 +13,11 @@ class Facade:
         self._host = host
 
     def select_department(self, table):
+        """
+        各テーブルを操作するDepartmentクラスを返す
+        :param table: string           テーブル名
+        :return:      Department like  テーブルを操作するDepartmentクラス
+        """
         if table is self._tables[0]:
             return gadept.GeneticAlgorithmsDepartment(self._host)
         elif table is self._tables[1]:
