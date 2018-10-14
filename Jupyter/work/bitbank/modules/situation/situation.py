@@ -28,3 +28,4 @@ class Situation:
         tuple_list = list()
         for key in self._genome_ranges:
             tuple_list.append(self._genome_ranges[key])
+        return tuple_list
