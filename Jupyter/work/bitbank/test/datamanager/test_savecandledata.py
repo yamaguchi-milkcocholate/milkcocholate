@@ -3,16 +3,16 @@ import sys
 import os
 import pandas as pd
 sys.path.append(os.pardir+'/../')
-from modules.datamanager import getvariable
+from modules.datamanager import savecandledata
 
 
 class TestGetVariable(unittest.TestCase):
 
     def setUp(self):
-        self.bar = getvariable.GetVariable()
+        self.bar = savecandledata.SaveCandleData()
 
-    def test_get_variable(self):
-        self.bar.get_variable("1hour", "20181001", "20181007", "http://192.168.99.100:10080", "btc_jpy")
+    def test_save_candledata(self):
+        self.bar.save_candledata("1hour", "20181001", "20181007", "http://192.168.99.100:10080", "btc_jpy")
         test_list = self.bar.get_test_list()
         list_len = len(test_list)
 
@@ -44,8 +44,12 @@ class TestGetVariable(unittest.TestCase):
                      "timestamp": 1538783999930}
         candlestick = test_dict['candlestick'][0]['ohlcv']
         df = pd.DataFrame(candlestick, columns=['open', 'high', 'low', 'end', 'turnover', 'time'])
-        df.equals(test_list[4])
-        self.assertEqual(list_len, 6)
+        df['time'] = pd.to_datetime(df['time'], unit='ms')
+        print(df.equals(test_list[4]))
+        self.assertEqual(list_len, 7)
+
+        # 20181005日のデータが一致するかの確認
+        # 保存した期間の長さの確認
 
     def tearDown(self):
         pass
