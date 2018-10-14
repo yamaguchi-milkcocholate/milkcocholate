@@ -1,4 +1,4 @@
-from modules.db import gadept, fitfuncdept, exptdept, exptlogsdept
+from modules.db import gadept, fitfuncdept, exptdept, exptlogsdept, popdept
 
 
 class Facade:
@@ -9,6 +9,7 @@ class Facade:
             'fitness_functions',
             'experiments',
             'experiment_logs',
+            'populations',
         ]
         self._host = host
 
@@ -26,5 +27,7 @@ class Facade:
             return exptdept.ExperimentsDepartment(self._host)
         elif table is self._tables[3]:
             return exptlogsdept.ExperimentLogsDepartment(self._host)
+        elif table is self._tables[4]:
+            return popdept.PopulationsDepartment(self._host)
         else:
             raise ValueError("table '" + table + "' is not found")
