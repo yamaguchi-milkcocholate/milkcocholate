@@ -1,9 +1,9 @@
-from modules.ga import go
+from modules.crossover import crossover
 import numpy as np
 import random
 
 
-class OnePointCrossover(go.Crossover):
+class OnePointCrossover(crossover.Crossover):
     """
     一点交叉を行う
     """

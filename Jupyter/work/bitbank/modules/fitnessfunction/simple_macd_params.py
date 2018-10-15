@@ -1,4 +1,3 @@
-# coding:utf-8
 from modules.datamanager import macd
 from modules.datamanager import picker
 import numpy as np
