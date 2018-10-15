@@ -4,7 +4,7 @@ import pprint
 import datetime
 import pickle
 sys.path.append(os.pardir)
-from modules.ga import uniformcrossover
+from modules.ga import gafacade
 from modules.fitnessfunction import fffacade
 from modules.db import facade
 
@@ -31,8 +31,11 @@ class UniformCrossoverMacd:
         """
         ff_facade = fffacade.Facade(candle_type=candle_type)
         fitness_function = ff_facade.select_department(self.FITNESS_FUNCTION_NAME)
-        self.ga = uniformcrossover.UniformCrossover(situation, fitness_function, population=population,
-                                                    mutation=mutation, cross=cross, elite_num=elite_num)
+        ga_facade = gafacade.Facade(
+            situation=situation, fitness_function=fitness_function, population=population,
+            mutation=mutation, cross=cross, elite_num=elite_num
+        )
+        self._ga = ga_facade.select_department(self.GENETIC_ALGORITHM_NAME)
         self._situation = situation
         self._population = population
         self._mutation = mutation
@@ -48,17 +51,13 @@ class UniformCrossoverMacd:
         db_facade = facade.Facade(host)
         str_format = '%Y-%m-%d %H:%M:%S'
         start_at = datetime.datetime.now()
-        self.ga(steps=steps, db_facade=db_facade, log_span=log_span)
+        self._ga(steps=steps, db_facade=db_facade, log_span=log_span)
         end_at = datetime.datetime.now()
-        print('geno_type')
-        pprint.pprint(self.ga.geno_type)
-        print('fitness')
-        pprint.pprint(self.ga.fitness)
         # 実験を記録
         dept = db_facade.select_department('experiments')
         execute_time = int(start_at.strftime('%s')) - int(end_at.strftime('%s'))
         values = [
-            self.GENETIC_ALGORITHM_id,
+            self.GENETIC_ALGORITHM_ID,
             self.FITNESS_FUNCTION_ID,
             pickle.dumps(self._situation),
             self._mutation,
