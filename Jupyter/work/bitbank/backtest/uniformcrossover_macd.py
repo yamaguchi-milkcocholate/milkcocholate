@@ -5,7 +5,7 @@ import datetime
 import pickle
 sys.path.append(os.pardir)
 from modules.ga import uniformcrossover
-from modules.fitnessfunction import simple_macd_params
+from modules.fitnessfunction import fffacade
 from modules.db import facade
 
 
@@ -15,19 +15,22 @@ class UniformCrossoverMacd:
     """
     DEFAULT_STEPS = 300
     DEFAULT_LOG_SPAN = 20
-    GENETIC_ALGORITHM_id = 2
+    GENETIC_ALGORITHM_ID = 2
     FITNESS_FUNCTION_ID = 1
+    GENETIC_ALGORITHM_NAME = 'uniform_crossover'
+    FITNESS_FUNCTION_NAME = 'simple_macd_params'
 
     def __init__(self, situation, candle_type, population, mutation, cross, elite_num):
         """
         :param situation:     Situation 遺伝子の要素の取りうる範囲などを表す
-        :param candle_type:   DataFrame ロウソク足データ
+        :param candle_type:   string    ロウソク足データの種類
         :param population:    int       個体数
         :param mutation:      int       突然変異のパーセンテージ
         :param cross:         int       交叉のパーセンテージ
         :param elite_num:     int       世代交代時に残すエリート個体数
         """
-        fitness_function = simple_macd_params.SimpleMacDParams(candle_type)
+        ff_facade = fffacade.Facade(candle_type=candle_type)
+        fitness_function = ff_facade.select_department(self.FITNESS_FUNCTION_NAME)
         self.ga = uniformcrossover.UniformCrossover(situation, fitness_function, population=population,
                                                     mutation=mutation, cross=cross, elite_num=elite_num)
         self._situation = situation

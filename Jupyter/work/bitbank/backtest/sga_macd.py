@@ -5,7 +5,7 @@ import datetime
 import pickle
 sys.path.append(os.pardir)
 from modules.ga import sga
-from modules.fitnessfunction import simple_macd_params
+from modules.fitnessfunction import fffacade
 from modules.db import facade
 
 
@@ -14,19 +14,22 @@ class SgaMacd:
     SGAを使って、MACDのパラメータを最適化する
     """
     DEFAULT_STEPS = 300
-    GENETIC_ALGORITHM_id = 1
+    GENETIC_ALGORITHM_ID = 1
     FITNESS_FUNCTION_ID = 1
+    GENETIC_ALGORITHM_NAME = 'uniform_crossover'
+    FITNESS_FUNCTION_NAME = 'simple_macd_params'
 
     def __init__(self, situation, candle_type, population, mutation, cross, elite_num):
         """
         :param situation:     Situation 遺伝子の要素の取りうる範囲などを表す
-        :param candle_type:   DataFrame ロウソク足データ
+        :param candle_type:   string    ロウソク足データ
         :param population:    int       個体数
         :param mutation:      int       突然変異のパーセンテージ
         :param cross:         int       交叉のパーセンテージ
         :param elite_num:     int       世代交代時に残すエリート個体数
         """
-        fitness_function = simple_macd_params.SimpleMacDParams(candle_type)
+        ff_facade = fffacade.Facade(candle_type=candle_type)
+        fitness_function = ff_facade.select_department(self.FITNESS_FUNCTION_NAME)
         self.ga = sga.SimpleGeneticAlgorithm(situation=situation, population=population,
                                              fitness_function=fitness_function, mutation=mutation,
                                              cross=cross, elite_num=elite_num)
