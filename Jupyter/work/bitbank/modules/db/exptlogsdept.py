@@ -6,7 +6,7 @@ class ExperimentLogsDepartment:
     def __init__(self, host):
         self._table = 'experiment_logs'
         self._columns = [
-            'experiment_id',
+            'population_id',
             'position',
             'price',
             'logged_at'
