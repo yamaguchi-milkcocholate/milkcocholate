@@ -9,13 +9,14 @@ class Facade:
         ]
         self._candle_type = candle_type
 
-    def select_department(self, function_name):
+    def select_department(self, function_name, db_dept):
         """
         適応度関数を選ぶ
         :param function_name: string           適応度関数の名称
-        :return:              Department like  適応度関数のインスタンス
+        :param db_dept:       Department       テーブルに対して操作を行うクラスのインスタンス
+        :return:              FitnessFunction  適応度関数のインスタンス
         """
         if function_name is self._functions[0]:
-            return simple_macd_params.SimpleMacDParams(self._candle_type)
+            return simple_macd_params.SimpleMacDParams(candle_type=self._candle_type, db_dept=db_dept)
         else:
             raise ValueError("fitness function '" + function_name + "' is not found")
