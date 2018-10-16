@@ -29,7 +29,7 @@ class SgaMacd:
         self._db_facade = facade.Facade(host=host)
         ff_facade = fffacade.Facade(candle_type=candle_type)
         expt_logs_dept = self._db_facade.select_department('experiment_logs')
-        fitness_function = ff_facade.select_department(self.FITNESS_FUNCTION_NAME, db_dept=expt_logs_dept)
+        fitness_function = ff_facade.select_department(function_name=self.FITNESS_FUNCTION_NAME, db_dept=expt_logs_dept)
         crossover_method = onepoint.OnePointCrossover()
         self._ga = ga.GeneticAlgorithm(
             mutation=mutation,
@@ -44,13 +44,14 @@ class SgaMacd:
     def __call__(self, steps=DEFAULT_STEPS, log_span=DEFAULT_LOG_SPAN):
         """
         バックテスト
-        :param steps: int    世代交代数
+        :param steps:    int    世代交代数
+        :param log_span: int    どのくらいの期間ごとに記録を取るか
         """
         experiment_id = self._db_facade.select_department('experiments').make_writer_find_next_id()
         population_dept = self._db_facade.select_department('populations')
         str_format = '%Y-%m-%d %H:%M:%S'
         start_at = datetime.datetime.now()
-        self._ga.generation(steps, experiment_id=experiment_id, log_span=log_span, population_dept=population_dept)
+        self._ga.generation(steps=steps, experiment_id=experiment_id, log_span=log_span, population_dept=population_dept)
         end_at = datetime.datetime.now()
         # 実験を記録
         expt_dept = self._db_facade.select_department('experiments')
