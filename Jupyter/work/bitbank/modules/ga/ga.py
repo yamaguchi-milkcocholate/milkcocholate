@@ -1,141 +1,126 @@
-# coding:utf-8
 import numpy as np
 import random
 import pickle
-import pprint
-import os
 from modules.feature import genofeature
+from modules.crossover import crossover
+from modules.fitnessfunction import fitnessfunction
 
 
 class GeneticAlgorithm:
-    EXPERIMENT_TABLE = 'experiments'
-    POPULATION_TABLE = 'populations'
-    LOG_TABLE = 'logs'
 
-    def __init__(self, mutation, cross, situation, elite_num, population):
+    def __init__(self, mutation, cross, situation, elite_num, population, crossover_method, fitness_function):
         """
-        :param mutation:    int        突然変異が起きるパーセンテージ
-        :param cross:       int        交叉を起こすパーセンテージ
-        :param situation:   Situation  特徴量の情報を持つクラスのインスタンス
-        :param elite_num:   int        次の世代に残すエリートの個体数
-        :param population:  int        個体数
+        :param mutation:         int               突然変異が起きるパーセンテージ
+        :param cross:            int               交叉を起こすパーセンテージ
+        :param situation:        Situation         特徴量の情報を持つクラスのインスタンス
+        :param elite_num:        int               次の世代に残すエリートの個体数
+        :param population:       int               個体数
+        :param crossover_method: Crossover         交叉の手法を表すクラスのインスタンス
+        :param fitness_function  FitnessFunction   適応度関数を表すクラスのインスタンス
         """
-        self.mutation = mutation
-        self.cross = cross
+        if (0 <= mutation) and (mutation <= 100):
+            raise TypeError("mutation must be 0 ~ 100")
+        if (0 <= cross) and (cross <= 100):
+            raise TypeError("cross must be - ~ 100")
         if not isinstance(situation, genofeature.Situation):
             raise TypeError("situation must be an instance of 'Situation'")
-        self.situation = situation
         if population < elite_num:
             raise ArithmeticError('population must be larger than elite_num')
-        self.population = population
-        self.elite_num = elite_num
-        self.geno_type = None
-        self.fitness = None
-        self._log_span = None
-        self._experiment_id = None
-        self._db_facade = None
-
-    def log_setting(self, db_facade, log_span):
-        self._db_facade = db_facade
-        dept = self._db_facade.select_department(self.EXPERIMENT_TABLE)
-        self._experiment_id = dept.make_writer_find_next_id()
-        self._log_span = log_span
+        if not isinstance(crossover_method, crossover.Crossover):
+            raise TypeError("crossover must be an instance of 'Crossover'")
+        if not isinstance(fitness_function, fitnessfunction.FitnessFunction):
+            raise TypeError("fitness_function must be an instance of 'FitnessFunction'")
+        self._mutation = mutation
+        self._cross = cross
+        self._situation = situation
+        self._elite_num = elite_num
+        self._population = population
+        self._crossover = crossover_method
+        self._fitness_function = fitness_function
+        self._geno_type = None
+        self._fitness = None
 
     def init_population(self):
         """
         遺伝子の初期化
-        :return: numpy 初期化された遺伝子
         """
         pop_list = []
-        for pop_i in range(self.population):
+        for pop_i in range(self._population):
             inter_list = []
-            range_tuple_list = self.situation.range_to_tuple_list()
+            range_tuple_list = self._situation.range_to_tuple_list()
             for situ_i in range(len(range_tuple_list)):
                 value = range_tuple_list[situ_i]
                 inter_list.append(random.randint(value[0], value[1]))
             pop_list.append(np.asarray(inter_list, int))
-        return np.asarray(pop_list, int)
+        self._geno_type = np.asarray(pop_list, int)
 
-    def generation(self, steps, geno_type, fitness_function, selected_ga):
+    def generation(self, steps, experiment_id, log_span, population_dept):
         """
         世代数だけ世代交代させる
-        :param steps:              int                            世代交代数
-        :param geno_type:          numpy                          遺伝子
-        :param fitness_function:   fitnessfunction                適応度関数をもつクラスのインスタンス
-        :param selected_ga:        object                         交叉方法の違いなどで分類される遺伝的アルゴリズムのクラスのインスタンス
-        :return:                   numpy, numpy                   遺伝子, 適応度
+        :param steps:              int                  世代交代数
+        :param experiment_id:      int                  テーブル'experiments'のid
+        :param log_span:           int                  記録をどれくらいの期間ごとに取るか
+        :param population_dept:    PopulationDepartment テーブル'population'のDB操作をするクラスのインスタンス
+        :return:                   numpy, numpy         遺伝子, 適応度
         """
-        fitness = self.calc_fitness(geno_type, fitness_function)
+        self._fitness = self.calc_fitness(should_log=False)
         for step_i in range(steps):
             print('No. ', step_i + 1)
-            geno_type = selected_ga.determine_next_generation(geno_type, fitness)
-            if step_i % self._log_span is 0:
-                fitness = self.calc_fitness(geno_type, fitness_function)
-                self._log_population(generation_number=step_i, geno_type=geno_type, fitness=fitness)
+            self._geno_type = self.determine_next_generation()
+            if step_i % log_span is 0:
+                # 記録を取る
+                # populationsに書き込む
+                population_id = self._log_population(
+                    experiment_id=experiment_id,
+                    generation_number=step_i,
+                    geno_type=self._geno_type,
+                    fitness=self._fitness,
+                    population_dept=population_dept)
+                # 適応度計算時に記録を取るようにする
+                self._fitness = self.calc_fitness(should_log=True, population_id=population_id)
             else:
-                fitness = self.calc_fitness(geno_type, fitness_function)
-        self.geno_type = geno_type
-        self.fitness = fitness
-        self.show_geno_type()
-        self.show_geno_type()
-        return geno_type, fitness
+                self._fitness = self.calc_fitness(should_log=False)
 
-    def select_elites(self, geno_type, fitness):
+    def determine_next_generation(self):
         """
-        エリート個体の遺伝子を返す
-        :param fitness:     numpy 適応度
-        :param geno_type    numpy 遺伝子
-        :return:            numpy エリート個体の遺伝子
+        次の世代を決定する
+        :return: geno_type numpy 遺伝子
         """
-        fitness = np.argsort(fitness)[::-1]
-        elites = geno_type[fitness[:self.elite_num]]
-        return elites
+        geno_type = self._crossover.determine_next_generation(
+            geno_type=self._geno_type, fitness=self._fitness, situation=self._situation,
+            mutation=self._mutation, cross=self._cross, elite_num=self._elite_num
+        )
+        return geno_type
 
-    @staticmethod
-    def calc_fitness(geno_type, fitness_function):
+    def calc_fitness(self, should_log, population_id=0):
         """
         適応度関数に適応度を計算させ、その値を返す
-        :param geno_type:           numpy     遺伝子
-        :param fitness_function:    object    適応度関数を持つクラスのインスタンス
-        :return:                    numpy     適応度
+        :param should_log:      bool  ログを記録するかどうか
+        :param population_id:   int   テーブル'experiments'のid
+        :return: fitness:       numpy 適応度
         """
-        fitness = fitness_function.calc_fitness(geno_type)
+        fitness = self._fitness_function.calc_fitness(
+            self._geno_type, should_log=should_log, population_id=population_id)
         return fitness
 
     @staticmethod
-    def save_geno_type(geno_type):
-        """
-        遺伝子をpickleファイルに保存する
-        Todo: 📁 resultにテクニカル分析手法や遺伝的アルゴリズム別で保存する
-        :param geno_type:      numpy  遺伝子
-        :return:
-        """
-        save_file = os.path.dirname(os.path.dirname(__file__) + '/../../results/') + '/geno_type.pkl'
-        with open(save_file, 'wb') as f:
-            pickle.dump(geno_type, f)
-        print('saved geno_type')
-
-    def show_geno_type(self):
-        pprint.pprint(self.geno_type)
-        print('count: ', len(self.geno_type))
-
-    def show_fitness(self):
-        pprint.pprint(self.fitness)
-        print('count: ', len(self.fitness))
-
-    def _log_population(self, generation_number, geno_type, fitness):
+    def _log_population(experiment_id, generation_number, geno_type, fitness, population_dept):
         """
         テーブル'populations'に書き込むメソッド
-        :param generation_number: int   書き込む個体の世代数
-        :param geno_type:         numpy 遺伝子
-        :param fitness:           numpy 適応度
+        :param experiment_id:     int                   テーブル'experiments'のid
+        :param generation_number: int                   書き込む個体の世代数
+        :param geno_type:         numpy                 遺伝子
+        :param fitness:           numpy                 適応度
+        :param population_dept:   PopulationDepartment  テーブル'populations'へのDB操作を扱かうクラスのインスタンス
+        :return population_id:    int                   テーブル'populations'に書きこんだid
         """
-        dept = self._db_facade.select_department(self.POPULATION_TABLE)
-        dept.give_writer_task(values=[
+        population_id = population_dept.make_writer_find_next_id()
+        population_dept.give_writer_task(values=[
             [
-                self._experiment_id,
+                experiment_id,
                 generation_number,
                 pickle.dumps(geno_type),
                 pickle.dumps(fitness),
             ],
         ])
+        return population_id
