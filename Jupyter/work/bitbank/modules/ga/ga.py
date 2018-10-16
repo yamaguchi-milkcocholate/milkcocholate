@@ -18,6 +18,12 @@ class GeneticAlgorithm:
         :param crossover_method: Crossover         交叉の手法を表すクラスのインスタンス
         :param fitness_function  FitnessFunction   適応度関数を表すクラスのインスタンス
         """
+        # 1. mutation(突然変異のパーセンテージ)は0 ~ 100
+        # 2. cross(交叉のパーセンテージ)は0 ~ 100
+        # 3. situation(遺伝子の特徴量を表す)はmodules.feature.Situationクラスのインスタンス
+        # 4. population(個体数)がelite_num(エリートの個体数)より大きい
+        # 5. crossover_method(交叉の手法を表す)はmodules.crossover.Crossoverクラスのインスタンス
+        # 6. fitness_function(適応度関数を表す)はmodules.fitnessfunction.FitnessFunctionクラスのインスタンス
         if (0 <= mutation) and (mutation <= 100):
             raise TypeError("mutation must be 0 ~ 100")
         if (0 <= cross) and (cross <= 100):
@@ -27,7 +33,7 @@ class GeneticAlgorithm:
         if population < elite_num:
             raise ArithmeticError('population must be larger than elite_num')
         if not isinstance(crossover_method, crossover.Crossover):
-            raise TypeError("crossover must be an instance of 'Crossover'")
+            raise TypeError("crossover_method must be an instance of 'Crossover'")
         if not isinstance(fitness_function, fitnessfunction.FitnessFunction):
             raise TypeError("fitness_function must be an instance of 'FitnessFunction'")
         self._mutation = mutation
