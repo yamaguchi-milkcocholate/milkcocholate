@@ -20,3 +20,12 @@ class PopulationsDepartment:
         """
         self._writer.connect()
         self._writer.write_with_auto_increment_id(self._table, self._columns, values)
+
+    def make_writer_find_next_id(self):
+        """
+        Writerクラスを使って、次のAuto_increment_idを取り出す
+        :return: auto_increment_id int  次のAuto_increment_id
+        """
+        self._writer.connect()
+        auto_increment_id = self._writer.next_auto_increment_id(self._table)
+        return auto_increment_id

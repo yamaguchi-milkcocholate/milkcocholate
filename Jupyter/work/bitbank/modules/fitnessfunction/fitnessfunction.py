@@ -13,5 +13,5 @@ class FitnessFunction(ABC):
             raise TypeError('candle type is not found')
 
     @abstractmethod
-    def calc_fitness(self, geno_type, should_log):
+    def calc_fitness(self, geno_type, should_log, population_id):
         pass

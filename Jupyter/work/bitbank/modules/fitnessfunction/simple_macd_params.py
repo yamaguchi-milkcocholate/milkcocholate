@@ -14,13 +14,13 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         super().__init__(candle_type=candle_type, db_dept=db_dept)
         self.approach = macd.MacD(self.candlestick)
 
-    def calc_fitness(self, geno_type, should_log, population_id=False):
+    def calc_fitness(self, geno_type, should_log, population_id):
         """
         calc_resultメソッドより適応度を計算
-        :param geno_type      numpy 遺伝子
-        :param should_log     bool  記録を取るべきかどうか
-        :param population_id  int   テーブル'populations'のid
-        :return:              numpy 適応度
+        :param geno_type      numpy      遺伝子
+        :param should_log     bool       記録を取るべきかどうか
+        :param population_id  int        テーブル'populations'のid
+        :return:              numpy      適応度
         """
         # 1番目のもっとも優れた個体
         population = geno_type.shape[0]
