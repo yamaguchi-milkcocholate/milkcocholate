@@ -49,6 +49,7 @@ class GeneticAlgorithm:
     def init_population(self):
         """
         遺伝子の初期化
+        :return geno_type  numpy 遺伝子
         """
         pop_list = []
         for pop_i in range(self._population):
@@ -58,7 +59,7 @@ class GeneticAlgorithm:
                 value = range_tuple_list[situ_i]
                 inter_list.append(random.randint(value[0], value[1]))
             pop_list.append(np.asarray(inter_list, int))
-        self._geno_type = np.asarray(pop_list, int)
+        return np.asarray(pop_list, int)
 
     def generation(self, steps, experiment_id, log_span, population_dept):
         """
@@ -69,6 +70,7 @@ class GeneticAlgorithm:
         :param population_dept:    PopulationDepartment テーブル'population'のDB操作をするクラスのインスタンス
         :return:                   numpy, numpy         遺伝子, 適応度
         """
+        self._geno_type = self.init_population()
         self._fitness = self.calc_fitness(should_log=False)
         for step_i in range(steps):
             print('No. ', step_i + 1)
@@ -130,3 +132,18 @@ class GeneticAlgorithm:
             ],
         ])
         return population_id
+
+    def get_mutation(self):
+        return self._mutation
+
+    def get_cross(self):
+        return self._cross
+
+    def get_situation(self):
+        return self._situation
+
+    def get_elite_num(self):
+        return self._elite_num
+
+    def get_population(self):
+        return self._population
