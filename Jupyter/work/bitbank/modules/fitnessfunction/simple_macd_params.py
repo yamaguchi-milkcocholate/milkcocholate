@@ -16,7 +16,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
             db_dept=db_dept,
             fitness_function_id=fitness_function_id
         )
-        self.approach = macd.MacD(self.candlestick)
+        self._approach = macd.MacD(self._candlestick)
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -30,7 +30,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         population = geno_type.shape[0]
         fitness_list = list()
         geno = geno_type[0]
-        data = self.approach(geno[0], geno[1], geno[2])
+        data = self._approach(geno[0], geno[1], geno[2])
         if should_log:
             fitness_result = self.calc_result_and_log(data, population_id)
         else:
@@ -39,7 +39,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         # 2番目以降の個体
         for geno_i in range(1, population):
             geno = geno_type[geno_i]
-            data = self.approach(geno[0], geno[1], geno[2])
+            data = self._approach(geno[0], geno[1], geno[2])
             fitness_result = self.calc_result(data)
             fitness_list.append(fitness_result)
         return np.asarray(fitness_list, int)
@@ -83,16 +83,18 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         :param population_id:   int              テーブル'populations'のid
         :return:                int              最終日の持ち分(円)
         """
+        insert_list = []
+        str_format = '%Y-%m-%d %H:%M:%S'
         pre_macd = 0
         pre_signal = 0
         bitcoin = 10
         yen = 0
         has_bitcoin = True
-        self.db_dept.give_writer_task([
-            population_id,
-            int(bitcoin * float(data[0].end)),
-            int(bitcoin * float(data[0].end)),
-            data[0].time,
+        insert_list.append([
+                population_id,
+                int(bitcoin * float(data.at[0, 'end'])),
+                int(bitcoin * float(data.at[0, 'end'])),
+                data.at[0, 'time'].strftime(str_format),
         ])
         for row in data.itertuples():
             operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
@@ -102,11 +104,11 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 bitcoin = 0
                 print(row.time, row.end, 'buy', 'yen', yen)
                 # DB
-                self.db_dept.give_writer_task([
+                insert_list.append([
                     population_id,
                     int(yen),
                     int(bitcoin * float(row.end)),
-                    row.time,
+                    row.time.strftime(str_format),
                 ])
             elif operation is MacdOperation.SELL:
                 has_bitcoin = True
@@ -114,17 +116,18 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 yen = 0
                 print(row.time, row.end, 'sell', 'bitcoin', bitcoin)
                 # DB
-                self.db_dept.give_writer_task([
+                insert_list.append([
                     population_id,
                     int(bitcoin * float(row.end)),
                     int(bitcoin * float(row.end)),
-                    row.time,
+                    row.time.strftime(str_format),
                 ])
             pre_macd = row.macd
             pre_signal = row.macd_signal
         if has_bitcoin:
             yen = float(bitcoin * float(data.tail(1)['end']))
         print(yen)
+        self._db_dept.give_writer_task(insert_list)
         return int(yen)
 
 

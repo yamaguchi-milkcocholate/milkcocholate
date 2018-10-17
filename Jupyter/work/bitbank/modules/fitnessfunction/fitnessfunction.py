@@ -7,9 +7,10 @@ class FitnessFunction(ABC):
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         if candle_type in self.BIT_BANK_CANDLE_STICK:
-            self.candlestick = picker.Picker(candle_type).get_candlestick()
-            self.db_dept = db_dept
+            self._candlestick = picker.Picker(candle_type).get_candlestick()
+            self._db_dept = db_dept
             self._fitness_function_id = fitness_function_id
+            self._approach = None
         else:
             raise TypeError('candle type is not found')
 
@@ -19,3 +20,6 @@ class FitnessFunction(ABC):
 
     def get_fitness_function_id(self):
         return self._fitness_function_id
+
+    def get_approach(self):
+        return self._approach
