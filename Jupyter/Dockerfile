@@ -8,6 +8,8 @@ RUN pip install --upgrade pip
 RUN pip install jupyterlab jsonify
 RUN pip install --upgrade google-cloud-storage
 RUN jupyter serverextension enable --py jupyterlab
+RUN python3 -m pip install PyMySQL
+
 
 EXPOSE 8888
 COPY ./work /home/jovyan/work/

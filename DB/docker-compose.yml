@@ -6,12 +6,15 @@ services:
     volumes:
       - ./MariaDB/init.d:/docker-entrypoint-initdb.d
       - ./MariaDB/data:/var/lib/mariadb
+      - ./MariaDB/dump:/var/tmp/dump
     environment:
         MYSQL_DATABASE: "milkcocholate"
         MYSQL_RANDOM_ROOT_PASSWORD: "yes"
         MYSQL_USER: milkcocholate
         MYSQL_PASSWORD: milkchocolate22
         TZ: "Asia/Tokyo"
+    ports:
+      - 3306:3306
   phpmyadmin:
     build: ./phpMyAdmin
     image: milkchocolate22/phpmyadmin:latest
