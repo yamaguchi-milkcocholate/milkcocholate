@@ -63,3 +63,6 @@ class OnePointCrossover(crossover.Crossover):
     def select_elites(elite_num, geno_type, fitness):
         elites = super().select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
         return elites
+
+    def get_crossover_id(self):
+        return super().get_crossover_id()
