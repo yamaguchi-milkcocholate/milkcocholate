@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: 2018 年 10 月 14 日 07:06
+-- Generation Time: 2018 年 10 月 17 日 01:26
 -- サーバのバージョン： 10.3.10-MariaDB-1:10.3.10+maria~bionic
 -- PHP Version: 7.2.8
 
@@ -25,6 +25,18 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- テーブルの構造 `crossovers`
+--
+
+CREATE TABLE `crossovers` (
+  `id` int(11) NOT NULL,
+  `name` char(50) COLLATE utf8_bin NOT NULL,
+  `spec` char(100) COLLATE utf8_bin DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
+
+-- --------------------------------------------------------
+
+--
 -- テーブルの構造 `experiments`
 --
 
@@ -40,7 +52,7 @@ CREATE TABLE `experiments` (
   `start_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `end_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `execute_time` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
 
 -- --------------------------------------------------------
 
@@ -50,21 +62,9 @@ CREATE TABLE `experiments` (
 
 CREATE TABLE `fitness_functions` (
   `id` int(11) NOT NULL,
-  `name` char(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `spec` char(100) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- テーブルの構造 `genetic_algorithms`
---
-
-CREATE TABLE `genetic_algorithms` (
-  `id` int(11) NOT NULL,
-  `name` char(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `spec` char(100) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `name` char(50) COLLATE utf8_bin NOT NULL,
+  `spec` char(100) COLLATE utf8_bin DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
 
 -- --------------------------------------------------------
 
@@ -78,7 +78,7 @@ CREATE TABLE `logs` (
   `position` int(11) NOT NULL,
   `price` int(11) NOT NULL,
   `loged_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
 
 -- --------------------------------------------------------
 
@@ -92,7 +92,7 @@ CREATE TABLE `populations` (
   `generation_number` int(11) NOT NULL,
   `genome` varbinary(1000) NOT NULL,
   `fitness` varbinary(1000) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
 
 -- --------------------------------------------------------
 
@@ -102,10 +102,10 @@ CREATE TABLE `populations` (
 
 CREATE TABLE `test` (
   `id` int(11) NOT NULL,
-  `name` char(50) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `name` char(50) COLLATE utf8_bin NOT NULL,
   `object` varbinary(1000) NOT NULL,
   `time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;
 
 --
 -- テーブルのデータのダンプ `test`
@@ -134,6 +134,12 @@ INSERT INTO `test` (`id`, `name`, `object`, `time`) VALUES
 --
 
 --
+-- Indexes for table `crossovers`
+--
+ALTER TABLE `crossovers`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `experiments`
 --
 ALTER TABLE `experiments`
@@ -143,12 +149,6 @@ ALTER TABLE `experiments`
 -- Indexes for table `fitness_functions`
 --
 ALTER TABLE `fitness_functions`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `genetic_algorithms`
---
-ALTER TABLE `genetic_algorithms`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -174,6 +174,12 @@ ALTER TABLE `test`
 --
 
 --
+-- AUTO_INCREMENT for table `crossovers`
+--
+ALTER TABLE `crossovers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `experiments`
 --
 ALTER TABLE `experiments`
@@ -184,12 +190,6 @@ ALTER TABLE `experiments`
 --
 ALTER TABLE `fitness_functions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `genetic_algorithms`
---
-ALTER TABLE `genetic_algorithms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `logs`
