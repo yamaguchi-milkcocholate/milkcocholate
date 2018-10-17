@@ -24,9 +24,9 @@ class GeneticAlgorithm:
         # 4. population(個体数)がelite_num(エリートの個体数)より大きい
         # 5. crossover_method(交叉の手法を表す)はmodules.crossover.Crossoverクラスのインスタンス
         # 6. fitness_function(適応度関数を表す)はmodules.fitnessfunction.FitnessFunctionクラスのインスタンス
-        if (0 <= mutation) and (mutation <= 100):
+        if (mutation < 0) or (100 < mutation):
             raise TypeError("mutation must be 0 ~ 100")
-        if (0 <= cross) and (cross <= 100):
+        if (cross < 0) or (100 < cross):
             raise TypeError("cross must be - ~ 100")
         if not isinstance(situation, genofeature.Situation):
             raise TypeError("situation must be an instance of 'Situation'")
@@ -73,7 +73,7 @@ class GeneticAlgorithm:
         self._geno_type = self.init_population()
         self._fitness = self.calc_fitness(should_log=False)
         for step_i in range(steps):
-            print('No. ', step_i + 1)
+            print('No. ', step_i)
             self._geno_type = self.determine_next_generation()
             if step_i % log_span is 0:
                 # 記録を取る
@@ -153,3 +153,9 @@ class GeneticAlgorithm:
 
     def get_fitness_function_id(self):
         return self._fitness_function.get_fitness_function_id()
+
+    def get_geno_type(self):
+        return self._geno_type
+
+    def set_geno_type(self, geno_type):
+        self._geno_type = geno_type
