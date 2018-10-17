@@ -2,6 +2,7 @@ from modules.fitnessfunction import simple_macd_params
 
 
 class Facade:
+    SIMPLE_MACD_PARAMS = 1
 
     def __init__(self, candle_type):
         self._functions = [
@@ -17,6 +18,7 @@ class Facade:
         :return:              FitnessFunction  適応度関数のインスタンス
         """
         if function_name is self._functions[0]:
-            return simple_macd_params.SimpleMacDParams(candle_type=self._candle_type, db_dept=db_dept)
+            return simple_macd_params.SimpleMacDParams(
+                candle_type=self._candle_type, db_dept=db_dept, fitness_function_id=self.SIMPLE_MACD_PARAMS)
         else:
             raise ValueError("fitness function '" + function_name + "' is not found")

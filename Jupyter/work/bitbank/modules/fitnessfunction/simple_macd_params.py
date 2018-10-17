@@ -10,8 +10,12 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
 
-    def __init__(self, candle_type, db_dept):
-        super().__init__(candle_type=candle_type, db_dept=db_dept)
+    def __init__(self, candle_type, db_dept, fitness_function_id):
+        super().__init__(
+            candle_type=candle_type,
+            db_dept=db_dept,
+            fitness_function_id=fitness_function_id
+        )
         self.approach = macd.MacD(self.candlestick)
 
     def calc_fitness(self, geno_type, should_log, population_id):
@@ -155,3 +159,6 @@ class MacdOperation(Enum):
                 return MacdOperation.SELL
         else:
             return MacdOperation.STAY
+
+    def get_fitness_function_id(self):
+        return super().get_fitness_function_id()
