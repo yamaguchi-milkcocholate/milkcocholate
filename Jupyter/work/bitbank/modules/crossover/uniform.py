@@ -5,8 +5,7 @@ import random
 
 class UniformCrossover(crossover.Crossover):
 
-    @classmethod
-    def determine_next_generation(cls, geno_type, fitness, situation, mutation, cross, elite_num):
+    def determine_next_generation(self, geno_type, fitness, situation, mutation, cross, elite_num):
         """
         次の世代を決定する
         :param   geno_type: numpy      遺伝子
@@ -26,7 +25,7 @@ class UniformCrossover(crossover.Crossover):
             field.append(sum_fitness)
         field = np.asarray(field, int)
         new_geno_type = np.empty((0, feature_num), int)
-        elites = cls.select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
+        elites = self.select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
 
         for geno_i in range(0, population):
             roulette = random.randrange(0, sum_fitness)
