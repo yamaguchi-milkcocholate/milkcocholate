@@ -58,8 +58,7 @@ class UniformCrossover(crossover.Crossover):
         geno_type = np.asarray(np.r_[elites, rest], int)
         return geno_type
 
-    @staticmethod
-    def select_elites(elite_num, geno_type, fitness):
+    def select_elites(self, elite_num, geno_type, fitness):
         elites = super().select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
         return elites
 

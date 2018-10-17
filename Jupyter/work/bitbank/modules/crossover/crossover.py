@@ -22,7 +22,7 @@ class Crossover(ABC):
         :return:            numpy エリート個体の遺伝子
         """
         fitness = np.argsort(fitness)[::-1]
-        elites = geno_type[fitness[elite_num]]
+        elites = geno_type[fitness[:elite_num]]
         return elites
 
     def get_crossover_id(self):

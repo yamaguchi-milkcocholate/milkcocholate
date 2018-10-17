@@ -157,5 +157,11 @@ class GeneticAlgorithm:
     def get_geno_type(self):
         return self._geno_type
 
+    def get_fitness(self):
+        return self._fitness
+
     def set_geno_type(self, geno_type):
         self._geno_type = geno_type
+
+    def set_fitness(self, fitness):
+        self._fitness = fitness
