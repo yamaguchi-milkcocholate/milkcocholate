@@ -147,3 +147,9 @@ class GeneticAlgorithm:
 
     def get_population(self):
         return self._population
+
+    def get_crossover_id(self):
+        return self._crossover.get_crossover_id()
+
+    def get_fitness_function_id(self):
+        return self._fitness_function.get_fitness_function_id()
