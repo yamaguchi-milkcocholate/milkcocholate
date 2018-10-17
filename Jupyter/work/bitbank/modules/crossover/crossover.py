@@ -12,8 +12,7 @@ class Crossover(ABC):
     def determine_next_generation(cls, geno_type, fitness, situation, mutation, cross, elite_num):
         pass
 
-    @staticmethod
-    def select_elites(elite_num, geno_type, fitness):
+    def select_elites(self, elite_num, geno_type, fitness):
         """
         エリート個体の遺伝子を返す
         :param elite_num    int   エリートの個体数
