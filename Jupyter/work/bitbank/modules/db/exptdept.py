@@ -7,7 +7,7 @@ class ExperimentsDepartment(department.Department):
         super().__init__(host=host)
         self._table = 'experiments'
         self._columns = [
-            'genetic_algorithm_id',
+            'crossover_id',
             'fitness_function_id',
             'situation',
             'mutation_rate',

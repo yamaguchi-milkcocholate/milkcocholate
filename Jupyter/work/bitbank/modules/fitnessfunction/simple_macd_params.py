@@ -9,6 +9,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
     MACDのパラメータの最適化を行う
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
+    BATCH_INSERT_NUM = 20
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         super().__init__(
@@ -42,6 +43,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
             data = self._approach(geno[0], geno[1], geno[2])
             fitness_result = self.calc_result(data)
             fitness_list.append(fitness_result)
+        del data
         return np.asarray(fitness_list, int)
 
     @staticmethod
@@ -87,7 +89,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         str_format = '%Y-%m-%d %H:%M:%S'
         pre_macd = 0
         pre_signal = 0
-        bitcoin = 10
+        bitcoin = 1
         yen = 0
         has_bitcoin = True
         insert_list.append([
@@ -96,6 +98,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 int(bitcoin * float(data.at[0, 'end'])),
                 data.at[0, 'time'].strftime(str_format),
         ])
+        insert_iteration = 0
         for row in data.itertuples():
             operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
             if operation is MacdOperation.BUY:
@@ -107,7 +110,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 insert_list.append([
                     population_id,
                     int(yen),
-                    int(bitcoin * float(row.end)),
+                    int(row.end),
                     row.time.strftime(str_format),
                 ])
             elif operation is MacdOperation.SELL:
@@ -119,15 +122,21 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 insert_list.append([
                     population_id,
                     int(bitcoin * float(row.end)),
-                    int(bitcoin * float(row.end)),
+                    int(row.end),
                     row.time.strftime(str_format),
                 ])
             pre_macd = row.macd
             pre_signal = row.macd_signal
+            # 20
+            if insert_iteration % self.BATCH_INSERT_NUM is 0 and len(insert_list) > 0:
+                self._db_dept.give_writer_task(insert_list)
+                insert_list = []
         if has_bitcoin:
             yen = float(bitcoin * float(data.tail(1)['end']))
         print(yen)
-        self._db_dept.give_writer_task(insert_list)
+        if len(insert_list) > 0:
+            self._db_dept.give_writer_task(insert_list)
+        del insert_list
         return int(yen)
 
 

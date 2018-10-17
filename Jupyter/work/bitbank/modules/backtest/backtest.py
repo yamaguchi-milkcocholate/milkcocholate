@@ -74,5 +74,5 @@ class BackTest:
             end_at.strftime(str_format),
             execute_time,
         ]
-        expt_dept.give_writer_task(values)
+        expt_dept.give_writer_task([values])
 
