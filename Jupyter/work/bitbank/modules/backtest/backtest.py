@@ -61,7 +61,7 @@ class BackTest:
         end_at = datetime.datetime.now()
         # 実験を記録
         expt_dept = self._db_facade.select_department('experiments')
-        execute_time = int(start_at.strftime('%s')) - int(end_at.strftime('%s'))
+        execute_time = int(end_at.strftime('%s')) - int(start_at.strftime('%s'))
         values = [
             self._ga.get_crossover_id(),
             self._ga.get_fitness_function_id(),
