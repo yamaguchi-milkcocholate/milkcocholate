@@ -1,7 +1,7 @@
-# coding:utf-8
 import pickle
 import os
 import pandas as pd
+import pprint
 
 
 class Picker:
@@ -10,7 +10,7 @@ class Picker:
     """
 
     def __init__(self, span):
-        self.candlestick = self.load_data(span)
+        self._candlestick = self.load_data(span)
 
     @staticmethod
     def load_data(span):
@@ -23,7 +23,15 @@ class Picker:
             raise FileNotFoundError("'5min' or '15min' or '1hour'")
         cur = os.path.dirname(os.path.abspath(__file__))
         files_path = os.path.abspath(cur + '/../../') + '/' + span + '/data'
+
+        # 文字列なので順番はバラバラ
         files = os.listdir(files_path)
+
+        # ファイル名前半の20180101のようなものをintに変換してソート
+        print(int(files[0].split('.')[0]))
+        pprint.pprint(files)
+        files = sorted(files, key=lambda x: int(x.split('.')[0]))
+        pprint.pprint(files)
 
         candlestick = []
         for i in range(len(files)):
