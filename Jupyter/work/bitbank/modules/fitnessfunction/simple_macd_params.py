@@ -10,6 +10,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
     BATCH_INSERT_NUM = 20
+    INIT_BIT_COIN_AMOUNT = 1
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         super().__init__(
@@ -46,8 +47,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         del data
         return np.asarray(fitness_list, int)
 
-    @staticmethod
-    def calc_result(data):
+    def calc_result(self, data):
         """
         過去のデータから取引を行って、最終日の持ち分を適応度とする
         :param data: pandas.DataFrame 過去のデータ
@@ -55,7 +55,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         """
         pre_macd = 0
         pre_signal = 0
-        bitcoin = 10
+        bitcoin = self.INIT_BIT_COIN_AMOUNT
         yen = 0
         has_bitcoin = True
         for row in data.itertuples():
@@ -89,7 +89,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         str_format = '%Y-%m-%d %H:%M:%S'
         pre_macd = 0
         pre_signal = 0
-        bitcoin = 1
+        bitcoin = self.INIT_BIT_COIN_AMOUNT
         yen = 0
         has_bitcoin = True
         insert_list.append([
