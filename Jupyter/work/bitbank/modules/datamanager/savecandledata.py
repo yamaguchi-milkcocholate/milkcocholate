@@ -50,7 +50,7 @@ class SaveCandleData:
             # timeformat
             df['time'] = pd.to_datetime(df['time'], unit='ms')
             # save
-            save_file = wur + save_dir + day_str + '_' + timespace + '.pkl'
+            save_file = wur + save_dir + day_str + '.pkl'
             with open(save_file, 'wb') as f:
                 print('saving' + day_str)
                 pickle.dump(df, f)

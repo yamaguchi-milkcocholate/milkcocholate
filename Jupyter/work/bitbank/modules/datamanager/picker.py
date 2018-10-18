@@ -35,4 +35,4 @@ class Picker:
         return candlestick
 
     def get_candlestick(self):
-        return self.candlestick
+        return self._candlestick
