@@ -11,3 +11,4 @@ BitBank/API/__pycache__/configmanager.cpython-36.pyc
 \.idea/libraries/
 
 \.idea/
+*/.DS_Store
