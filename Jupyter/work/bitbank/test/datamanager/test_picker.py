@@ -15,10 +15,10 @@ class TestPicker(unittest.TestCase):
     def test_load_data(self):
         data = self._picker_1hour.get_candlestick()
         print(data)
-        pre_time = data.head().time
-        for row in data.itertuples():
-            if pre_time >= row.time:
-                self.assertEqual(1, -1)
+        data = self._picker_15min.get_candlestick()
+        print(data)
+        data = self._picker_5min.get_candlestick()
+        print(data)
 
 
 if __name__ == '__main__':

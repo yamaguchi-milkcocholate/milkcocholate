@@ -28,11 +28,7 @@ class Picker:
         files = os.listdir(files_path)
 
         # ファイル名前半の20180101のようなものをintに変換してソート
-        print(int(files[0].split('.')[0]))
-        pprint.pprint(files)
         files = sorted(files, key=lambda x: int(x.split('.')[0]))
-        pprint.pprint(files)
-
         candlestick = []
         for i in range(len(files)):
             file = files_path + '/' + files[i]
