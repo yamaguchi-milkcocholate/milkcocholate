@@ -1,7 +1,7 @@
 from modules.db import department
 
 
-class GeneticAlgorithmsDepartment(department.Department):
+class CrossoversDepartment(department.Department):
 
     def __init__(self, host):
         super().__init__(host=host)
