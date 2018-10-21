@@ -14,14 +14,13 @@ class SaveCandleData:
     def __init__(self):
         self.test_list = list()
 
-    def save_candledata(self, timespace, start_day, finish_day, url_header, pair):
+    def save_candledata(self, timespace, start_day, finish_day, pair):
         """
         指定した日付のろうそく足データを取得する
-        引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,urlヘッダー,仮想通貨の名前）
+        引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,仮想通貨の名前）
         :param timespace: string 調べたい時間間隔　例1hour
         :param start_day: string 調べたい期間の開始日　例20181007
         :param finish_day:　string　調べたい期間の終了日　例20181009
-        :param url_header: string 例http://localhost：10080
         :param pair: string 調べたい仮想通貨　例btc_jpy
         :return:
         """
@@ -37,7 +36,7 @@ class SaveCandleData:
         if int(start_day)>int(finish_day):
             print("調べたい期間の最初の日付が最後の日付より後になっています")
             sys.exit()
-        gateway = apigateway.ApiGateway(url_header, pair)
+        gateway = apigateway.ApiGateway(pair)
         cur = os.path.dirname(os.path.abspath(__file__))
         our = os.path.abspath(cur + '/../..')
         wur = our + '/' + timespace
