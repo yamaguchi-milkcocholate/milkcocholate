@@ -39,6 +39,8 @@ spec:
       - image: milkchocolate22/mariadb:latest
         name: mariadb
         env:
+        - name: MYSQL_DATABASE
+          value: "milkcocholate"
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
