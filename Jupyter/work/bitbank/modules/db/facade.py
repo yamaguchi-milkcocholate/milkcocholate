@@ -1,11 +1,11 @@
-from modules.db import gadept, fitfuncdept, exptdept, exptlogsdept, popdept
+from modules.db import crossoverdept, fitfuncdept, exptdept, exptlogsdept, popdept
 
 
 class Facade:
 
     def __init__(self, host):
         self._tables = [
-            'genetic_algorithms',
+            'crossovers',
             'fitness_functions',
             'experiments',
             'experiment_logs',
@@ -20,7 +20,7 @@ class Facade:
         :return:      Department like  テーブルを操作するDepartmentクラス
         """
         if table is self._tables[0]:
-            return gadept.GeneticAlgorithmsDepartment(self._host)
+            return crossoverdept.CrossoversDepartment(self._host)
         elif table is self._tables[1]:
             return fitfuncdept.FitnessFunctionsDepartment(self._host)
         elif table is self._tables[2]:
