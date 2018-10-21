@@ -9,6 +9,7 @@ RUN pip install jupyterlab jsonify
 RUN pip install --upgrade google-cloud-storage
 RUN jupyter serverextension enable --py jupyterlab
 RUN python3 -m pip install PyMySQL
+RUN pip install git+https://github.com/bitbankinc/python-bitbankcc.git
 
 
 EXPOSE 8888

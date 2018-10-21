@@ -12,7 +12,7 @@ class TestGetVariable(unittest.TestCase):
         self.bar = savecandledata.SaveCandleData()
 
     def test_save_candledata(self):
-        self.bar.save_candledata("1hour", "20181001", "20181007", "http://192.168.99.100:10080", "btc_jpy")
+        self.bar.save_candledata("1hour", "20181001", "20181007", "btc_jpy")
         test_list = self.bar.get_test_list()
         list_len = len(test_list)
 
