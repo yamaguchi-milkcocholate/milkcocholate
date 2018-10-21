@@ -3,14 +3,14 @@ kind: Service
 metadata:
   labels:
     name: phpmyadmin
-  name: phpmyadmin
+  name: phpmyadmin-http
 spec:
   ports:
     - port: 80
       targetPort: 80
   selector:
     name: phpmyadmin
-  type: NodePort
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Pod
