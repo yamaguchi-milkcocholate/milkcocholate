@@ -21,7 +21,7 @@ metadata:
 spec:
   containers:
     - name: phpmyadmin
-      image: milkcocholate22/phpayadmin
+      image: milkcocholate22/phpmyadmin:latest
       env:
         - name: PMA_HOST
           value: mariadb-http
