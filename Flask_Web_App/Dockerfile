@@ -7,6 +7,8 @@ RUN apt-get update -y && apt-get install -y python-pip python-dev build-essentia
 COPY ./requirements.txt /requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+RUN python3 -m pip install PyMySQL
+
 
 EXPOSE 5000
 COPY . /home/app/

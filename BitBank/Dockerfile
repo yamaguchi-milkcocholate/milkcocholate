@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM python:3.6
 
 LABEL maintainer = "milkcocholate"
 LABEL titile     = "BitBank"
