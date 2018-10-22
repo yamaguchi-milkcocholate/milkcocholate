@@ -5,10 +5,10 @@ from modules.datamanager import apigateway
 
 class RealTimeRunner:
 
-    def __init__(self, url_header, pair):
+    def __init__(self, pair):
         self.ticker_list = list()
         self.depth_list = list()
-        self.api_gateway = apigateway.ApiGateway(url_header, pair)
+        self.api_gateway = apigateway.ApiGateway(pair)
 
     def processing(self, *args):
         """

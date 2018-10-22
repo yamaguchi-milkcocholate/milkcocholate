@@ -72,7 +72,7 @@ class GeneticAlgorithm:
         """
         self._geno_type = self.init_population()
         self._fitness = self.calc_fitness(should_log=False)
-        for step_i in range(steps):
+        for step_i in range(steps + 1):
             print('No. ', step_i)
             self._geno_type = self.determine_next_generation()
             if step_i % log_span is 0:
