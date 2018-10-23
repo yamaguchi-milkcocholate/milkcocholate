@@ -94,7 +94,7 @@ class Reader:
         try:
             with self._connection.cursor() as cursor:
                 cursor.execute(sql, placeholder)
-                result = cursor.fetchone()
+                result = cursor.fetchall()
         except Exception:
             self._connection.close()
             raise
