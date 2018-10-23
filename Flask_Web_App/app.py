@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template
 from flask_modules.loggraph import expt
+from flask_modules.loggraph.repository import loggraprepo
 app = Flask(__name__)
 
 
@@ -18,6 +19,14 @@ def index():
         execute_time=86400
     )
     return render_template('index.html', experiments=[experiment, experiment, experiment])
+
+
+@app.route("/graph/<population_id>", methods=['GET'])
+def graph(population_id):
+    host = 'localhost'
+    repository = loggraprepo.LogGraphRepository(host=host)
+    log_graph = repository.get_log_graph(population_id=1)
+    return render_template('graph.html', log_graph=log_graph)
 
 
 if __name__ == "__main__":
