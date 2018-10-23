@@ -23,7 +23,7 @@ def index():
 
 @app.route("/graph/<population_id>", methods=['GET'])
 def graph(population_id):
-    host = 'localhost'
+    host = 'mariadb'
     repository = loggraprepo.LogGraphRepository(host=host)
     log_graph = repository.get_log_graph(population_id=1)
     return render_template('graph.html', log_graph=log_graph)
