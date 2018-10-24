@@ -6,6 +6,12 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET'])
 def index():
+
+    return render_template('index.html')
+
+
+@app.route("/experiments", methods=['GET'])
+def experiments():
     experiment = expt.Experiment(
         crossover_name='uniform',
         fitness_function_name='simple_macd_params',
@@ -18,14 +24,14 @@ def index():
         end_time="2018-10-22 12:34:56",
         execute_time=86400
     )
-    return render_template('index.html', experiments=[experiment, experiment, experiment])
+    return render_template('experiments.html', experiments=[experiment, experiment, experiment])
 
 
 @app.route("/graph/<population_id>", methods=['GET'])
 def graph(population_id):
     host = 'mariadb'
     repository = loggraprepo.LogGraphRepository(host=host)
-    log_graph = repository.get_log_graph(population_id=1)
+    log_graph = repository.get_log_graph(population_id=population_id)
     return render_template('graph.html', log_graph=log_graph)
 
 
