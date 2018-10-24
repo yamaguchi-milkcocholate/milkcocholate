@@ -11,10 +11,13 @@
     </div>
 <script>
 
+jQuery(function($){
+    activateNav(2);
+});
+
 var time = {{ log_graph.plot_data|tojson }};
 var position = {{ log_graph.plot_data['position']|tojson }};
 var price = {{ log_graph.plot_data['price']|tojson }};
-console.log(time);
 
 var xData = [time, time];
 
