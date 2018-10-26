@@ -19,7 +19,7 @@ def simple_moving_average(candlestick_end, term):
     for i in range(iteration):
         ends = candlestick_end.loc[i:start + i, 'end'].values
         average_list.append(float(np.sum(ends) / term))
-    return pd.DataFrame(data=average_list, columns=['simple_moving_average'])
+    return pd.DataFrame(data=average_list, columns=['simple_moving_average'], dtype=np.float32)
 
 
 def exponential_moving_average(candlestick_end, term):
@@ -43,7 +43,7 @@ def exponential_moving_average(candlestick_end, term):
         part = candlestick_end.loc[i, 'end']
         pre = average_list[-1]
         average_list.append(float(pre + alpha * (part - pre)))
-    return pd.DataFrame(data=average_list, columns=['exponential_moving_average'])
+    return pd.DataFrame(data=average_list, columns=['exponential_moving_average'], dtype=np.float32)
 
 
 def volatility(simple_moving_average_end, term):
@@ -71,7 +71,7 @@ def volatility(simple_moving_average_end, term):
         sma = simple_moving_average_end.loc[start + i, 'simple_moving_average']
         upper_band_list.append(float(sma + 2 * std))
         lower_band_list.append(float(sma - 2 * std))
-    return pd.DataFrame({
+    return pd.DataFrame(data={
         'upper_band': upper_band_list,
         'lower_band': lower_band_list,
-    })
+    }, dtype=np.float32)
