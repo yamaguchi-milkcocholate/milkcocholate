@@ -1,4 +1,3 @@
-# coding:utf-8
 import pandas as pd
 
 
@@ -17,7 +16,7 @@ class MacD:
         :param short-term:       int                    短期間の平滑移動平均
         :param long-term:        int                    長期間の平滑移動平均
         :param signal:           int                    シグナルの平滑移動平均
-        :return                  pandas.DataFrame       ロウソク足データ
+        :return                  pandas.DataFrame
         """
         self.short_term = short_term
         self.long_term = long_term
