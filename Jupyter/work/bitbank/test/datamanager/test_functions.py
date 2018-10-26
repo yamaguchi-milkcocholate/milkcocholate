@@ -42,8 +42,60 @@ class TestFunctions(unittest.TestCase):
         # 例外
         try:
             df_1 = pd.DataFrame(data=list_1, columns=['hoge'])
-            functions.simple_moving_average(candlestick_end=df_1, term=3)
+            functions.exponential_moving_average(candlestick_end=df_1, term=3)
             self.assertEqual(1, -1, msg='カラム名の例外')
+        except TypeError:
+            pass
+
+    def test_volatility(self):
+        # 単純平均移動線
+        list_1 = [1, 2, 2, 4, 5, 6]
+        list_2 = [10, 10, 10, 20, 10, 20]
+        df_1 = pd.DataFrame({
+            'end': list_1,
+            'simple_moving_average': list_2,
+             })
+        result_1 = functions.volatility(simple_moving_average_end=df_1, term=3)
+        # 標準偏差 × 2
+        std_std = [0.94281, 1.885618, 2.494438, 1.632994]
+        print(result_1)
+        self.assertEqual(4, len(result_1))
+        self.assertAlmostEqual(list_2[2] + std_std[0], round(result_1.at[0, 'upper_band']), -5)
+        self.assertAlmostEqual(list_2[3] + std_std[1], round(result_1.at[1, 'upper_band']), -5)
+        self.assertAlmostEqual(list_2[4] + std_std[2], round(result_1.at[2, 'upper_band']), -5)
+        self.assertAlmostEqual(list_2[5] + std_std[3], round(result_1.at[3, 'upper_band']), -5)
+
+        self.assertAlmostEqual(list_2[2] - std_std[0], round(result_1.at[0, 'lower_band']), -5)
+        self.assertAlmostEqual(list_2[3] - std_std[1], round(result_1.at[1, 'lower_band']), -5)
+        self.assertAlmostEqual(list_2[4] - std_std[2], round(result_1.at[2, 'lower_band']), -5)
+        self.assertAlmostEqual(list_2[5] - std_std[3], round(result_1.at[3, 'lower_band']), -5)
+
+        # 例外
+        try:
+            df_1 = pd.DataFrame({
+                'end': list_1,
+                'hoge': list_2,
+            })
+            functions.volatility(simple_moving_average_end=df_1, term=3)
+            self.assertEqual(1, -1, msg='カラム名の例外')
+        except TypeError:
+            pass
+        try:
+            df_1 = pd.DataFrame({
+                'hoge': list_1,
+                'simple_moving_average': list_2,
+            })
+            functions.volatility(simple_moving_average_end=df_1, term=3)
+            self.assertEqual(1, -1, msg='カラム名の例外')
+        except TypeError:
+            pass
+        try:
+            df_1 = pd.DataFrame({
+                'end': list_1,
+                'simple_moving_average': list_2,
+            })
+            functions.volatility(simple_moving_average_end=df_1, term=1)
+            self.assertEqual(1, -1, msg='termの例外')
         except TypeError:
             pass
 
