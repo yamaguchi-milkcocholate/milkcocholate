@@ -9,8 +9,6 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
     MACDのパラメータの最適化を行う
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
-    BATCH_INSERT_NUM = 20
-    INIT_BIT_COIN_AMOUNT = 1
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         super().__init__(
@@ -28,24 +26,12 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         :param population_id  int        テーブル'populations'のid
         :return:              numpy      適応度
         """
-        population = geno_type.shape[0]
-        fitness_list = list()
-        # 1番目のもっとも優れた個体
-        geno = geno_type[0]
-        data = self._approach(genome=geno)
-        if should_log:
-            fitness_result = self.calc_result_and_log(data, population_id)
-        else:
-            fitness_result = self.calc_result(data)
-        fitness_list.append(fitness_result)
-        # 2番目以降の個体
-        for geno_i in range(1, population):
-            geno = geno_type[geno_i]
-            data = self._approach(genome=geno)
-            fitness_result = self.calc_result(data)
-            fitness_list.append(fitness_result)
-        del data
-        return np.asarray(fitness_list, int)
+        fitness = super().calc_fitness(
+            geno_type=geno_type,
+            should_log=should_log,
+            population_id=population_id
+        )
+        return fitness
 
     def calc_result(self, data):
         """

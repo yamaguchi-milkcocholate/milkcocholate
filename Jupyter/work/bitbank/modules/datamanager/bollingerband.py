@@ -10,14 +10,13 @@ class BollingerBand:
         self._volatility_term = None
         self._data = None
 
-    def __call__(self, sma_term, volatility_term):
+    def __call__(self, genome):
         """
-        :param   sma_term:            int
-        :param   volatility_term:     int
-        :return:                      pandas.DataFrame
+        :param   genome:     numpy             ['sma_term', 'volatility_term']
+        :return:             pandas.DataFrame
         """
-        self._sma_term = sma_term
-        self._volatility_term = volatility_term
+        self._sma_term = genome[0]
+        self._volatility_term = genome[1]
         self.__calculate()
         return self._data
 
