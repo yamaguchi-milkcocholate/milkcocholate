@@ -28,11 +28,11 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         :param population_id  int        テーブル'populations'のid
         :return:              numpy      適応度
         """
-        # 1番目のもっとも優れた個体
         population = geno_type.shape[0]
         fitness_list = list()
+        # 1番目のもっとも優れた個体
         geno = geno_type[0]
-        data = self._approach(geno[0], geno[1], geno[2])
+        data = self._approach(genome=geno)
         if should_log:
             fitness_result = self.calc_result_and_log(data, population_id)
         else:
@@ -41,7 +41,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         # 2番目以降の個体
         for geno_i in range(1, population):
             geno = geno_type[geno_i]
-            data = self._approach(geno[0], geno[1], geno[2])
+            data = self._approach(genome=geno)
             fitness_result = self.calc_result(data)
             fitness_list.append(fitness_result)
         del data
