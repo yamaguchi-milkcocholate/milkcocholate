@@ -8,6 +8,8 @@ services:
     ports:
       - "5000:5000"
     restart: always
+    links:
+      - mariadb
 
   jupyter:
     container_name: jupyter
@@ -16,11 +18,40 @@ services:
       - "8888:8888"
     volumes:
       - ./Jupyter/work:/home/jovyan/work
+    links:
+      - mariadb
 
-  bitbank:
-    build: ./BitBank
-    ports:
-      - "10080:10080"
+  mariadb:
+    build: ./DB/MariaDB
+    image: milkchocolate22/mariadb:latest
     volumes:
-      - ./BitBank:/home/bitbank
+      - ./DB/MariaDB/init.d:/docker-entrypoint-initdb.d
+      - ./DB/MariaDB/data:/var/lib/mariadb
+      - ./DB/MariaDB/dump:/var/tmp/dump
+    environment:
+      MYSQL_ROOT_PASSWORD: "milkchocolate22"
+      MYSQL_DATABASE: "milkcocholate"
+      MYSQL_USER: milkcocholate
+      MYSQL_PASSWORD: milkchocolate22
+      TZ: "Asia/Tokyo"
+    ports:
+      - 3306:3306
+
+  phpmyadmin:
+    build: ./DB/phpMyAdmin
+    image: milkchocolate22/phpmyadmin:latest
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mariadb
+      - PMA_USER=milkcocholate
+      - PMA_PASSWORD=milkchocolate22
     restart: always
+    links:
+      - mariadb
+    ports:
+      - 8080:80
+    volumes:
+      - /sessions
+    depends_on:
+      - mariadb
+

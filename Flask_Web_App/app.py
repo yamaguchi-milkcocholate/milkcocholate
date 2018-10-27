@@ -1,24 +1,38 @@
-# coding:utf-8
 from flask import Flask, jsonify, request, render_template
+from flask_modules.loggraph import expt
+from flask_modules.loggraph.repository import loggraprepo
 app = Flask(__name__)
 
 
 @app.route("/", methods=['GET'])
 def index():
-    prefectures = list()
-    prefectures.append(('北海度', 1))
-    prefectures.append(('aomori', 2))
-    prefectures.append(('iwate', 3))
-    prefectures.append(('miyagi', 4))
-    prefectures.append(('akita', 5))
-    prefectures.append(('yamagata', 6))
-    prefectures.append(('fukusima', 7))
-    prefectures.append(('ibaraki', 8))
-    prefectures.append(('tochigi', 9))
-    prefectures.append(('gunma', 10))
-    prefectures.append(('chiba', 11))
-    prefectures.append(('kanagawa', 12))
-    return render_template('index.html', prefectures=prefectures)
+
+    return render_template('index.html')
+
+
+@app.route("/experiments", methods=['GET'])
+def experiments():
+    experiment = expt.Experiment(
+        crossover_name='uniform',
+        fitness_function_name='simple_macd_params',
+        situation=None,
+        mutation_rate=50,
+        cross_rate=2,
+        population=100,
+        elite_num=1,
+        start_time="2018-10-21 12:34:56",
+        end_time="2018-10-22 12:34:56",
+        execute_time=86400
+    )
+    return render_template('experiments.html', experiments=[experiment, experiment, experiment])
+
+
+@app.route("/graph/<population_id>", methods=['GET'])
+def graph(population_id):
+    host = 'mariadb'
+    repository = loggraprepo.LogGraphRepository(host=host)
+    log_graph = repository.get_log_graph(population_id=population_id)
+    return render_template('graph.html', log_graph=log_graph)
 
 
 if __name__ == "__main__":
