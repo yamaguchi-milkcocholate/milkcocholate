@@ -32,13 +32,16 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         genome = geno_type[0]
         data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
         if should_log:
-            fitness_result = self.calc_result_and_log(data, population_id)
+            fitness_result = self.calc_result_and_log(
+                population_id=population_id,
+                data=data
+            )
         else:
             fitness_result = self.calc_result(data)
         fitness_list.append(fitness_result)
         # 2番目以降の個体
         for genome_i in range(1, population):
-            genome = geno_type(genome_i)
+            genome = geno_type[genome_i]
             data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
             fitness_result = self.calc_result(data=data)
             fitness_list.append(fitness_result)
@@ -57,7 +60,13 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         yen = 0
         has_bitcoin = True
         for row in data.itertuples():
-            operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
+            operation = MacdOperation.operation(
+                pre_macd=pre_macd,
+                pre_signal=pre_signal,
+                macd=row.macd,
+                signal=row.macd_signal,
+                has_bitcoin=has_bitcoin
+            )
             if operation is MacdOperation.BUY:
                 has_bitcoin = False
                 yen = float(bitcoin * float(row.end))
@@ -75,14 +84,15 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         print(yen)
         return int(yen)
 
-    def calc_result_and_log(self, data, population_id):
+    def calc_result_and_log(self, population_id, **kwargs):
         """
         過去のデータから取引を行って、最終日の持ち分を適応度とする
         記録をデータベースに保存する
-        :param data:            pandas.DataFrame 過去のデータ
+        :param kwargs:          pandas.DataFrame ['data']過去のデータ
         :param population_id:   int              テーブル'populations'のid
         :return:                int              最終日の持ち分(円)
         """
+        data = kwargs['data']
         insert_list = []
         str_format = '%Y-%m-%d %H:%M:%S'
         pre_macd = 0
@@ -98,7 +108,13 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         ])
         insert_iteration = 0
         for row in data.itertuples():
-            operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
+            operation = MacdOperation.operation(
+                pre_macd=pre_macd,
+                pre_signal=pre_signal,
+                macd=row.macd,
+                signal=row.macd_signal,
+                has_bitcoin=has_bitcoin
+            )
             if operation is MacdOperation.BUY:
                 has_bitcoin = False
                 yen = float(bitcoin * float(row.end))
