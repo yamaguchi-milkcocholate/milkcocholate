@@ -41,6 +41,8 @@ class BollingerBand:
             'end': self._candlestick.tail(len(vol)).end.values,
             'lower_band': vol.lower_band.values,
             'upper_band': vol.upper_band.values,
+            'lower_band_double': vol.lower_band_double.values,
+            'upper_band_double': vol.upper_band_double.values,
             'time': self._candlestick.tail(len(vol)).time.values
         })
 

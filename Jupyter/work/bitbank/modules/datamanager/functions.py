@@ -50,8 +50,8 @@ def volatility(simple_moving_average_end, term):
     """
     単純移動平均線の標準偏差を計算して、上部バンド・下部バンドを返す
     :param simple_moving_average_end:         pandas.DataFrame
-    :param term:                    int
-    :return:                        pandas.DataFrame, pandas.DataFrame
+    :param term:                              int
+    :return:                                  pandas.DataFrame, pandas.DataFrame
     """
     if term <= 1:
         raise TypeError('term must be larger than 1')
@@ -61,6 +61,8 @@ def volatility(simple_moving_average_end, term):
         raise TypeError('column "simple_moving_average" not found')
     upper_band_list = list()
     lower_band_list = list()
+    upper_band_double_list = list()
+    lower_band_double_list = list()
     # 開始位置
     start = term - 1
     # ループ回数 = 返すDataFrameの行数
@@ -69,9 +71,13 @@ def volatility(simple_moving_average_end, term):
         ends = simple_moving_average_end.loc[i:start + i, 'end'].values
         std = np.std(a=ends)
         sma = simple_moving_average_end.loc[start + i, 'simple_moving_average']
-        upper_band_list.append(float(sma + 2 * std))
-        lower_band_list.append(float(sma - 2 * std))
+        upper_band_list.append(float(sma + std))
+        lower_band_list.append(float(sma - std))
+        upper_band_double_list.append(float(sma + 2 * std))
+        lower_band_double_list.append(float(sma - 2 * std))
     return pd.DataFrame(data={
         'upper_band': upper_band_list,
         'lower_band': lower_band_list,
+        'upper_band_double': upper_band_double_list,
+        'lower_band_double': lower_band_double_list,
     }, dtype=np.float32)
