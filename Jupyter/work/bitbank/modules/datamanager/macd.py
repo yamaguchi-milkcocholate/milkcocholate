@@ -11,15 +11,16 @@ class MacD:
         self.__list = None
         self.data = None
 
-    def __call__(self, genome):
+    def __call__(self, short_term, long_term, signal):
         """
-        :param genome            numpy
-                ['短期間の平滑移動平均', '長期間の平滑移動平均', 'シグナルの平滑移動平均']
-        :return                  pandas.DataFrame
+        :param short_term: float 短期間の平滑移動平均
+        :param long_term:  float 長期間の平滑移動平均
+        :param signal:     float シグナルの平滑移動平均
+        :return:           pandas.DataFrame
         """
-        self.short_term = genome[0]
-        self.long_term = genome[1]
-        self.signal = genome[2]
+        self.short_term = short_term
+        self.long_term = long_term
+        self.signal = signal
         self.__list = []
         self.data = pd.DataFrame([], columns=['end', 'short_term', 'long_term', 'time'])
         self.calculate()

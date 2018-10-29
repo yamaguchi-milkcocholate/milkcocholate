@@ -17,31 +17,9 @@ class FitnessFunction(ABC):
         else:
             raise TypeError('candle type is not found')
 
+    @abstractmethod
     def calc_fitness(self, geno_type, should_log, population_id):
-        """
-        calc_resultメソッドより適応度を計算
-        :param geno_type      numpy      遺伝子
-        :param should_log     bool       記録を取るべきかどうか
-        :param population_id  int        テーブル'populations'のid
-        :return:              numpy      適応度
-        """
-        population = geno_type.shape[0]
-        fitness_list = list()
-        # 1番目のもっとも優れた個体
-        genome = geno_type[0]
-        data = self._approach(genome=genome)
-        if should_log:
-            fitness_result = self.calc_result_and_log(data, population_id)
-        else:
-            fitness_result = self.calc_result(data)
-        fitness_list.append(fitness_result)
-        # 2番目以降の個体
-        for genome_i in range(1, population):
-            genome = geno_type(genome_i)
-            data = self._approach(genome=genome)
-            fitness_list.append(fitness_result)
-        del data
-        return np.asarray(a=fitness_list, dtype=np.int32)
+        pass
 
     @abstractmethod
     def calc_result(self, data):

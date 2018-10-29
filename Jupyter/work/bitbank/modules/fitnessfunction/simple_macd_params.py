@@ -26,12 +26,23 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         :param population_id  int        テーブル'populations'のid
         :return:              numpy      適応度
         """
-        fitness = super().calc_fitness(
-            geno_type=geno_type,
-            should_log=should_log,
-            population_id=population_id
-        )
-        return fitness
+        population = geno_type.shape[0]
+        fitness_list = list()
+        # 1番目のもっとも優れた個体
+        genome = geno_type[0]
+        data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
+        if should_log:
+            fitness_result = self.calc_result_and_log(data, population_id)
+        else:
+            fitness_result = self.calc_result(data)
+        fitness_list.append(fitness_result)
+        # 2番目以降の個体
+        for genome_i in range(1, population):
+            genome = geno_type(genome_i)
+            data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
+            fitness_list.append(fitness_result)
+        del data
+        return np.asarray(a=fitness_list, dtype=np.int32)
 
     def calc_result(self, data):
         """
