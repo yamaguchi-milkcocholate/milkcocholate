@@ -40,6 +40,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         for genome_i in range(1, population):
             genome = geno_type(genome_i)
             data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
+            fitness_result = self.calc_result(data=data)
             fitness_list.append(fitness_result)
         del data
         return np.asarray(a=fitness_list, dtype=np.int32)
