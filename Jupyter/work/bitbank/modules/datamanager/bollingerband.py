@@ -10,13 +10,14 @@ class BollingerBand:
         self._volatility_term = None
         self._data = None
 
-    def __call__(self, genome):
+    def __call__(self, sma_term, std_term):
         """
-        :param   genome:     numpy             ['sma_term', 'volatility_term']
-        :return:             pandas.DataFrame
+        :param sma_term: 平均移動線
+        :param std_term: 標準偏差
+        :return:
         """
-        self._sma_term = genome[0]
-        self._volatility_term = genome[1]
+        self._sma_term = sma_term
+        self._volatility_term = std_term
         self.__calculate()
         return self._data
 
@@ -43,6 +44,7 @@ class BollingerBand:
             'upper_band': vol.upper_band.values,
             'lower_band_double': vol.lower_band_double.values,
             'upper_band_double': vol.upper_band_double.values,
+            'sigma': vol.sigma.values,
             'time': self._candlestick.tail(len(vol)).time.values
         })
 

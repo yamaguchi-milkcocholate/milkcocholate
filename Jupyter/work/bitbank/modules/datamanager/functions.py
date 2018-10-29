@@ -63,6 +63,7 @@ def volatility(simple_moving_average_end, term):
     lower_band_list = list()
     upper_band_double_list = list()
     lower_band_double_list = list()
+    sigma_list = list()
     # 開始位置
     start = term - 1
     # ループ回数 = 返すDataFrameの行数
@@ -75,9 +76,11 @@ def volatility(simple_moving_average_end, term):
         lower_band_list.append(float(sma - std))
         upper_band_double_list.append(float(sma + 2 * std))
         lower_band_double_list.append(float(sma - 2 * std))
+        sigma_list.append(float(std))
     return pd.DataFrame(data={
         'upper_band': upper_band_list,
         'lower_band': lower_band_list,
         'upper_band_double': upper_band_double_list,
         'lower_band_double': lower_band_double_list,
+        'sigma': sigma_list,
     }, dtype=np.float32)
