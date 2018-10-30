@@ -45,7 +45,8 @@ class BollingerBand:
             'lower_band_double': vol.lower_band_double.values,
             'upper_band_double': vol.upper_band_double.values,
             'sigma': vol.sigma.values,
-            'time': self._candlestick.tail(len(vol)).time.values
+            'simple_moving_average': sma.tail(len(vol)).simple_moving_average.values,
+            'time': self._candlestick.tail(len(vol)).time.values,
         })
 
 
