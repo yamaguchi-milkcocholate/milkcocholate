@@ -84,3 +84,31 @@ def volatility(simple_moving_average_end, term):
         'lower_band_double': lower_band_double_list,
         'sigma': sigma_list,
     }, dtype=np.float32)
+
+
+def linear_regression(x, t, basic_function):
+    """
+    線形回帰 正則化なし
+    :param   x:              numpy  入力値
+    :param   t:              numpy  目標値
+    :param   basic_function: object 基底関数を算出するクラスオブジェクト
+    :return: w:              numpy  重みパラメータ
+    """
+    phi_x = basic_function(x)
+    tmp = np.linalg.inv(np.dot(phi_x.T, phi_x))
+    w = np.dot(np.dot(tmp, phi_x.T), t)
+    return w
+
+
+class Polynomial(object):
+    """
+    多項式の基底関数
+    """
+    def __init__(self, dim=1):
+        """
+        :param dim: int 多項式の次元 (初期値は0次元なので、入力値のまま)
+        """
+        self._dim = dim
+
+    def __call__(self, x):
+        return np.array([x ** i for i in range(self._dim)]).T
