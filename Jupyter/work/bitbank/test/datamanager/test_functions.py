@@ -2,6 +2,7 @@ import sys
 import os
 import unittest
 import pandas as pd
+import numpy as np
 sys.path.append(os.pardir + '/../')
 from modules.datamanager import functions
 
@@ -100,6 +101,20 @@ class TestFunctions(unittest.TestCase):
             self.assertEqual(1, -1, msg='termの例外')
         except TypeError:
             pass
+
+    def test_linear_regression(self):
+        x = np.asarray([0, 20, 40])
+        t = np.asarray([100, 120, 140])
+        polynomial = functions.Polynomial(dim=2)
+        w = functions.linear_regression(
+            x=x,
+            t=t,
+            basic_function=polynomial
+        )
+        self.assertEqual(100, round(w[0]))
+        self.assertEqual(1, round(w[1]))
+        print(round(w[0]), w[0])
+        print(round(w[1]), w[1])
 
     def tearDown(self):
         pass
