@@ -22,11 +22,11 @@ class FitnessFunction(ABC):
         pass
 
     @abstractmethod
-    def calc_result(self, data):
+    def calc_result(self, **kwargs):
         pass
 
     @abstractmethod
-    def calc_result_and_log(self, data, population_id):
+    def calc_result_and_log(self, population_id, **kwargs):
         pass
 
     def get_fitness_function_id(self):
