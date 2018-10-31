@@ -213,6 +213,8 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
             inclination_pattern = self.SQUEEZE
         elif inclination < self.NEGATIVE_INCLINATION:
             inclination_pattern = self.HYPER_SQUEEZE
+        else:
+            inclination_pattern = None
         return inclination_pattern
 
     def end_position(self, data_i):
