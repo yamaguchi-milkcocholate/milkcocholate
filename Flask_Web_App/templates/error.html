@@ -1,0 +1,25 @@
+{% extends "base/base.html" %}
+{% block main %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="starter-template">
+                    <h1>Bootstrap starter template</h1>
+                    <p class="lead">
+                        Use this document as a way to quickly start any new project.<br>
+                        All you get is this text and a mostly barebones HTML document.
+                    </p>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <form action="experiments" method="POST">
+                    <input type="text" name="host" placeholder="ex) localhost" value="">
+                    <input type="submit" value="go">
+                </form>
+            </div>
+            <p>
+                {{ form }}
+            </p>
+        </div>
+    </div>
+{% endblock %}

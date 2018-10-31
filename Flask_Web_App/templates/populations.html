@@ -1,4 +1,3 @@
-
 {% extends "base/base.html" %}
 {% block main %}
 <main role="main" class="col-md-12">
@@ -37,45 +36,36 @@
           <thead>
             <tr>
                 <th>#</th>
-                <th>crossover name</th>
-                <th>fitness function name</th>
-                <th>situation</th>
-                <th>mutation rate</th>
-                <th>cross rate</th>
-                <th>population</th>
-                <th>elites</th>
-                <th>start at</th>
-                <th>ent at</th>
-                <th>execute time</th>
+                <th>generations</th>
+                <th>genome</th>
+                <th>fitness</th>
             </tr>
           </thead>
           <tbody>
-            {% for line in experiments %}
+            {% for line in populations %}
                 <tr>
                     <td>
-                        <form action="populations" method="POST">
-                            <input type="hidden" name="experiment_id" value="{{ line.id }}">
+                        <form action="graph" method="POST">
+                            <input type="hidden" name="population_id" value="{{ line.id }}">
                             <input type="hidden" name="host" value="{{ host }}">
                             <button class="badge badge-success" type="submit">
-                                ログを確認<ion-icon name="checkmark-circle-outline"></ion-icon>
+                                グラフを確認<ion-icon name="checkmark-circle-outline"></ion-icon>
                             </button>
                         </form>
                     </td>
-                    <td>{{ line.crossover_name }}</td>
-                    <td>{{ line.fitness_function_name }}</td>
+                    <td>{{ line.generation_number }}</td>
                     <td>
                         <button type="button" class="btn btn-info">
                             detail
                             <ion-icon name="clipboard"></ion-icon>
                         </button>
                     </td>
-                    <td>{{ line.mutation_rate }}</td>
-                    <td>{{ line.cross_rate }}</td>
-                    <td>{{ line.population }}</td>
-                    <td>{{ line.elite_num }}</td>
-                    <td>{{ line.start_time }}</td>
-                    <td>{{ line.end_time }}</td>
-                    <td>{{ line.execute_time }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info">
+                            detail
+                            <ion-icon name="clipboard"></ion-icon>
+                        </button>
+                    </td>
                 </tr>
             {% endfor %}
           </tbody>
