@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, render_template
-from flask_modules.loggraph import expt
 from flask_modules.loggraph.repository import loggraprepo
+from flask_modules.loggraph.repository import exptrepo
 app = Flask(__name__)
 
 
@@ -11,19 +11,10 @@ def index():
 
 @app.route("/experiments", methods=['GET'])
 def experiments():
-    experiment = expt.Experiment(
-        crossover_name='uniform',
-        fitness_function_name='simple_macd_params',
-        situation=None,
-        mutation_rate=50,
-        cross_rate=2,
-        population=100,
-        elite_num=1,
-        start_time="2018-10-21 12:34:56",
-        end_time="2018-10-22 12:34:56",
-        execute_time=86400
-    )
-    return render_template('experiments.html', experiments=[experiment, experiment, experiment])
+    host = 'mariadb'
+    repository = exptrepo.ExperimentRepository(host=host)
+    experiment_list = repository.get_experiments()
+    return render_template('experiments.html', experiments=experiment_list)
 
 
 @app.route("/graph/<population_id>", methods=['GET'])
