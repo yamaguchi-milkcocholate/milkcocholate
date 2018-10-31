@@ -30,6 +30,7 @@ class ExperimentRepository:
             situation = pickle.loads(item['situation'])
 
             experiment = expt.Experiment(
+                experiment_id=item['id'],
                 crossover_name=crossover_name,
                 fitness_function_name=fitness_function_name,
                 situation=situation,
