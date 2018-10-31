@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: 2018 年 10 月 18 日 02:31
+-- Generation Time: 2018 年 10 月 31 日 01:32
 -- サーバのバージョン： 10.3.10-MariaDB-1:10.3.10+maria~bionic
 -- PHP Version: 7.2.8
 
@@ -93,7 +93,8 @@ CREATE TABLE `fitness_functions` (
 --
 
 INSERT INTO `fitness_functions` (`id`, `name`, `spec`) VALUES
-(1, 'simple_macd_params', NULL);
+(1, 'simple_macd_params', NULL),
+(2, 'bollinger_band_linear_end', NULL);
 
 -- --------------------------------------------------------
 
@@ -210,7 +211,7 @@ ALTER TABLE `experiment_logs`
 -- AUTO_INCREMENT for table `fitness_functions`
 --
 ALTER TABLE `fitness_functions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `populations`
