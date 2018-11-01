@@ -1,13 +1,13 @@
-from flask_modules.db import reader
 from flask_modules.loggraph import pop
+from flask_modules.loggraph.repository import repository
 import pickle
 
 
-class PopulationRepository:
+class PopulationRepository(repository.Repository):
     POPULATIONS_TABLE = 'populations'
 
     def __init__(self, host):
-        self._reader = reader.Reader(host=host)
+        super().__init__(host=host)
 
     def get_populations(self, experiment_id):
         result = self._reader(
@@ -25,5 +25,4 @@ class PopulationRepository:
                 fitness=fitness
             )
             population_list.append(population)
-
         return population_list

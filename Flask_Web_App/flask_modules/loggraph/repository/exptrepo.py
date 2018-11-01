@@ -1,9 +1,9 @@
 import pickle
-from flask_modules.db import reader
 from flask_modules.loggraph import expt
+from flask_modules.loggraph.repository import repository
 
 
-class ExperimentRepository:
+class ExperimentRepository(repository.Repository):
     EXPERIMENTS_TABLE = 'experiments'
     CROSSOVERS_TABLE = 'crossovers'
     FITNESS_FUNCTIONS_TABLE = 'fitness_functions'

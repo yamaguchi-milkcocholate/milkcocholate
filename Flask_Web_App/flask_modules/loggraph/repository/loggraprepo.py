@@ -1,12 +1,12 @@
-from flask_modules.db import reader
 from flask_modules.loggraph import loggraph
+from flask_modules.loggraph.repository import repository
 
 
-class LogGraphRepository:
+class LogGraphRepository(repository.Repository):
     EXPERIMENT_LOGS_TABLE = 'experiment_logs'
 
     def __init__(self, host):
-        self._reader = reader.Reader(host=host)
+        super().__init__(host=host)
 
     def get_log_graph(self, population_id):
         result = self._reader(
