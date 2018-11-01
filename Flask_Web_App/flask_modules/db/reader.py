@@ -1,4 +1,5 @@
 import pymysql.cursors
+from flask_modules.exceptions import dbhost
 
 
 class Reader:
@@ -23,14 +24,17 @@ class Reader:
         """
         データベースに接続
         """
-        self._connection = pymysql.connect(
-            host=self._host,
-            user=self.USER,
-            db=self.DB,
-            password=self.PASSWORD,
-            charset=self.CHARSET,
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        try:
+            self._connection = pymysql.connect(
+                host=self._host,
+                user=self.USER,
+                db=self.DB,
+                password=self.PASSWORD,
+                charset=self.CHARSET,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except pymysql.err.OperationalError:
+            raise dbhost.HostNotFoundException
 
     def get_sql(self):
         return self._sql
@@ -87,10 +91,16 @@ class Reader:
             else:
                 self._sql = self._sql + "`" + wheres[where_i][0] + "` " + wheres[where_i][1] + " %s and "
         if should_execute:
-            return self.execute_query(sql=self._sql, placeholder=placeholder)
+            try:
+                return self.execute_query(sql=self._sql, placeholder=placeholder)
+            except dbhost.HostNotFoundException:
+                raise
 
     def execute_query(self, sql, placeholder):
-        self._connect()
+        try:
+            self._connect()
+        except dbhost.HostNotFoundException:
+            raise
         try:
             with self._connection.cursor() as cursor:
                 cursor.execute(sql, placeholder)
