@@ -1,5 +1,5 @@
 import pymysql.cursors
-from flask_modules.exceptions import dbhost
+from flask_modules.exceptions.dbhost import HostNotFoundException
 
 
 class Reader:
@@ -34,7 +34,7 @@ class Reader:
                 cursorclass=pymysql.cursors.DictCursor
             )
         except pymysql.err.OperationalError:
-            raise dbhost.HostNotFoundException
+            raise HostNotFoundException
 
     def get_sql(self):
         return self._sql
@@ -93,13 +93,13 @@ class Reader:
         if should_execute:
             try:
                 return self.execute_query(sql=self._sql, placeholder=placeholder)
-            except dbhost.HostNotFoundException:
+            except HostNotFoundException:
                 raise
 
     def execute_query(self, sql, placeholder):
         try:
             self._connect()
-        except dbhost.HostNotFoundException:
+        except HostNotFoundException:
             raise
         try:
             with self._connection.cursor() as cursor:

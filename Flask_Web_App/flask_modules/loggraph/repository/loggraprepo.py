@@ -1,6 +1,6 @@
 from flask_modules.loggraph import loggraph
 from flask_modules.loggraph.repository import repository
-from flask_modules.exceptions import dbhost
+from flask_modules.exceptions.dbhost import HostNotFoundException
 
 
 class LogGraphRepository(repository.Repository):
@@ -16,5 +16,5 @@ class LogGraphRepository(repository.Repository):
             ).select().where(['population_id', '=', population_id]).get()
             log_graph = loggraph.LogGraph(population_id=population_id, plot_data=result)
             return log_graph
-        except dbhost.HostNotFoundException:
+        except HostNotFoundException:
             raise

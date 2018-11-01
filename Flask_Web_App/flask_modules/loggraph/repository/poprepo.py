@@ -1,6 +1,6 @@
 from flask_modules.loggraph import pop
 from flask_modules.loggraph.repository import repository
-from flask_modules.exceptions import dbhost
+from flask_modules.exceptions.dbhost import HostNotFoundException
 import pickle
 
 
@@ -28,5 +28,5 @@ class PopulationRepository(repository.Repository):
                 )
                 population_list.append(population)
             return population_list
-        except dbhost.HostNotFoundException:
+        except HostNotFoundException:
             raise

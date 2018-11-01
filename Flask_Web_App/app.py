@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, render_template
 from flask_modules.loggraph.repository import loggraprepo
 from flask_modules.loggraph.repository import exptrepo
 from flask_modules.loggraph.repository import poprepo
-from flask_modules.exceptions import dbhost
+from flask_modules.exceptions.dbhost import HostNotFoundException
 app = Flask(__name__)
 
 
@@ -20,7 +20,7 @@ def experiments():
     try:
         repository = exptrepo.ExperimentRepository(host=host)
         experiment_list = repository.get_experiments()
-    except dbhost.HostNotFoundException:
+    except HostNotFoundException:
         return render_template('error.html', has_error=host)
     return render_template('experiments.html', experiments=experiment_list, host=host)
 
@@ -35,7 +35,7 @@ def populations():
     try:
         repository = poprepo.PopulationRepository(host=host)
         population_list = repository.get_populations(experiment_id=experiment_id)
-    except dbhost.HostNotFoundException:
+    except HostNotFoundException:
         return render_template('error.html', has_error=host)
     return render_template('populations.html', populations=population_list, host=host)
 
@@ -50,7 +50,7 @@ def graph():
     try:
         repository = loggraprepo.LogGraphRepository(host=host)
         log_graph = repository.get_log_graph(population_id=population_id)
-    except dbhost.HostNotFoundException:
+    except HostNotFoundException:
         return render_template('error.html', has_error=host)
     return render_template('graph.html', log_graph=log_graph)
 

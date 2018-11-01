@@ -1,7 +1,7 @@
 import pickle
 from flask_modules.loggraph import expt
 from flask_modules.loggraph.repository import repository
-from flask_modules.exceptions import dbhost
+from flask_modules.exceptions.dbhost import HostNotFoundException
 
 
 class ExperimentRepository(repository.Repository):
@@ -12,7 +12,7 @@ class ExperimentRepository(repository.Repository):
     def __init__(self, host):
         try:
             super().__init__(host=host)
-        except dbhost.HostNotFoundException:
+        except HostNotFoundException:
             raise
 
     def get_experiments(self):
@@ -49,5 +49,5 @@ class ExperimentRepository(repository.Repository):
                 )
                 experiment_list.append(experiment)
             return experiment_list
-        except dbhost.HostNotFoundException:
+        except HostNotFoundException:
             raise
