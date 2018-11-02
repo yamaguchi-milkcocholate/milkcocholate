@@ -98,43 +98,43 @@
 
                             <!-- Modal -->
                             {% for line in experiments %}
-                            <div class="modal fade" id="situation_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                              <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                  <div class="modal-header situation__header">
-                                    <h3 class="modal-title" id="exampleModalLabel">No. {{ line.id }}　遺伝子構成</h3>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                      <span aria-hidden="true">&times;</span>
-                                    </button>
-                                  </div>
-                                  <div class="modal-body situation__body">
-                                  <ul class="situation__list--base">
-                                      <li class="situation__list--line">
-                                          <ul class="situation__list--line-base">
-                                              <li class="situation__list--line-element"><b>特徴</b></li>
-                                              <li class="situation__list--line-element"><b>範囲はじまり</b></li>
-                                              <li class="situation__list--line-element"><b>~</b></li>
-                                              <li class="situation__list--line-element"><b>範囲おわり</b></li>
-                                          </ul>
-                                      </li>
-                                      {% for key in line.situation %}
-                                      <li class="situation__list--line">
-                                          <ul class="situation__list--line-base">
-                                              <li class="situation__list--line-element">{{ key }}</li>
-                                              <li class="situation__list--line-element">{{ line.situation[key][0] }}</li>
-                                              <li class="situation__list--line-element"> ~ </li>
-                                              <li class="situation__list--line-element">{{ line.situation[key][1] }}</li>
-                                          </ul>
-                                      </li>
-                                      {% endfor %}
-                                  </ul>
+                            <div class="modal fade" id="situation_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="situation_{{ line.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header situation__header">
+                                            <h3 class="modal-title">No. {{ line.id }}　遺伝子構成</h3>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body situation__body">
+                                        <ul class="situation__list--base">
+                                            <li class="situation__list--line">
+                                                <ul class="situation__list--line-base">
+                                                    <li class="situation__list--line-element"><b>特徴</b></li>
+                                                    <li class="situation__list--line-element"><b>範囲はじまり</b></li>
+                                                    <li class="situation__list--line-element"><b>~</b></li>
+                                                    <li class="situation__list--line-element"><b>範囲おわり</b></li>
+                                                </ul>
+                                            </li>
+                                            {% for key in line.situation %}
+                                            <li class="situation__list--line">
+                                                <ul class="situation__list--line-base">
+                                                    <li class="situation__list--line-element">{{ key }}</li>
+                                                    <li class="situation__list--line-element">{{ line.situation[key][0] }}</li>
+                                                    <li class="situation__list--line-element"> ~ </li>
+                                                    <li class="situation__list--line-element">{{ line.situation[key][1] }}</li>
+                                                </ul>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
 
-                                  </div>
-                                  <div class="modal-footer situation__footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                  </div>
+                                        </div>
+                                        <div class="modal-footer situation__footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
                                 </div>
-                              </div>
                             </div>
                             {% endfor %}
                         </div>
