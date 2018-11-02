@@ -51,3 +51,37 @@ class ExperimentRepository(repository.Repository):
             return experiment_list
         except HostNotFoundException:
             raise
+
+    def get_experiment(self, experiment_id):
+        try:
+            result = self._reader(
+                table=self.EXPERIMENTS_TABLE
+            ).find(search_id=experiment_id).get()[0]
+
+            crossover = self._reader(
+                table=self.CROSSOVERS_TABLE
+            ).select().find(search_id=result['crossover_id']).get()
+            crossover_name = crossover[0]['name']
+
+            fitness_function = self._reader(
+                table=self.FITNESS_FUNCTIONS_TABLE
+            ).select().find(search_id=result['fitness_function_id']).get()
+            fitness_function_name = fitness_function[0]['name']
+
+            situation = pickle.loads(result['situation'])
+            return_expt = expt.Experiment(
+                experiment_id=result['id'],
+                crossover_name=crossover_name,
+                fitness_function_name=fitness_function_name,
+                situation=situation,
+                mutation_rate=result['mutation_rate'],
+                cross_rate=result['cross_rate'],
+                population=result['population'],
+                elite_num=result['elite_num'],
+                start_time=result['start_at'],
+                end_time=result['end_at'],
+                execute_time=result['execute_time']
+            )
+            return return_expt
+        except HostNotFoundException:
+            raise

@@ -16,6 +16,11 @@ class TestExperimentRepository(unittest.TestCase):
         for item in result:
             pprint.pprint(vars(item))
 
+    def test_get_experiment(self):
+        result = self._repository.get_experiment(experiment_id=1)
+        self.assertEqual(1, result.id)
+        self.assertEqual(410, result.execute_time)
+
 
 if __name__ == '__main__':
     unittest.main()

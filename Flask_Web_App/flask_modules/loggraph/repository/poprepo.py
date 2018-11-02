@@ -30,3 +30,22 @@ class PopulationRepository(repository.Repository):
             return population_list
         except HostNotFoundException:
             raise
+
+    def get_population(self, population_id):
+        try:
+            result = self._reader(
+                table=self.POPULATIONS_TABLE
+            ).find(search_id=population_id).get()[0]
+
+            genome = pickle.loads(result['genome'])
+            fitness = pickle.loads(result['fitness'])
+            population = pop.Population(
+                population_id=result['id'],
+                experiment_id=result['experiment_id'],
+                generation_number=result['generation_number'],
+                genome=genome,
+                fitness=fitness
+            )
+            return population
+        except HostNotFoundException:
+            raise
