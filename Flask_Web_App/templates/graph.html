@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 {% block main %}
-    <div class="container">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div class="row graph__base">
+        <div class="container">
             <h2 class="h2">
                   Dashboard
                       <a href="javascript:history.back();">
@@ -10,120 +10,134 @@
                           </button>
                       </a>
               </h2>
-            <div class="btn-toolbar mb-2 mb-md-0">
-              <div class="btn-group mr-2">
-                <button class="btn btn-sm btn-outline-secondary">Share</button>
-                <button class="btn btn-sm btn-outline-secondary">Export</button>
-              </div>
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
-                    </rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                This week
-              </button>
+        </div>
+        <div class="container">
+            <div class="card graph__card">
+                <div class="card-header graph__card--header">
+                    Featured
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div id="myDiv">
+                                <!-- Plotly chart will be drawn inside this DIV -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <div id="myDiv">
-                <!-- Plotly chart will be drawn inside this DIV -->
-            </div>
-        </div>
-    </div>
-<script>
-// 読み込み時
-jQuery(function($)
-{
-    activateNav(2);
-});
-
-function unpack(rows, key)
-{
-  return rows.map(function(row)
-  {
-      return row[key];
-  });
-}
-
-function unpack_datetime(rows, key)
-{
-    return rows.map(function(row)
+    <script>
+    // 読み込み時
+    jQuery(function($)
     {
-        var date = new Date(row[key]);
-        //console.log(date.getHours());
+        activateNav(2);
+    });
 
-        if (date.getMonth() <= 8)
-        {
-            var month = '0' + (date.getMonth() + 1);
-        }
-        else
-        {
-            var month = date.getMonth() + 1 + '';
-        }
-        if (date.getDate() <= 9)
-        {
-            var date_s = '0' + date.getDate();
-        }
-        else
-        {
-            var date_s = date.getDate() + '';
-        }
-        if (date.getHours() <= 9)
-        {
-            var hours = '0' + date.getHours();
-            console.log(hours);
-        }
-        else
-        {
-            var hours = date.getHours() + '';
-        }
-        if (date.getMinutes() <=9)
-        {
-            var minutes = '0' + date.getMinutes();
-        }
-        else
-        {
-            var minutes = date.getMinutes() + '';
-        }
-        return month + '/' + date_s + ' ' +  hours + ':' + minutes;
-    })
-}
+    function unpack(rows, key)
+    {
+      return rows.map(function(row)
+      {
+          return row[key];
+      });
+    }
 
-var log = {{ log_graph.plot_data|tojson }};
+    function unpack_datetime(rows, key)
+    {
+        return rows.map(function(row)
+        {
+            var date = new Date(row[key]);
+            //console.log(date.getHours());
 
-var trace1 = {
-  type: "scatter",
-  mode: "lines",
-  name: 'position',
-  x: unpack_datetime(log, 'logged_at'),
-  y: unpack(log, 'position'),
-  line: {color: '#17BECF'}
-}
+            if (date.getMonth() <= 8)
+            {
+                var month = '0' + (date.getMonth() + 1);
+            }
+            else
+            {
+                var month = date.getMonth() + 1 + '';
+            }
+            if (date.getDate() <= 9)
+            {
+                var date_s = '0' + date.getDate();
+            }
+            else
+            {
+                var date_s = date.getDate() + '';
+            }
+            if (date.getHours() <= 9)
+            {
+                var hours = '0' + date.getHours();
+                console.log(hours);
+            }
+            else
+            {
+                var hours = date.getHours() + '';
+            }
+            if (date.getMinutes() <=9)
+            {
+                var minutes = '0' + date.getMinutes();
+            }
+            else
+            {
+                var minutes = date.getMinutes() + '';
+            }
+            return month + '/' + date_s + ' ' +  hours + ':' + minutes;
+        })
+    }
 
-var trace2 = {
-  type: "scatter",
-  mode: "lines",
-  name: 'price',
-  x: unpack_datetime(log, 'logged_at'),
-  y: unpack(log, 'price'),
-  line: {color: '#7F7F7F'}
-}
+    var log = {{ log_graph.plot_data|tojson }};
 
-var data = [trace1,trace2];
+    var trace1 = {
+      type: "scatter",
+      mode: "lines",
+      name: 'position',
+      x: unpack_datetime(log, 'logged_at'),
+      y: unpack(log, 'position'),
+      line: {color: '#17BECF'}
+    }
 
-var layout = {
-  title: '取引',
-  xaxis: {
-    gridwidth: 1,
-  },
-};
+    var trace2 = {
+      type: "scatter",
+      mode: "lines",
+      name: 'price',
+      x: unpack_datetime(log, 'logged_at'),
+      y: unpack(log, 'price'),
+      line: {color: '#7F7F7F'}
+    }
 
-Plotly.newPlot('myDiv', data, layout);
+    var data = [trace1,trace2];
 
-</script>
+    var layout = {
+      title: '取引',
+      xaxis: {
+        gridwidth: 1,
+      },
+    };
+
+    Plotly.newPlot('myDiv', data, layout);
+
+    </script>
+    <style>
+    .graph__base
+    {
+        background-color: #F7F7F7;
+    }
+
+    .graph__card
+    {
+        margin-bottom: 500px;
+    }
+
+    .graph__card--header
+    {
+        background-color: #FFFFFF;
+        box-sizing: border-box;
+        margin: 0 15px;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        font-size: large;
+        color: #73879C;
+    }
+    </style>
 {% endblock %}
