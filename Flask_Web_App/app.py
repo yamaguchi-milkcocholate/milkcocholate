@@ -35,9 +35,11 @@ def populations():
     try:
         repository = poprepo.PopulationRepository(host=host)
         population_list = repository.get_populations(experiment_id=experiment_id)
+        repository = exptrepo.ExperimentRepository(host=host)
+        experiment = repository.get_experiment(experiment_id=experiment_id)
     except HostNotFoundException:
         return render_template('error.html', has_error=host)
-    return render_template('populations.html', populations=population_list, host=host)
+    return render_template('populations.html', populations=population_list, experiment=experiment, host=host)
 
 
 @app.route("/graph", methods=['GET', 'POST'])
@@ -50,9 +52,11 @@ def graph():
     try:
         repository = loggraprepo.LogGraphRepository(host=host)
         log_graph = repository.get_log_graph(population_id=population_id)
+        repository = poprepo.PopulationRepository(host=host)
+        population = repository.get_population(population_id=population_id)
     except HostNotFoundException:
         return render_template('error.html', has_error=host)
-    return render_template('graph.html', log_graph=log_graph)
+    return render_template('graph.html', log_graph=log_graph, population=population)
 
 
 if __name__ == "__main__":
