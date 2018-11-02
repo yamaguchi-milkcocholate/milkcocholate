@@ -1,0 +1,233 @@
+
+{% extends "base/base.html" %}
+{% block main %}
+    <div class="row experiments__base">
+        <div class="container">
+            <h2 class="h2">
+                Dashboard
+                <a href="javascript:history.back();">
+                    <button type="button" class="btn btn-primary">
+                    戻る
+                    </button>
+                </a>
+            </h2>
+        </div>
+        <div class="container">
+            <div class="card experiments__card">
+                <div class="card-body">
+                    <main role="main" class="col-md-12">
+                        <div class="chartjs-size-monitor" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                            <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0">
+                                </div>
+                            </div>
+                            <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                                <div style="position:absolute;width:200%;height:200%;left:0; top:0">
+                                </div>
+                            </div>
+                        </div>
+                          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                              <div class="btn-toolbar mb-2 mb-md-0">
+                                  <div class="btn-group mr-2">
+                                    <button class="btn btn-sm btn-outline-secondary">Share</button>
+                                    <button class="btn btn-sm btn-outline-secondary">Export</button>
+                                  </div>
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
+                                        </rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    This week
+                                  </button>
+                              </div>
+                          </div>
+
+                        <div class="table-responsive">
+                            <table id="foo-table" class="table table-striped table-sm">
+                              <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>No.</th>
+                                    <th>crossover name</th>
+                                    <th>fitness function name</th>
+                                    <th>situation</th>
+                                    <th>mutation rate</th>
+                                    <th>cross rate</th>
+                                    <th>population</th>
+                                    <th>elites</th>
+                                    <th>start at</th>
+                                    <th>ent at</th>
+                                    <th>execute time</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for line in experiments %}
+                                    <tr>
+                                        <td>
+                                            <form action="populations" method="POST">
+                                                <input type="hidden" name="experiment_id" value="{{ line.id }}">
+                                                <input type="hidden" name="host" value="{{ host }}">
+                                                <button class="badge badge-success" type="submit">
+                                                    ログを確認<ion-icon name="checkmark-circle-outline"></ion-icon>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td>{{ line.id }}</td>
+                                        <td>{{ line.crossover_name }}</td>
+                                        <td>{{ line.fitness_function_name }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#situation_{{ line.id }}">
+                                                詳細
+                                                <ion-icon name="clipboard"></ion-icon>
+                                            </button>
+                                        </td>
+                                        <td>{{ line.mutation_rate }}</td>
+                                        <td>{{ line.cross_rate }}</td>
+                                        <td>{{ line.population }}</td>
+                                        <td>{{ line.elite_num }}</td>
+                                        <td>{{ line.start_time }}</td>
+                                        <td>{{ line.end_time }}</td>
+                                        <td>{{ line.execute_time }}</td>
+                                    </tr>
+                                {% endfor %}
+                              </tbody>
+                            </table>
+
+                            <!-- Modal -->
+                            {% for line in experiments %}
+                            <div class="modal fade" id="situation_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="situation_{{ line.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header situation__header">
+                                            <h3 class="modal-title">No. {{ line.id }}　遺伝子構成</h3>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body situation__body">
+                                        <ul class="situation__list--base">
+                                            <li class="situation__list--line">
+                                                <ul class="situation__list--line-base">
+                                                    <li class="situation__list--line-element"><b>特徴</b></li>
+                                                    <li class="situation__list--line-element"><b>範囲はじまり</b></li>
+                                                    <li class="situation__list--line-element"><b>~</b></li>
+                                                    <li class="situation__list--line-element"><b>範囲おわり</b></li>
+                                                </ul>
+                                            </li>
+                                            {% for key in line.situation %}
+                                            <li class="situation__list--line">
+                                                <ul class="situation__list--line-base">
+                                                    <li class="situation__list--line-element">{{ key }}</li>
+                                                    <li class="situation__list--line-element">{{ line.situation[key][0] }}</li>
+                                                    <li class="situation__list--line-element"> ~ </li>
+                                                    <li class="situation__list--line-element">{{ line.situation[key][1] }}</li>
+                                                </ul>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+
+                                        </div>
+                                        <div class="modal-footer situation__footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 読み込み時
+        jQuery(function($){
+            $.extend( $.fn.dataTable.defaults, {
+                language: {
+                    url: "http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json"
+                }
+            });
+            var table = $("#foo-table").DataTable();
+            table.columns.adjust();
+
+            activateNav(2);
+        });
+    </script>
+    <style>
+    .situation__list--base
+    {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .situation__list--line:first-child
+    {
+        border: 1px dashed rgba(0, 0, 0, 0.1);
+        padding: 5px 0;
+        margin-bottom: 5px;
+    }
+
+    .situation__list--line:last-child
+    {
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .situation__list--line
+    {
+        padding: 5px 0;
+    }
+
+    .situation__list--line-base
+    {
+        list-style-type: none;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .situation__list--line-element
+    {
+        float: left;
+        width: 25%;
+        box-sizing: border-box;
+        text-align: center;
+        border-right: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .situation__list--line-element:first-child
+    {
+        border-left: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .situation__header
+    {
+        box-sizing: border-box;
+        background-color: #5097D5;
+        color: #ffff;
+        border-left: solid 3px #F5C845;
+    }
+
+    .situation__body
+    {
+        background-color: #F6F6F6;
+    }
+
+    .situation__footer
+    {
+        background-color: #F6F6F6;
+    }
+
+    .experiments__base
+    {
+        background-color: #F7F7F7;
+    }
+
+    .experiments__card
+    {
+        margin-bottom: 500px;
+    }
+    </style>
+{% endblock %}

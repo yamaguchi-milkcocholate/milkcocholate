@@ -8,8 +8,8 @@ services:
       - ./MariaDB/data:/var/lib/mariadb
       - ./MariaDB/dump:/var/tmp/dump
     environment:
+        MYSQL_ROOT_PASSWORD: "milkchocolate22"
         MYSQL_DATABASE: "milkcocholate"
-        MYSQL_RANDOM_ROOT_PASSWORD: "yes"
         MYSQL_USER: milkcocholate
         MYSQL_PASSWORD: milkchocolate22
         TZ: "Asia/Tokyo"

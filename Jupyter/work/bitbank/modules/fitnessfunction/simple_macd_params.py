@@ -61,15 +61,15 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         for row in data.itertuples():
             operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
             if operation is MacdOperation.BUY:
-                has_bitcoin = False
-                yen = float(bitcoin * float(row.end))
-                bitcoin = 0
-                print(row.time, row.end, 'buy', 'yen', yen)
-            elif operation is MacdOperation.SELL:
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'sell', 'bitcoin', bitcoin)
+                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
+            elif operation is MacdOperation.SELL:
+                has_bitcoin = False
+                yen = float(bitcoin * float(row.end))
+                bitcoin = 0
+                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
             pre_macd = row.macd
             pre_signal = row.macd_signal
         if has_bitcoin:
@@ -102,26 +102,26 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         for row in data.itertuples():
             operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
             if operation is MacdOperation.BUY:
-                has_bitcoin = False
-                yen = float(bitcoin * float(row.end))
-                bitcoin = 0
-                print(row.time, row.end, 'buy', 'yen', yen)
-                # DB
-                insert_list.append([
-                    population_id,
-                    int(yen),
-                    int(row.end),
-                    row.time.strftime(str_format),
-                ])
-            elif operation is MacdOperation.SELL:
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'sell', 'bitcoin', bitcoin)
+                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
                 # DB
                 insert_list.append([
                     population_id,
                     int(bitcoin * float(row.end)),
+                    int(row.end),
+                    row.time.strftime(str_format),
+                ])
+            elif operation is MacdOperation.SELL:
+                has_bitcoin = False
+                yen = float(bitcoin * float(row.end))
+                bitcoin = 0
+                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
+                # DB
+                insert_list.append([
+                    population_id,
+                    int(yen),
                     int(row.end),
                     row.time.strftime(str_format),
                 ])
@@ -142,7 +142,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
 
 class MacdOperation(Enum):
     """
-    買い、売り、保持を示すEnum
+    (bitcoinを)買い、売り、保持を示すEnum
     """
     BUY = 1
     SELL = 2
@@ -159,16 +159,18 @@ class MacdOperation(Enum):
         :param has_bitcoin:   bool   bitcoinを持っているか(円を持っていないのか)どうか
         :return:              Enum   (買い、売り、保持)
         """
+        # MACDがシグナルを上向きに抜くとき
         if pre_macd < pre_signal and macd > signal:
-            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and has_bitcoin:
+            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and not has_bitcoin:
                 return MacdOperation.BUY
-            elif pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and not has_bitcoin:
-                return MacdOperation.SELL
+            else:
+                return MacdOperation.STAY
+        # MACDがシグナルを下向きに抜くとき
         elif pre_macd > pre_signal and macd < signal:
-            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and has_bitcoin:
-                return MacdOperation.BUY
-            elif pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and not has_bitcoin:
+            if pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and has_bitcoin:
                 return MacdOperation.SELL
+            else:
+                return MacdOperation.STAY
         else:
             return MacdOperation.STAY
 

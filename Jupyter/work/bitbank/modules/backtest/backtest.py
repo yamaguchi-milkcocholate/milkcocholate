@@ -65,7 +65,7 @@ class BackTest:
         values = [
             self._ga.get_crossover_id(),
             self._ga.get_fitness_function_id(),
-            pickle.dumps(self._ga.get_situation()),
+            pickle.dumps(self._ga.get_situation().get_genome_ranges()),
             self._ga.get_mutation(),
             self._ga.get_cross(),
             self._ga.get_population(),
