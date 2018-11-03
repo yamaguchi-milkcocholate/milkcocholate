@@ -5,15 +5,15 @@ metadata:
     deployment.kubernetes.io/revision: "1"
   generation: 1
   labels:
-    run: flask_web_app
-  name: flask_web_app
+    run: flask-web-app
+  name: flask-web-app
   namespace: default
   resourceVersion: "44093"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: flask_web_app
+      run: flask-web-app
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,15 +23,15 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        run: flask_web_app
+        run: flask-web-app
     spec:
       containers:
       - image: milkchocolate22/flask_web_app:latest
         imagePullPolicy: Always
-        name: flask_web_app
+        name: flask-web-app
         volumeMounts:
         - mountPath: /home/app/new
-          name: flask_web_app-volume
+          name: flask-web-app-volume
         ports:
         - containerPort: 5000
           protocol: TCP
@@ -39,7 +39,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
       volumes:
-      - name: flask_web_app-volume
+      - name: flask-web-app-volume
         emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
