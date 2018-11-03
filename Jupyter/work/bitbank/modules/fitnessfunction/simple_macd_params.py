@@ -5,6 +5,7 @@ from enum import Enum
 
 
 class SimpleMacDParams(fitnessfunction.FitnessFunction):
+    FITNESS_FUNCTION_ID = 1
     """
     MACDのパラメータの最適化を行う
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
