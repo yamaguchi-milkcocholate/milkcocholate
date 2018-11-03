@@ -1,0 +1,35 @@
+# mariadb
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+# flask-web-app
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: flask-web-app-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Ki
+---
+# jupyter
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jupyter-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
