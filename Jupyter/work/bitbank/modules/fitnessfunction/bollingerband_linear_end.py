@@ -2,10 +2,12 @@ from modules.datamanager import bollingerband
 from modules.fitnessfunction import fitnessfunction
 from modules.datamanager import functions
 import numpy as np
-from enum import Enum
+from enum import IntEnum
 
 
 class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
+    FITNESS_FUNCTION_ID = 2
+
     UPPER = 0
     UPPER_UPPER = 1
     UPPER_MIDDLE = 2
@@ -76,7 +78,7 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
         fitness_list.append(fitness_result)
         # 2番目以降の個体
         for genome_i in range(1, population):
-            genome = geno_type(genome_i)
+            genome = geno_type[genome_i]
             fitness_result = self.calc_result(genome=genome)
             fitness_list.append(fitness_result)
         return np.asarray(a=fitness_list, dtype=np.int32)
@@ -101,13 +103,13 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                 genome=genome
             )
             last_end_position = end_position
-            if operation is BollingerBandLinearEndOperation.BUY and has_bitcoin is False:
+            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
                 bitcoin = float(yen / end_price)
                 yen = 0
                 print(self._data.loc[data_i, 'time'], end_price, 'buy', 'bitcoin', bitcoin)
-            elif operation is BollingerBandLinearEndOperation.SELL and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 yen = float(bitcoin * end_price)
@@ -149,10 +151,10 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                 genome=genome
             )
             last_end_position = end_position
-            if operation is BollingerBandLinearEndOperation.BUY and has_bitcoin is False:
+            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
-                time = self._data.loc[data_i, 'time'].strgtime(str_format)
+                time = self._data.loc[data_i, 'time'].strftime(str_format)
                 bitcoin = float(yen / end_price)
                 yen = 0
                 print(time, end_price, 'buy', 'bitcoin', bitcoin)
@@ -163,10 +165,10 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                     int(end_price),
                     time
                 ])
-            elif operation is BollingerBandLinearEndOperation.SELL and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
-                time = self._data.loc[data_i, 'time'].strgtime(str_format)
+                time = self._data.loc[data_i, 'time'].strftime(str_format)
                 yen = float(bitcoin * end_price)
                 bitcoin = 0
                 print(time, end_price, 'sell', 'yen', yen)
@@ -177,12 +179,13 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                     int(end_price),
                     time
                 ])
-            if len(insert_list) >= self.BATCH_INSERT_NUM:
+            if len(insert_list) >= 1:
                 self._db_dept.give_writer_task(insert_list)
                 insert_list = []
         if has_bitcoin is True:
             yen = float(bitcoin * self._data.tail(1)['end'])
         print('finally', 'yen', yen)
+        # 一行ずつ挿入 Todo:writerのバグを直す
         if len(insert_list) > 0:
             self._db_dept.give_writer_task(insert_list)
         del insert_list
@@ -195,7 +198,7 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
         x = np.arange(
             start=0,
             step=self._inclination_alpha,
-            stop=self._inclination_alpha * (len(t) - 1)
+            stop=self._inclination_alpha * len(t)
         )
         inclination = functions.linear_regression(
             x=x,
@@ -238,7 +241,7 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
             return self.LOWER
 
 
-class BollingerBandLinearEndOperation(Enum):
+class BollingerBandLinearEndOperation(IntEnum):
     """
     bitcoinの 買い、売り、保持を示すEnum
     """
@@ -251,6 +254,6 @@ class BollingerBandLinearEndOperation(Enum):
         """
         終値、上部バンド、下部バンドから(買い,売り,保持)を決める
         ※ 遺伝子の特徴
-        [(前回の終値位置0~5 * 1)(現在の終値位置0~5 * 6)(傾きのパターン0~n * 36)]
+        [(前回の終値位置0~5 * 1)(現在の終値位置0~5 * 6)(傾きのパターン0~4 * 36)]
         """
         return genome[last_end_position * 1 + end_position * 6 + inclination_pattern * 36]
