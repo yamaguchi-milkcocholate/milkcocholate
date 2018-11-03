@@ -1,0 +1,35 @@
+{% extends "base/base.html" %}
+{% block main %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                {% if has_error != null %}
+                <div class="alert alert-danger" role="alert">
+                    接続できません! ホストをもう一度確認しよう。
+                    {% if has_error %}
+                        <br><b>接続ホスト名: {{ has_error }}</b>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-sm-12">
+                <div class="starter-template">
+                    <h1>Bootstrap starter template</h1>
+                    <p class="lead">
+                        Use this document as a way to quickly start any new project.<br>
+                        All you get is this text and a mostly barebones HTML document.
+                    </p>
+                </div>
+            </div>
+            <div class="col-sm-12">
+                <form class="form-inline  mx-sm-3 mb-2" action="experiments" method="POST">
+                    <div class="form-group mx-sm-3 mb-2">
+                        <label for="hostInput" class="sr-only">Password</label>
+                        <input id="hostInput" class="form-control form-control-lg" type="text" name="host" placeholder="ex) localhost" value="">
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Connect</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

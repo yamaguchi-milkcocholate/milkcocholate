@@ -5,12 +5,11 @@ from enum import Enum
 
 
 class SimpleMacDParams(fitnessfunction.FitnessFunction):
+    FITNESS_FUNCTION_ID = 1
     """
     MACDのパラメータの最適化を行う
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
-    BATCH_INSERT_NUM = 20
-    INIT_BIT_COIN_AMOUNT = 1
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         super().__init__(
@@ -28,24 +27,27 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         :param population_id  int        テーブル'populations'のid
         :return:              numpy      適応度
         """
-        # 1番目のもっとも優れた個体
         population = geno_type.shape[0]
         fitness_list = list()
-        geno = geno_type[0]
-        data = self._approach(geno[0], geno[1], geno[2])
+        # 1番目のもっとも優れた個体
+        genome = geno_type[0]
+        data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
         if should_log:
-            fitness_result = self.calc_result_and_log(data, population_id)
+            fitness_result = self.calc_result_and_log(
+                population_id=population_id,
+                data=data
+            )
         else:
             fitness_result = self.calc_result(data)
         fitness_list.append(fitness_result)
         # 2番目以降の個体
-        for geno_i in range(1, population):
-            geno = geno_type[geno_i]
-            data = self._approach(geno[0], geno[1], geno[2])
-            fitness_result = self.calc_result(data)
+        for genome_i in range(1, population):
+            genome = geno_type[genome_i]
+            data = self._approach(short_term=genome[0], long_term=genome[1], signal=genome[2])
+            fitness_result = self.calc_result(data=data)
             fitness_list.append(fitness_result)
         del data
-        return np.asarray(fitness_list, int)
+        return np.asarray(a=fitness_list, dtype=np.int32)
 
     def calc_result(self, data):
         """
@@ -59,17 +61,23 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         yen = 0
         has_bitcoin = True
         for row in data.itertuples():
-            operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
+            operation = MacdOperation.operation(
+                pre_macd=pre_macd,
+                pre_signal=pre_signal,
+                macd=row.macd,
+                signal=row.macd_signal,
+                has_bitcoin=has_bitcoin
+            )
             if operation is MacdOperation.BUY:
-                has_bitcoin = False
-                yen = float(bitcoin * float(row.end))
-                bitcoin = 0
-                print(row.time, row.end, 'buy', 'yen', yen)
-            elif operation is MacdOperation.SELL:
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'sell', 'bitcoin', bitcoin)
+                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
+            elif operation is MacdOperation.SELL:
+                has_bitcoin = False
+                yen = float(bitcoin * float(row.end))
+                bitcoin = 0
+                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
             pre_macd = row.macd
             pre_signal = row.macd_signal
         if has_bitcoin:
@@ -77,14 +85,15 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         print(yen)
         return int(yen)
 
-    def calc_result_and_log(self, data, population_id):
+    def calc_result_and_log(self, population_id, **kwargs):
         """
         過去のデータから取引を行って、最終日の持ち分を適応度とする
         記録をデータベースに保存する
-        :param data:            pandas.DataFrame 過去のデータ
+        :param kwargs:          pandas.DataFrame ['data']過去のデータ
         :param population_id:   int              テーブル'populations'のid
         :return:                int              最終日の持ち分(円)
         """
+        data = kwargs['data']
         insert_list = []
         str_format = '%Y-%m-%d %H:%M:%S'
         pre_macd = 0
@@ -100,28 +109,34 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         ])
         insert_iteration = 0
         for row in data.itertuples():
-            operation = MacdOperation.operation(pre_macd, pre_signal, row.macd, row.macd_signal, has_bitcoin)
+            operation = MacdOperation.operation(
+                pre_macd=pre_macd,
+                pre_signal=pre_signal,
+                macd=row.macd,
+                signal=row.macd_signal,
+                has_bitcoin=has_bitcoin
+            )
             if operation is MacdOperation.BUY:
-                has_bitcoin = False
-                yen = float(bitcoin * float(row.end))
-                bitcoin = 0
-                print(row.time, row.end, 'buy', 'yen', yen)
-                # DB
-                insert_list.append([
-                    population_id,
-                    int(yen),
-                    int(row.end),
-                    row.time.strftime(str_format),
-                ])
-            elif operation is MacdOperation.SELL:
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'sell', 'bitcoin', bitcoin)
+                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
                 # DB
                 insert_list.append([
                     population_id,
                     int(bitcoin * float(row.end)),
+                    int(row.end),
+                    row.time.strftime(str_format),
+                ])
+            elif operation is MacdOperation.SELL:
+                has_bitcoin = False
+                yen = float(bitcoin * float(row.end))
+                bitcoin = 0
+                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
+                # DB
+                insert_list.append([
+                    population_id,
+                    int(yen),
                     int(row.end),
                     row.time.strftime(str_format),
                 ])
@@ -142,7 +157,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
 
 class MacdOperation(Enum):
     """
-    買い、売り、保持を示すEnum
+    (bitcoinを)買い、売り、保持を示すEnum
     """
     BUY = 1
     SELL = 2
@@ -159,16 +174,18 @@ class MacdOperation(Enum):
         :param has_bitcoin:   bool   bitcoinを持っているか(円を持っていないのか)どうか
         :return:              Enum   (買い、売り、保持)
         """
+        # MACDがシグナルを上向きに抜くとき
         if pre_macd < pre_signal and macd > signal:
-            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and has_bitcoin:
+            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and not has_bitcoin:
                 return MacdOperation.BUY
-            elif pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and not has_bitcoin:
-                return MacdOperation.SELL
+            else:
+                return MacdOperation.STAY
+        # MACDがシグナルを下向きに抜くとき
         elif pre_macd > pre_signal and macd < signal:
-            if pre_macd < 0 and pre_signal < 0 and macd < 0 and signal < 0 and has_bitcoin:
-                return MacdOperation.BUY
-            elif pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and not has_bitcoin:
+            if pre_macd > 0 and pre_signal > 0 and macd > 0 and signal > 0 and has_bitcoin:
                 return MacdOperation.SELL
+            else:
+                return MacdOperation.STAY
         else:
             return MacdOperation.STAY
 

@@ -1,0 +1,28 @@
+{% macro header() %}
+<header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar header__base">
+  <div class="navbar-nav-scroll">
+    <ul class="navbar-nav bd-navbar-nav flex-row header__nav">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/experiments">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Documentation</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Examples</a>
+      </li>
+      </li>
+    </ul>
+  </div>
+<style>
+    .header__base
+    {
+        background-color: #2A80B9;
+        margin: 0;
+    }
+</style>
+</header>
+{% endmacro %}

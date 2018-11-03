@@ -21,12 +21,23 @@ class Situation:
 
     def set_genome_ranges(self, **kwargs):
         """
+        順番が保持されないので非推奨
         特徴量の名称 = tuple(取り得る範囲)を可変長で受け取る
         :param kwargs: dict  特徴量と範囲のdictionary
         """
         for key in kwargs:
             self._genomes.append(key)
         self._genome_ranges = kwargs
+
+    def set_genome_ranges_with_order_dict(self, genome_ranges):
+        """
+        遺伝子と遺伝子の特徴・範囲を対応させる
+        :param genome_ranges: collection.OrderedDict  順番を持たせたdictionary
+        :return:
+        """
+        self._genome_ranges = genome_ranges
+        for key in genome_ranges:
+            self._genomes.append(key)
 
     def get_fitness_function(self):
         return self._fitness_function_id

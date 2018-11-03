@@ -4,7 +4,7 @@ from modules.datamanager import savecandledata
 save_candle_data = savecandledata.SaveCandleData()
 timespace = '1hour'
 start_day = '20180201'
-finish_day = '20181017'
+finish_day = '20181025'
 pair = 'btc_jpy'
 save_candle_data.save_candledata(
     timespace=timespace,

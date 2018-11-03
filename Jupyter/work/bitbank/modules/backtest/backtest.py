@@ -11,7 +11,7 @@ class BackTest:
     DEFAULT_LOG_SPAN = 20
 
     def __init__(self, situation, candle_type, population, mutation,
-                 cross, elite_num, host, fitness_function_name, crossover_name):
+                 cross, elite_num, host, fitness_function_name, crossover_name, hyper_params=None):
         """
         :param situation:                Situation 遺伝子の要素の取りうる範囲などを表す
         :param candle_type:              string    ロウソク足データの種類
@@ -22,6 +22,7 @@ class BackTest:
         :param host:                     string    dbの接続先
         :param fitness_function_name:    string    適応度関数の名称
         :param crossover_name:           string    交叉手法の名称
+        :param hyper_params:             dict      ハイパーパラメータ
         """
         self._db_facade = facade.Facade(host=host)
         ff_facade = fffacade.Facade(candle_type=candle_type)
@@ -30,7 +31,8 @@ class BackTest:
         # 適応度関数
         fitness_function = ff_facade.select_department(
             function_name=fitness_function_name,
-            db_dept=expt_logs_dept
+            db_dept=expt_logs_dept,
+            hyper_params=hyper_params
         )
         # 交叉手法
         crossover_method = c_facade.select_department(
@@ -65,7 +67,7 @@ class BackTest:
         values = [
             self._ga.get_crossover_id(),
             self._ga.get_fitness_function_id(),
-            pickle.dumps(self._ga.get_situation()),
+            pickle.dumps(self._ga.get_situation().get_genome_ranges()),
             self._ga.get_mutation(),
             self._ga.get_cross(),
             self._ga.get_population(),

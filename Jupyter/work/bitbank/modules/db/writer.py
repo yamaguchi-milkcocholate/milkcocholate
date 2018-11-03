@@ -1,4 +1,5 @@
 import pymysql.cursors
+import pprint
 
 
 class Writer:
@@ -39,6 +40,7 @@ class Writer:
         except Exception:
             self._connection.rollback()
             self._connection.close()
+            pprint.pprint(chunk)
             raise
         finally:
             self._connection.commit()

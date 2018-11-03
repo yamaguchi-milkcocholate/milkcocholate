@@ -4,6 +4,7 @@ from modules.datamanager import apigateway
 import os
 import sys
 import datetime
+import numpy as np
 
 
 class SaveCandleData:
@@ -18,10 +19,10 @@ class SaveCandleData:
         """
         指定した日付のろうそく足データを取得する
         引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,仮想通貨の名前）
-        :param timespace: string 調べたい時間間隔　例1hour
-        :param start_day: string 調べたい期間の開始日　例20181007
-        :param finish_day:　string　調べたい期間の終了日　例20181009
-        :param pair: string 調べたい仮想通貨　例btc_jpy
+        :param timespace:    string   調べたい時間間隔      例1hour
+        :param start_day:    string   調べたい期間の開始日　 例20181007
+        :param finish_day:   string   調べたい期間の終了日　 例20181009
+        :param pair:         string   調べたい仮想通貨      例btc_jpy
         :return:
         """
 
@@ -46,7 +47,13 @@ class SaveCandleData:
             candlestick = my_dict['candlestick'][0]['ohlcv']
 
             df = pd.DataFrame(candlestick, columns=['open', 'high', 'low', 'end', 'turnover', 'time'])
-            # timeformat
+            # 型の変換
+            # pandas.DataFrame   データ型はfloat32
+            df['open'] = df['open'].astype(np.float32)
+            df['high'] = df['high'].astype(np.float32)
+            df['low'] = df['low'].astype(np.float32)
+            df['end'] = df['end'].astype(np.float32)
+            df['turnover'] = df['turnover'].astype(np.float32)
             df['time'] = pd.to_datetime(df['time'], unit='ms')
             # save
             save_file = wur + save_dir + day_str + '.pkl'
