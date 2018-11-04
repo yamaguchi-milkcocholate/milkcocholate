@@ -96,19 +96,12 @@ spec:
       - image: milkchocolate22/flask_web_app:latest
         imagePullPolicy: Always
         name: flask-web-app
-        volumeMounts:
-        - name: flask-web-app-persistent-storage
-          mountPath: /home/app
         ports:
         - containerPort: 5000
           protocol: TCP
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
-      volumes:
-      - name: flask-web-app-persistent-storage
-        persistentVolumeClaim:
-          claimName: flask-web-app-pv-claim
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -148,8 +141,8 @@ spec:
         imagePullPolicy: Always
         name: jupyter
         volumeMounts:
-        - name: jupyter-persistent-storage
-          mountPath: /home/jovyan/work
+        - name: jupyter-volume
+          mountPath: /home/jovyan/work/bitbank/new
         ports:
         - containerPort: 8888
           protocol: TCP
@@ -157,9 +150,8 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
       volumes:
-      - name: jupyter-persistent-storage
-        persistentVolumeClaim:
-          claimName: jupyter-pv-claim
+      - name: jupyter-volume
+        emptyDir: {}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

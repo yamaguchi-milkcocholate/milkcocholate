@@ -14,37 +14,7 @@ spec:
   hostPath:
     path: /data/mysql
     # type: DirectoryOrCreate
----
+
 # flask-web-app
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: flask-web-app-hostpath-pv
-  labels:
-    type: local
-spec:
-  capacity:
-    storage: 500Ki
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /var/tmp/app
-    # type: DirectoryOrCreate
----
 # jupyter
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: jupyter-hostpath-pv
-  labels:
-    type: local
-spec:
-  capacity:
-    storage: 500Mi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /var/tmp/work
-    # type: DirectoryOrCreate
+
