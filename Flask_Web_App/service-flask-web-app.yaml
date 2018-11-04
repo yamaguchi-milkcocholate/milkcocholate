@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: flask-web-app-http
   labels:
-    run: flask_web_app
+    run: flask-web-app
   namespace: default
 spec:
   ports:

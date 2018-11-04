@@ -54,6 +54,7 @@
                                     <th>crossover name</th>
                                     <th>fitness function name</th>
                                     <th>situation</th>
+                                    <th>hyper parameter</th>
                                     <th>mutation rate</th>
                                     <th>cross rate</th>
                                     <th>population</th>
@@ -84,6 +85,16 @@
                                                 <ion-icon name="clipboard"></ion-icon>
                                             </button>
                                         </td>
+                                        <td>
+                                            {% if line.hyper_params %}
+                                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#hyper_parameter_{{ line.id }}">
+                                                詳細
+                                                <ion-icon name="clipboard"></ion-icon>
+                                            </button>
+                                            {% else %}
+                                                <span aria-hidden="true">&times;</span>
+                                            {% endif %}
+                                        </td>
                                         <td>{{ line.mutation_rate }}</td>
                                         <td>{{ line.cross_rate }}</td>
                                         <td>{{ line.population }}</td>
@@ -98,6 +109,7 @@
 
                             <!-- Modal -->
                             {% for line in experiments %}
+                            <!-- situation -->
                             <div class="modal fade" id="situation_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="situation_{{ line.id }}" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
@@ -136,7 +148,38 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- hyper parameter -->
+                            <div class="modal fade" id="hyper_parameter_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="hyper_parameter_{{ line.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header hyper_parameter__header">
+                                            <h3 class="modal-title">No. {{ line.id }}　ハイパーパラメータ</h3>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body hyper_parameter__body">
+                                            <table class="hyper_parameter__table">
+                                            <tbody>
+                                            {% if line.hyper_params %}
+                                            {% for key in line.hyper_params %}
+                                            <tr>
+                                                <th>{{ key }}</th>
+                                                <td>{{ line.hyper_params[key] }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% endif %}
+                                            </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="modal-footer hyper_parameter__footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             {% endfor %}
+
                         </div>
                     </main>
                 </div>
@@ -228,6 +271,36 @@
     .experiments__card
     {
         margin-bottom: 500px;
+    }
+
+    .hyper_parameter__header
+    {
+        box-sizing: border-box;
+        background-color: #5097D5;
+        color: #ffff;
+        border-left: solid 3px #F5C845;
+    }
+
+    .hyper_parameter__body
+    {
+        background-color: #F6F6F6;
+    }
+
+    .hyper_parameter__footer
+    {
+        background-color: #F6F6F6;
+    }
+
+    .hyper_parameter__table
+    {
+        margin: 0 10px 20px 10px;
+        width: 100%;
+    }
+
+    .hyper_parameter__table tbody tr th, .hyper_parameter__table tbody tr td
+    {
+        padding: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1)
     }
     </style>
 {% endblock %}

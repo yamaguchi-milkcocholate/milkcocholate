@@ -72,12 +72,12 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
+                # print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
             elif operation is MacdOperation.SELL:
                 has_bitcoin = False
                 yen = float(bitcoin * float(row.end))
                 bitcoin = 0
-                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
+                # print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
             pre_macd = row.macd
             pre_signal = row.macd_signal
         if has_bitcoin:
@@ -120,7 +120,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 has_bitcoin = True
                 bitcoin = float(yen / float(row.end))
                 yen = 0
-                print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
+                # print(row.time, row.end, 'buy', 'yen', yen, 'bitcoin', bitcoin)
                 # DB
                 insert_list.append([
                     population_id,
@@ -132,7 +132,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
                 has_bitcoin = False
                 yen = float(bitcoin * float(row.end))
                 bitcoin = 0
-                print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
+                # print(row.time, row.end, 'sell', 'yen', yen, 'bitcoin', bitcoin)
                 # DB
                 insert_list.append([
                     population_id,

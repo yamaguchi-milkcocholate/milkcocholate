@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mariadb
--- Generation Time: 2018 年 10 月 18 日 02:30
+-- Generation Time: 2018 年 11 月 04 日 05:01
 -- サーバのバージョン： 10.3.10-MariaDB-1:10.3.10+maria~bionic
 -- PHP Version: 7.2.8
 

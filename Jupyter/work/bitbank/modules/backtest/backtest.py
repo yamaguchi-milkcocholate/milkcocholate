@@ -47,6 +47,7 @@ class BackTest:
             crossover_method=crossover_method,
             fitness_function=fitness_function
         )
+        self._hyper_params=hyper_params
 
     def __call__(self, steps=DEFAULT_STEPS, log_span=DEFAULT_LOG_SPAN):
         """
@@ -64,10 +65,16 @@ class BackTest:
         # 実験を記録
         expt_dept = self._db_facade.select_department('experiments')
         execute_time = int(end_at.timestamp()) - int(start_at.timestamp())
+        # ハイパーパラメータがあればバイナリに変換する
+        if self._hyper_params is not None:
+            self._hyper_params = pickle.dumps(self._hyper_params)
+        else:
+            self._hyper_params = pickle.dumps(dict())
         values = [
             self._ga.get_crossover_id(),
             self._ga.get_fitness_function_id(),
             pickle.dumps(self._ga.get_situation().get_genome_ranges()),
+            self._hyper_params,
             self._ga.get_mutation(),
             self._ga.get_cross(),
             self._ga.get_population(),

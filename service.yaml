@@ -1,0 +1,64 @@
+# mariadb
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-http
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mariadb
+  clusterIP: None
+---
+# phpmyadmin
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: phpmyadmin
+  name: phpmyadmin-http
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: phpmyadmin
+  type: LoadBalancer
+---
+# flask-web-app
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-web-app-http
+  labels:
+    run: flask-web-app
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    run: flask-web-app
+  sessionAffinity: None
+  type: LoadBalancer
+---
+# jupyter
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyter-http
+  labels:
+    run: jupyter
+  namespace: default
+spec:
+  ports:
+    - name: http
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+  selector:
+    run: jupyter
+  sessionAffinity: None
+  type: LoadBalancer
