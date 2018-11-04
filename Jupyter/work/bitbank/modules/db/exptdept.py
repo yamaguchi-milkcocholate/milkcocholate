@@ -10,6 +10,7 @@ class ExperimentsDepartment(department.Department):
             'crossover_id',
             'fitness_function_id',
             'situation',
+            'hyper_parameter',
             'mutation_rate',
             'cross_rate',
             'population',

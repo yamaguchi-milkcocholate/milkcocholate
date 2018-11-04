@@ -33,12 +33,17 @@ class ExperimentRepository(repository.Repository):
                 fitness_function_name = fitness_function[0]['name']
 
                 situation = pickle.loads(item['situation'])
+                if item['hyper_parameter']:
+                    hyper_params = pickle.loads(item['hyper_parameter'])
+                else:
+                    hyper_params = None
 
                 experiment = expt.Experiment(
                     experiment_id=item['id'],
                     crossover_name=crossover_name,
                     fitness_function_name=fitness_function_name,
                     situation=situation,
+                    hyper_params=hyper_params,
                     mutation_rate=item['mutation_rate'],
                     cross_rate=item['cross_rate'],
                     population=item['population'],
@@ -69,11 +74,16 @@ class ExperimentRepository(repository.Repository):
             fitness_function_name = fitness_function[0]['name']
 
             situation = pickle.loads(result['situation'])
+            if result['hyper_parameter']:
+                hyper_params = pickle.loads(result['hyper_parameter'])
+            else:
+                hyper_params = None
             return_expt = expt.Experiment(
                 experiment_id=result['id'],
                 crossover_name=crossover_name,
                 fitness_function_name=fitness_function_name,
                 situation=situation,
+                hyper_params=hyper_params,
                 mutation_rate=result['mutation_rate'],
                 cross_rate=result['cross_rate'],
                 population=result['population'],
