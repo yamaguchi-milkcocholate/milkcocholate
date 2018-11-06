@@ -88,11 +88,10 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         """
         genome = kwargs['genome']
         # ポジションを初期化
-        bitcoin, yen = self.init_position()
+        bitcoin, yen, has_bitcoin = self.init_position()
         # 目標値を設定
         goal_bitcoin, goal_yen = self.init_goal(data_i=0)
         fitness = 0
-        has_bitcoin = True
         last_end_position = self.end_position(data_i=self._last_data_num - 2)
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
@@ -116,7 +115,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                     # ポジションを初期化
-                    bitcoin, yen = self.init_position()
+                    bitcoin, yen, has_bitcoin = self.init_position()
             elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
@@ -129,12 +128,12 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                     # ポジションを初期化
-                    bitcoin, yen = self.init_position()
+                    bitcoin, yen, has_bitcoin = self.init_position()
         # 目標達成の度合いを返す(適応度)
         print('finally', 'fitness', fitness)
         return fitness
 
-    def calc_result_aaa(self, population_id, **kwargs):
+    def calc_result_and_log(self, population_id, **kwargs):
         """
         過去のデータから取引を行って、10%の利益率で区切りをつける
         記録をデータベースに保存する
@@ -145,11 +144,10 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         str_format = '%Y-%m-%d %H:%M:%S'
         genome = kwargs['genome']
         # ポジションを初期化
-        bitcoin, yen = self.init_position()
+        bitcoin, yen, has_bitcoin = self.init_position()
         # 目標値を設定
         goal_bitcoin, goal_yen = self.init_goal(data_i=0)
         fitness = 0
-        has_bitcoin = True
         # 0番目の結果
         insert_list.append([
             population_id,
@@ -188,7 +186,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                     # ポジションを初期化
-                    bitcoin, yen = self.init_position()
+                    bitcoin, yen, has_bitcoin = self.init_position()
                     time = self._data.loc[data_i, 'time'].strftime(str_format)
                     # 同じ時間で初期化後のデータを入力(グラフに悪影響出るかも)
                     insert_list.append([
@@ -217,7 +215,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                     # ポジションを初期化
-                    bitcoin, yen = self.init_position()
+                    bitcoin, yen, has_bitcoin = self.init_position()
                     # 同じ時間で初期化後のデータを入力(グラフに悪影響出るかも)
                     insert_list.append([
                         population_id,
@@ -235,76 +233,6 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         # 目標達成の度合いを返す(適応度)
         print('finally', 'fitness', fitness)
         return fitness
-
-    def calc_result_and_log(self, population_id, **kwargs):
-        """
-        過去のデータから取引を行って、最終日の持ち分を適応度とする
-        記録をデータベースに保存する
-        :param population_id:   int              テーブル'populations'のid
-        :return:                int              最終日の持ち分(円)
-        """
-        insert_list = list()
-        str_format = '%Y-%m-%d %H:%M:%S'
-        genome = kwargs['genome']
-        bitcoin = self.INIT_BIT_COIN_AMOUNT
-        yen = 0
-        has_bitcoin = True
-        # 0番目の結果
-        insert_list.append([
-            population_id,
-            int(bitcoin * self._data.at[0, 'end']),
-            int(bitcoin * self._data.at[0, 'end']),
-            self._data.at[0, 'time'].strftime(str_format)
-        ])
-        last_end_position = self.end_position(data_i=self._last_data_num - 2)
-        for data_i in range(self._last_data_num - 1, len(self._data)):
-            inclination_pattern = self.inclination(data_i=data_i)
-            end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
-                last_end_position=last_end_position,
-                end_position=end_position,
-                inclination_pattern=inclination_pattern,
-                genome=genome
-            )
-            last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
-                has_bitcoin = True
-                end_price = self._data.loc[data_i, 'end']
-                bitcoin = float(yen / end_price)
-                yen = 0
-                # DB
-                time = self._data.loc[data_i, 'time'].strftime(str_format)
-                insert_list.append([
-                    population_id,
-                    int(bitcoin * end_price),
-                    int(end_price),
-                    time
-                ])
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
-                has_bitcoin = False
-                end_price = self._data.loc[data_i, 'end']
-                yen = float(bitcoin * end_price)
-                bitcoin = 0
-                # DB
-                time = self._data.loc[data_i, 'time'].strftime(str_format)
-                insert_list.append([
-                    population_id,
-                    int(yen),
-                    int(end_price),
-                    time
-                ])
-            # 一行ずつ挿入 Todo:writerのバグを直す
-            if len(insert_list) >= 1:
-                self._db_dept.give_writer_task(insert_list)
-                insert_list = []
-        if has_bitcoin is True:
-            yen = float(bitcoin * self._data.tail(1)['end'])
-        print('finally', 'yen', yen)
-        # 一行ずつ挿入 Todo:writerのバグを直す
-        if len(insert_list) > 0:
-            self._db_dept.give_writer_task(insert_list)
-        del insert_list
-        return int(yen)
 
     def inclination(self, data_i):
         pre_data = self._data.loc[data_i - self._last_data_num + 1:data_i, 'sigma'].values
@@ -367,9 +295,9 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
     def init_position(self):
         """
         ポシションを初期化する
-        :return: int, int:  ビットコインの初期値, 円の初期値
+        :return: int, int, bool:  ビットコインの初期値, 円の初期値, ビットコインを持っているかどうか
         """
-        return self.INIT_BIT_COIN_AMOUNT, 0
+        return self.INIT_BIT_COIN_AMOUNT, 0, True
 
     def init_goal(self, data_i):
         """
