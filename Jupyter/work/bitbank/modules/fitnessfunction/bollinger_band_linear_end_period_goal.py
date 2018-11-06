@@ -147,6 +147,8 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         bitcoin, yen, has_bitcoin = self.init_position()
         # 目標値を設定
         goal_bitcoin, goal_yen = self.init_goal(data_i=0)
+        # 確定利益
+        profit = 0
         fitness = 0
         # 0番目の結果
         insert_list.append([
@@ -175,7 +177,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
                 insert_list.append([
                     population_id,
-                    int(bitcoin * end_price),
+                    int(bitcoin * end_price + profit),
                     int(end_price),
                     time
                 ])
@@ -185,13 +187,16 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     fitness = self.goal(fitness=fitness)
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                    # 確定利益を更新
+                    profit += (bitcoin * end_price - end_price)
                     # ポジションを初期化
                     bitcoin, yen, has_bitcoin = self.init_position()
                     time = self._data.loc[data_i, 'time'].strftime(str_format)
-                    # 同じ時間で初期化後のデータを入力(グラフに悪影響出るかも)
+                    # 同じ時間で初期化後のデータを入力
+                    # 確定利益 + 1bitcoin(=終値)
                     insert_list.append([
                         population_id,
-                        int(end_price),
+                        int(end_price + profit),
                         int(end_price),
                         time
                     ])
@@ -204,7 +209,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
                 insert_list.append([
                     population_id,
-                    int(yen),
+                    int(yen + profit),
                     int(end_price),
                     time
                 ])
@@ -214,12 +219,15 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     fitness = self.goal(fitness=fitness)
                     # 目標を更新
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                    # 確定利益を更新
+                    profit += (yen - end_price)
                     # ポジションを初期化
                     bitcoin, yen, has_bitcoin = self.init_position()
-                    # 同じ時間で初期化後のデータを入力(グラフに悪影響出るかも)
+                    # 同じ時間で初期化後のデータを入力
+                    # 確定利益 + 1bitcoin(=終値)
                     insert_list.append([
                         population_id,
-                        int(end_price),
+                        int(end_price + profit),
                         int(end_price),
                         time
                     ])
