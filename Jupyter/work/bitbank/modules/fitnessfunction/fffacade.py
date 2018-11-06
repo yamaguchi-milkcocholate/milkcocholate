@@ -25,13 +25,11 @@ class Facade:
             return simple_macd_params.SimpleMacDParams(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
-                fitness_function_id=self.SIMPLE_MACD_PARAMS
             )
         elif function_name is self._functions[1]:
             return bollingerband_linear_end.BollingerBandLinearEnd(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
-                fitness_function_id=self.BOLLINGER_BAND_LINEAR_BAND,
                 hyper_params=hyper_params
             )
         else:
