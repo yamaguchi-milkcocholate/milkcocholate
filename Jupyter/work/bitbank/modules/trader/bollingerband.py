@@ -2,8 +2,10 @@ from modules.datamanager.apigateway import ApiGateway
 from modules.trader.functions import simple_moving_average
 from modules.trader.functions import standard_deviation
 from modules.trader.functions import volatility
+from modules.db.writer import Writer
 import datetime
 import numpy as np
+import pickle
 
 
 class BollingerBandTrader:
@@ -53,7 +55,7 @@ class BollingerBandTrader:
         )
         # 直近のデータを期間分だけ残す
         self.__recent_data = np.asarray(
-            a=data_list[data_size - self.__stock_term:data_size],
+            a=data_list,
             dtype=np.float32
         )
 
@@ -62,11 +64,43 @@ class BollingerBandTrader:
         現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
         """
         ticker = self.__api_gateway.use_ticker()['data']['last']
-        self.__recent_data.append(ticker)
-        self.__recent_data.pop(0)
+        # データを更新
+        np.append(self.__recent_data, ticker)
+        np.delete(self.__recent_data, -1)
+        # 直近の単純移動平均線を求める
+        self.__recent_sma = simple_moving_average(
+            data=np.asarray(a=self.__recent_data, dtype=np.float32),
+            term=self.__stock_term
+        )
+        # 標準偏差を求める
+        self.__recent_sigma = standard_deviation(
+            data=self.__recent_sma,
+            term=self.__stock_term
+        )
+        # ボラティリティーを求める
+        self.__volatility = volatility(
+            sma=self.__recent_sma[-1],
+            std=self.__recent_sigma[-1]
+        )
 
     def operation(self):
         pass
 
-    def set_genome(self):
-        pass
+    def set_genome(self, genome=None, host=None, population_id=None):
+        """
+        遺伝子のセッター
+        numpyのgenomeかデータベースからのどちらか
+        :param genome:
+        :param host:
+        :param population_id:
+        """
+        if genome:
+            self.__genome = genome
+        elif host:
+            population = Writer(host=host).find(
+                table='populations',
+                search_id=population_id
+            )[0]
+            self.__genome = pickle.loads(population.genome)
+        else:
+            raise TypeError('numpy(genome) or host(Database)')

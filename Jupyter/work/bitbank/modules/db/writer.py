@@ -25,6 +25,19 @@ class Writer:
             cursorclass=pymysql.cursors.DictCursor
         )
 
+    def find(self, table, search_id):
+        try:
+            with self._connection.cursor() as cursor:
+                sql = "SELECT * FROM `" + table + "` WHERE `id` = ?;"
+                cursor.execute(sql, [search_id])
+                result = cursor.fetchall()
+        except Exception:
+            self._connection.close()
+            raise
+        finally:
+            self._connection.close()
+        return result
+
     def write_with_auto_increment_id(self, table, columns, chunk):
         """
         複数行をauto_incrementで書き込む
