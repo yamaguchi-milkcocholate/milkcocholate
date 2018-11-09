@@ -13,12 +13,7 @@ class BollingerBandTrader:
         self.__recent_data = None
         self.__recent_sma = None
         self.__recent_sigma = None
-        self.__volatility = dict()
-        self.__volatility['double_upper'] = None
-        self.__volatility['upper'] = None
-        self.__volatility['sma'] = None
-        self.__volatility['lower'] = None
-        self.__volatility['double_lower'] = None
+        self.__volatility = None
         self.__initialize(candle_type=candle_type)
         self.__stock_term = stock_term
         self.__api_gateway = ApiGateway(pair='btc_jpy')
