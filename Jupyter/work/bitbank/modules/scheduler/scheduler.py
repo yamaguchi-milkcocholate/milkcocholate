@@ -1,4 +1,3 @@
-# coding:utf-8
 import sched
 import datetime
 import time
@@ -33,7 +32,7 @@ class Scheduler:
         :param args:
         :return:
         """
-        self.runner.processing(*args)
+        self.runner.processing()
         print(*args)
 
     def schedule(self):
