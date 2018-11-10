@@ -171,7 +171,7 @@ class BollingerBandTrader:
             self.__last_location = self.LOWER_LOWER
         elif end_price < self.__volatility['double_lower']:
             self.__last_location = self.LOWER
-        
+
     def set_genome(self, genome=None, host=None, population_id=None):
         """
         遺伝子のセッター

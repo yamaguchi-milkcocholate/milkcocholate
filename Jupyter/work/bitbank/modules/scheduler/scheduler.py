@@ -33,7 +33,7 @@ class Scheduler:
         :return:
         """
         self.runner.processing()
-        print(*args)
+        print(args)
 
     def schedule(self):
         """
