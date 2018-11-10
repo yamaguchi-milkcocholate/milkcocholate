@@ -2,6 +2,9 @@ from modules.datamanager.apigateway import ApiGateway
 from modules.trader.functions import simple_moving_average
 from modules.trader.functions import standard_deviation
 from modules.trader.functions import volatility
+from modules.datamanager.functions import linear_regression
+from modules.datamanager.functions import Polynomial
+from modules.fitnessfunction.bollingerband_linear_end import BollingerBandLinearEndOperation
 from modules.db.writer import Writer
 import datetime
 import numpy as np
@@ -9,15 +12,34 @@ import pickle
 
 
 class BollingerBandTrader:
+    UPPER = 0
+    UPPER_UPPER = 1
+    UPPER_MIDDLE = 2
+    MIDDLE_LOWER = 3
+    LOWER_LOWER = 4
+    LOWER = 5
 
-    def __init__(self, stock_term, candle_type):
+    POSITIVE_INCLINATION = 1
+    NEGATIVE_INCLINATION = -1
+    POSITIVE_MIDDLE_INCLINATION = 1.7
+    NEGATIVE_MIDDLE_INCLINATION = -1.7
+
+    HYPER_EXPANSION = 0
+    EXPANSION = 1
+    FLAT = 2
+    SQUEEZE = 3
+    HYPER_SQUEEZE = 4
+
+    def __init__(self, stock_term, inclination_alpha, candle_type):
         self.__genome = None
         self.__recent_data = None
         self.__recent_sma = None
         self.__recent_sigma = None
         self.__volatility = None
+        self.__last_location = None
         self.__initialize(candle_type=candle_type)
         self.__stock_term = stock_term
+        self.__inclination_alpha = inclination_alpha
         self.__api_gateway = ApiGateway(pair='btc_jpy')
 
     def __initialize(self, candle_type):
@@ -59,7 +81,7 @@ class BollingerBandTrader:
             dtype=np.float32
         )
 
-    def fetch_recent_data(self):
+    def __fetch_recent_data(self):
         """
         現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
         """
@@ -82,10 +104,74 @@ class BollingerBandTrader:
             sma=self.__recent_sma[-1],
             std=self.__recent_sigma[-1]
         )
+        # 終値の位置を求める
+        self.__location()
 
     def operation(self):
-        pass
+        """
+        データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
+        """
+        pre_location = self.__last_location
+        self.__fetch_recent_data()
+        self.__location()
+        inclination_pattern = self.__inclination()
+        action = BollingerBandLinearEndOperation.operation(
+            last_end_position=pre_location,
+            end_position=self.__last_location,
+            inclination_pattern=inclination_pattern,
+            genome=self.__genome
+        )
+        return int(action)
 
+    def __inclination(self):
+        min_sigma = np.amin(self.__recent_sigma)
+        # 最小値との差分だけの行列を作る
+        t = self.__recent_sigma - np.full_like(a=self.__recent_sigma, fill_value=min_sigma)
+        x = np.arange(
+            start=0,
+            step=self.__inclination_alpha,
+            stop=self.__inclination_alpha * len(t)
+        )
+        # 直線(１次多項式)の線形回帰
+        # その傾きを取り出す
+        inclination = linear_regression(
+            x=x,
+            t=t,
+            basic_function=Polynomial(dim=2)
+        )[1]
+
+        if self.POSITIVE_INCLINATION < inclination:
+            inclination_pattern = self.HYPER_EXPANSION
+        elif (self.POSITIVE_MIDDLE_INCLINATION < inclination) and (inclination <= self.POSITIVE_INCLINATION):
+            inclination_pattern = self.EXPANSION
+        elif (self.NEGATIVE_MIDDLE_INCLINATION <= inclination) and (inclination <= self.POSITIVE_MIDDLE_INCLINATION):
+            inclination_pattern = self.FLAT
+        elif (self.NEGATIVE_INCLINATION <= inclination) and (inclination < self.NEGATIVE_MIDDLE_INCLINATION):
+            inclination_pattern = self.SQUEEZE
+        elif inclination < self.NEGATIVE_INCLINATION:
+            inclination_pattern = self.HYPER_SQUEEZE
+        else:
+            raise TypeError('inclination is None')
+        return inclination_pattern
+
+    def __location(self):
+        """
+        終値の位置を求める
+        """
+        end_price = self.__recent_data[-1]
+        if self.__volatility['double_upper'] < end_price:
+            self.__last_location = self.UPPER
+        elif (self.__volatility['upper'] < end_price) and (end_price <= self.__volatility['double_upper']):
+            self.__last_location = self.UPPER_UPPER
+        elif (self.__volatility['sma'] < end_price) and (end_price <= self.__volatility['upper']):
+            self.__last_location = self.UPPER_MIDDLE
+        elif (self.__volatility['lower'] <= end_price) and (end_price <= self.__volatility['sma']):
+            self.__last_location = self.MIDDLE_LOWER
+        elif (self.__volatility['double_lower'] <= end_price) and (end_price < self.__volatility['lower']):
+            self.__last_location = self.LOWER_LOWER
+        elif end_price < self.__volatility['double_lower']:
+            self.__last_location = self.LOWER
+        
     def set_genome(self, genome=None, host=None, population_id=None):
         """
         遺伝子のセッター
