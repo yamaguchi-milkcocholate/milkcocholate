@@ -11,7 +11,8 @@ def simple_moving_average(data, term):
     average_list = list()
     start = term - 1
     for i in range(len(data) - start):
-        values = data[i:i + start]
+        # numpy[start:stop:steps] stopは含まれない
+        values = data[i:i + start + 1]
         average_list.append(float(np.sum(values) / term))
     return np.asarray(a=average_list, dtype=np.float32)
 
@@ -26,7 +27,8 @@ def standard_deviation(data, term):
     std_list = list()
     start = term - 1
     for i in range(len(data) - start):
-        values = data[i:i + start]
+        # numpy[start:stop:steps] stopは含まれない
+        values = data[i:i + start + 1]
         std_list.append(np.std(a=values))
     return np.asarray(a=std_list, dtype=np.float32)
 
