@@ -37,29 +37,29 @@ class BollingerBandTrader:
         self.__recent_sigma = None
         self.__volatility = None
         self.__last_location = None
-        self.__initialize(candle_type=candle_type)
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
         self.__api_gateway = ApiGateway(pair='btc_jpy')
+        self.__initialize(candle_type=candle_type)
 
     def __initialize(self, candle_type):
         """
         直近のデータをロウソク足データの終値で初期化する
         """
         # listで受け取る
-        candle_stick = self.__api_gateway.use_candlestick(
+        candlestick = self.__api_gateway.use_candlestick(
             time=datetime.datetime.today().strftime("%Y%m%d"),
             candle_type=candle_type
         )['candlestick'][0]['ohlcv']
-        # 計算に使うデータを取り出す
-        max_index = len(candle_stick)
-        # 単純移動平均線 + 標準偏差 で (期間-1)*2を余分に与える
-        data_size = self.__stock_term * 3 - 2
-        candle_stick = candle_stick[max_index - data_size:max_index]
+        candlestick = self.dispose_candlestick(
+            stock_term=self.__stock_term,
+            candlestick=candlestick
+        )
         data_list = list()
         # 終値のみを取り出す
-        for data_i in range(data_size):
-            data_list.append(candle_stick[data_i]['end'])
+        for data_i in range(len(candlestick)):
+            # 始値, 高値, 安値, 終値, 出来高, UnixTime
+            data_list.append(candlestick[data_i][3])
         # 直近の単純移動平均線を求める
         self.__recent_sma = simple_moving_average(
             data=np.asarray(a=data_list, dtype=np.float32),
@@ -75,17 +75,20 @@ class BollingerBandTrader:
             sma=self.__recent_sma[-1],
             std=self.__recent_sigma[-1]
         )
-        # 直近のデータを期間分だけ残す
+        # 計算に使うデータはnumpyに変換
         self.__recent_data = np.asarray(
             a=data_list,
-            dtype=np.float32
+            dtype=np.int32
         )
+        # 終値の位置を求める
+        self.__location()
 
     def __fetch_recent_data(self):
         """
         現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
         """
-        ticker = self.__api_gateway.use_ticker()['data']['last']
+        ticker = self.__api_gateway.use_ticker()
+        ticker = ticker['last']
         # データを更新
         np.append(self.__recent_data, ticker)
         np.delete(self.__recent_data, -1)
@@ -106,6 +109,23 @@ class BollingerBandTrader:
         )
         # 終値の位置を求める
         self.__location()
+
+    @staticmethod
+    def dispose_candlestick(stock_term, candlestick):
+        """
+        テスト用にパブリックフィールドでスタティックフィールド。
+        一日のロウソク足データから使うデータのみを取り出す関数
+        :param stock_term:
+        :param candlestick:
+        :return:
+        """
+        # 単純移動平均線 + 標準偏差 で(期間 - 1) * 2 を余分に使う
+        data_size = stock_term * 3 - 2
+        candlestick_size = len(candlestick)
+        if candlestick_size < data_size:
+            raise TypeError('candlestick has much length')
+        # [start:stop:steps] stopは含まれない
+        return candlestick[candlestick_size - data_size:candlestick_size]
 
     def operation(self):
         """
@@ -171,6 +191,8 @@ class BollingerBandTrader:
             self.__last_location = self.LOWER_LOWER
         elif end_price < self.__volatility['double_lower']:
             self.__last_location = self.LOWER
+        else:
+            raise TypeError()
 
     def set_genome(self, genome=None, host=None, population_id=None):
         """
@@ -187,6 +209,37 @@ class BollingerBandTrader:
                 table='populations',
                 search_id=population_id
             )[0]
-            self.__genome = pickle.loads(population.genome)
+            # 一番目のエリート個体を選ぶ
+            self.__genome = pickle.loads(population['genome'])[0]
         else:
             raise TypeError('numpy(genome) or host(Database)')
+
+    def get_recent_data(self):
+        """
+        テスト用のゲッター
+        """
+        return self.__recent_data
+
+    def get_recent_sma(self):
+        """
+        テスト用のゲッター
+        """
+        return self.__recent_sma
+
+    def get_recent_sigma(self):
+        """
+        テスト用のゲッター
+        """
+        return self.__recent_sigma
+
+    def get_volatility(self):
+        """
+        テスト用のゲッター
+        """
+        return self.__volatility
+
+    def get_genome(self):
+        """
+        テスト用のゲッター
+        """
+        return self.__genome

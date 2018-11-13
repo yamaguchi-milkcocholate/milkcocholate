@@ -26,9 +26,10 @@ class Writer:
         )
 
     def find(self, table, search_id):
+        self.connect()
         try:
             with self._connection.cursor() as cursor:
-                sql = "SELECT * FROM `" + table + "` WHERE `id` = ?;"
+                sql = "SELECT * FROM `" + table + "` WHERE `id` = %s;"
                 cursor.execute(sql, [search_id])
                 result = cursor.fetchall()
         except Exception:
