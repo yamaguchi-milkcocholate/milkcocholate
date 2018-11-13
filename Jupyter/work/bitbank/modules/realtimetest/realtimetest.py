@@ -57,9 +57,9 @@ class RealTimeTest:
             self.__has_bitcoin = False
             print(
                 time,
-                'last price', 'left  : {:<10}'.format(last_price),
-                'yen position', 'left  : {:<10}'.format(self.__yen_position),
-                'bitcoin position', 'left  : {:<10}'.format(self.__bitcoin_position),
+                'last price', ': {:<10}'.format(last_price),
+                'yen position', ': {:<10}'.format(self.__yen_position),
+                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
             )
         elif operation is self.STAY:
             pass

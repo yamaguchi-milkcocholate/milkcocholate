@@ -8,7 +8,7 @@ class RealTimeTestLogsDepartment(department.Department):
         self._table = 'realtime_test_logs'
         self._columns = [
             'last_price',
-            'yen_positon',
+            'yen_position',
             'bitcoin_position',
             'total_position',
             'time',
