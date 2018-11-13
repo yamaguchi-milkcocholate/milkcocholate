@@ -31,19 +31,17 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
     2. 直近の終値とボリンジャーバンドの位置
     """
 
-    def __init__(self, candle_type, db_dept, fitness_function_id, hyper_params):
+    def __init__(self, candle_type, db_dept, hyper_params):
         """
-
         :param candle_type:
         :param db_dept:
-        :param fitness_function_id:
         :param hyper_params:
         ['sma_term', 'std_term', 'linear_dim', 'last_data_num']
         """
         super().__init__(
             candle_type=candle_type,
             db_dept=db_dept,
-            fitness_function_id=fitness_function_id
+            fitness_function_id=self.FITNESS_FUNCTION_ID
         )
         self._approach = bollingerband.BollingerBand(candlestick=self._candlestick)
         # 平均移動戦と標準偏差はハイパーパラメータなので最初に計算するだけ
@@ -108,13 +106,11 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                 end_price = self._data.loc[data_i, 'end']
                 bitcoin = float(yen / end_price)
                 yen = 0
-                # print(self._data.loc[data_i, 'time'], end_price, 'buy', 'bitcoin', bitcoin)
             elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 yen = float(bitcoin * end_price)
                 bitcoin = 0
-                # print(self._data.loc[data_i, 'time'], end_price, 'sell', 'yen', yen)
         if has_bitcoin is True:
             yen = float(bitcoin * self._data.tail(1)['end'])
         print('finally', 'yen', yen)
@@ -157,7 +153,6 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
                 bitcoin = float(yen / end_price)
                 yen = 0
-                # print(time, end_price, 'buy', 'bitcoin', bitcoin)
                 # DB
                 insert_list.append([
                     population_id,
@@ -171,7 +166,6 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
                 yen = float(bitcoin * end_price)
                 bitcoin = 0
-                # print(time, end_price, 'sell', 'yen', yen)
                 # DB
                 insert_list.append([
                     population_id,

@@ -1,4 +1,3 @@
-# coding:utf-8
 import sched
 import datetime
 import time
@@ -33,8 +32,7 @@ class Scheduler:
         :param args:
         :return:
         """
-        self.runner.processing(*args)
-        print(*args)
+        self.runner.processing()
 
     def schedule(self):
         """
@@ -44,6 +42,7 @@ class Scheduler:
         print('start', self.start)
         print('second', self.second)
         print('end', self.end)
+        print()
 
         time_i = int(time.mktime(self.start.timetuple()))
         span = int(time.mktime(self.second.timetuple()) - time_i)

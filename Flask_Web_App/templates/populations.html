@@ -185,7 +185,6 @@
                         {% for key in line.genome %}
                         <tr>
                             <th>{{ key }}</th>
-                            <td>{{ line.genome[key] }}</td>
                         </tr>
                         {% endfor %}
                         </tbody>
@@ -198,6 +197,7 @@
             </div>
         </div>
 
+        <!-- Modal -->
         <div class="modal fade" id="fitness_{{ line.id }}" tabindex="-1" role="dialog" aria-labelledby="fitness_{{ line.id }}" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -210,10 +210,9 @@
                     <div class="modal-body modal_detail__body">
                         <table class="populations__table">
                         <tbody>
-                        {% for key in line.genome %}
+                        {% for key in line.fitness %}
                         <tr>
                             <th>{{ key }}</th>
-                            <td>{{ line.genome[key] }}</td>
                         </tr>
                         {% endfor %}
                         </tbody>
