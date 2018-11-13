@@ -1,61 +1,80 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, session, redirect
 from flask_modules.loggraph.repository import loggraprepo
 from flask_modules.loggraph.repository import exptrepo
 from flask_modules.loggraph.repository import poprepo
 from flask_modules.exceptions.dbhost import HostNotFoundException
 app = Flask(__name__)
+app.secret_key = 'milkcocholate'
 
 
 @app.route("/", methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('connection.html')
+
+
+@app.route("/reconnect", methods=['GET', 'POST'])
+def reconnect():
+    return redirect("/")
+
+
+@app.route("/home", methods=["GET", "POST"])
+def home():
+    if 'host' in session:
+        pass
+    else:
+        try:
+            host = request.form['host']
+            session['host'] = host
+        except Exception:
+            return render_template('connection.html')
+    return render_template('home.html')
 
 
 @app.route("/experiments", methods=['GET', 'POST'])
 def experiments():
-    try:
-        host = request.form['host']
-    except Exception:
-        return render_template('error.html')
+    if 'host' in session:
+        host = session.get('host')
+    else:
+        return render_template('connection.html')
     try:
         repository = exptrepo.ExperimentRepository(host=host)
         experiment_list = repository.get_experiments()
     except HostNotFoundException:
-        return render_template('error.html', has_error=host)
-    return render_template('experiments.html', experiments=experiment_list, host=host)
+        return render_template('connection.html', has_error=host)
+    return render_template('experiments.html', experiments=experiment_list)
 
 
 @app.route("/populations", methods=['GET', 'POST'])
 def populations():
-    try:
+    if 'host' in session:
         experiment_id = request.form['experiment_id']
-        host = request.form['host']
-    except Exception:
-        return render_template('error.html')
+        host = session.get('host')
+    else:
+        return render_template('connection.html')
     try:
         repository = poprepo.PopulationRepository(host=host)
         population_list = repository.get_populations(experiment_id=experiment_id)
         repository = exptrepo.ExperimentRepository(host=host)
         experiment = repository.get_experiment(experiment_id=experiment_id)
     except HostNotFoundException:
-        return render_template('error.html', has_error=host)
-    return render_template('populations.html', populations=population_list, experiment=experiment, host=host)
+        return render_template('connection.html', has_error=host)
+    return render_template('populations.html', populations=population_list, experiment=experiment)
 
 
 @app.route("/graph", methods=['GET', 'POST'])
 def graph():
-    try:
+    if 'host' in session:
         population_id = request.form['population_id']
-        host = request.form['host']
-    except Exception:
-        return render_template('error.html')
+        host = session.get('host')
+    else:
+        return render_template('connection.html')
     try:
         repository = loggraprepo.LogGraphRepository(host=host)
         log_graph = repository.get_log_graph(population_id=population_id)
         repository = poprepo.PopulationRepository(host=host)
         population = repository.get_population(population_id=population_id)
     except HostNotFoundException:
-        return render_template('error.html', has_error=host)
+        return render_template('connection.html', has_error=host)
     return render_template('graph.html', log_graph=log_graph, population=population)
 
 
