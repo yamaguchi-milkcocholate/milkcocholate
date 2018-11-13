@@ -1,4 +1,4 @@
-from modules.db import crossoverdept, fitfuncdept, exptdept, exptlogsdept, popdept
+from modules.db import crossoverdept, fitfuncdept, exptdept, exptlogsdept, popdept, realtimedept, realtimelogdept
 
 
 class Facade:
@@ -10,6 +10,8 @@ class Facade:
             'experiments',
             'experiment_logs',
             'populations',
+            'realtime_tests',
+            'realtime_test_logs',
         ]
         self._host = host
 
@@ -29,5 +31,9 @@ class Facade:
             return exptlogsdept.ExperimentLogsDepartment(self._host)
         elif table is self._tables[4]:
             return popdept.PopulationsDepartment(self._host)
+        elif table is self._tables[5]:
+            return realtimedept.RealTimeTestDepartment(self._host)
+        elif table is self._tables[6]:
+            return realtimelogdept.RealTimeTestLogsDepartment(self._host)
         else:
             raise ValueError("table '" + table + "' is not found")
