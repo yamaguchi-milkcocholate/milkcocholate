@@ -37,6 +37,7 @@ class BollingerBandTrader:
         self.__recent_sigma = None
         self.__volatility = None
         self.__last_location = None
+        self.__population_id = None
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
         self.__api_gateway = ApiGateway(pair='btc_jpy')
@@ -194,25 +195,20 @@ class BollingerBandTrader:
         else:
             raise TypeError()
 
-    def set_genome(self, genome=None, host=None, population_id=None):
+    def set_genome(self, host, population_id):
         """
         遺伝子のセッター
         numpyのgenomeかデータベースからのどちらか
-        :param genome:
         :param host:
         :param population_id:
         """
-        if genome:
-            self.__genome = genome
-        elif host:
-            population = Writer(host=host).find(
-                table='populations',
-                search_id=population_id
-            )[0]
-            # 一番目のエリート個体を選ぶ
-            self.__genome = pickle.loads(population['genome'])[0]
-        else:
-            raise TypeError('numpy(genome) or host(Database)')
+        self.__population_id = population_id
+        population = Writer(host=host).find(
+            table='populations',
+            search_id=population_id
+        )[0]
+        # 一番目のエリート個体を選ぶ
+        self.__genome = pickle.loads(population['genome'])[0]
 
     def get_recent_data(self):
         """
@@ -243,3 +239,6 @@ class BollingerBandTrader:
         テスト用のゲッター
         """
         return self.__genome
+
+    def get_population_id(self):
+        return self.__population_id
