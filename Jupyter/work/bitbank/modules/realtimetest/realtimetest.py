@@ -46,9 +46,9 @@ class RealTimeTest:
             self.__has_bitcoin = True
             print(
                 time,
-                'last price', 'left  : {:<10}'.format(last_price),
-                'yen position', 'left  : {:<10}'.format(self.__yen_position),
-                'bitcoin position', 'left  : {:<10}'.format(self.__bitcoin_position),
+                'last price', ': {:<10}'.format(last_price),
+                'yen position', ': {:<10}'.format(self.__yen_position),
+                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
             )
         elif operation is self.SELL and self.__has_bitcoin is True:
             last_price, time = self.__fetch_ticker()
@@ -72,6 +72,6 @@ class RealTimeTest:
         ticker = self.__api_gateway.use_ticker()
         # bitbankのunixtimeはミリ秒まで含めているので除外
         return int(ticker['last']), datetime.datetime.fromtimestamp(
-            int(ticker['timestamp']) / 1000).strftime("%Y%m%d")
+            int(ticker['timestamp']) / 1000).strftime("%Y-%m-%d %H:%M:%S")
 
 

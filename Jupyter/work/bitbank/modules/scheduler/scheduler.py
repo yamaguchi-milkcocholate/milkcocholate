@@ -33,7 +33,6 @@ class Scheduler:
         :return:
         """
         self.runner.processing()
-        print(args)
 
     def schedule(self):
         """
@@ -43,6 +42,7 @@ class Scheduler:
         print('start', self.start)
         print('second', self.second)
         print('end', self.end)
+        print()
 
         time_i = int(time.mktime(self.start.timetuple()))
         span = int(time.mktime(self.second.timetuple()) - time_i)
