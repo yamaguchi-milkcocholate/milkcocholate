@@ -71,6 +71,7 @@ class TestBollingerBand(unittest.TestCase):
         self.assertEqual(3, len(recent_sigma))
         # sma, upper, double_upper, lower, double_lower
         self.assertEqual(5, len(recent_volatility))
+
         # ここからoperation()のテスト
         trader.set_genome(host='localhost', population_id=1)
         trader.operation()

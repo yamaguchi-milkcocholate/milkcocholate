@@ -30,6 +30,7 @@ class RealTimeTest:
             second=second
         )
         self.__should_log = should_log
+        self.__scheduler()
 
     def processing(self):
         """
@@ -68,8 +69,9 @@ class RealTimeTest:
         tickerのapiを叩いて情報を取り出す
         :return: int, datetime.datetime: 最近の取引値, データ取得時間
         """
-        ticker = self.__api_gateway.use_ticker()['data']
+        ticker = self.__api_gateway.use_ticker()
+        # bitbankのunixtimeはミリ秒まで含めているので除外
         return int(ticker['last']), datetime.datetime.fromtimestamp(
-            ticker['timestamp']).strftime("%Y%m%d")
+            int(ticker['timestamp']) / 1000).strftime("%Y%m%d")
 
 
