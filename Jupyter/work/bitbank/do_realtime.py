@@ -21,5 +21,6 @@ test(
     start=start,
     end=end,
     second=second,
-    should_log=False
+    should_log=True,
+    host='localhost'
 )

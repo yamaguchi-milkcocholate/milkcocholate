@@ -1,5 +1,6 @@
 from modules.scheduler.scheduler import Scheduler
 from modules.datamanager.apigateway import ApiGateway
+from modules.db.facade import Facade
 import datetime
 
 
@@ -21,8 +22,9 @@ class RealTimeTest:
         self.__yen_position = 0
         self.__has_bitcoin = True
         self.__api_gateway = ApiGateway('btc_jpy')
+        self.__log_dept = None
 
-    def __call__(self, start, end, second, should_log):
+    def __call__(self, start, end, second, should_log=False, host=None):
         self.__scheduler = Scheduler(
             runner=self,
             start=start,
@@ -30,7 +32,18 @@ class RealTimeTest:
             second=second
         )
         self.__should_log = should_log
+        # 起動する前にログデータのデータベース操作をするために呼び出す
+        db_facade = None
+        if self.__should_log:
+            db_facade = Facade(host=host)
+            self.__log_dept = db_facade.select_department('realtime_test_logs')
+        # スケジューラを起動
         self.__scheduler()
+        # 実験を記録
+        if self.__should_log:
+            real_time_test_dept = db_facade.select_department(table='realtime_tests')
+            population_id = self.__trader.get_population_id()
+            real_time_test_dept.give_writer_task(values=[[population_id]])
 
     def processing(self):
         """
@@ -50,6 +63,17 @@ class RealTimeTest:
                 'yen position', ': {:<10}'.format(self.__yen_position),
                 'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
             )
+            if self.__should_log:
+                # id以外の挿入データ
+                values = [
+                    int(last_price),
+                    int(self.__yen_position),
+                    int(self.__bitcoin_position),
+                    # 資産の合計
+                    int(last_price * self.__bitcoin_position),
+                    time
+                ]
+                self.__log_dept.give_writer_task(values=[values])
         elif operation is self.SELL and self.__has_bitcoin is True:
             last_price, time = self.__fetch_ticker()
             self.__yen_position = float(self.__bitcoin_position * last_price)
@@ -61,6 +85,17 @@ class RealTimeTest:
                 'yen position', ': {:<10}'.format(self.__yen_position),
                 'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
             )
+            if self.__should_log:
+                # id以外の挿入データ
+                values = [
+                    int(last_price),
+                    int(self.__yen_position),
+                    int(self.__bitcoin_position),
+                    # 資産の合計
+                    int(self.__yen_position),
+                    time
+                ]
+                self.__log_dept.give_writer_task(values=[values])
         elif operation is self.STAY:
             pass
 
