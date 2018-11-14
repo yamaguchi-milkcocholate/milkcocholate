@@ -24,8 +24,9 @@ class BollingerBandController:
             for i in range(len(experiments)):
                 el = dict()
                 el['experiment'] = experiments[i]
-                max_fitness = pop_repository.find_max_fitness(experiment_id=experiments[i].id)
-                el['max_fitness'] = max_fitness
+                result = pop_repository.find_max_fitness_and_genome(experiment_id=experiments[i].id)
+                el['max_fitness'] = result['fitness']
+                el['max_genome'] = result['genome']
                 bollingerbands.append(el)
             return bollingerbands
         except HostNotFoundException:
