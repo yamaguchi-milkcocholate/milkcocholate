@@ -78,5 +78,19 @@ def graph():
     return render_template('graph.html', log_graph=log_graph, population=population)
 
 
+@app.route("/bollingerband", methods=['GET', 'POST'])
+def bollingerband():
+    if 'host' in session:
+        host = session.get('host')
+    else:
+        return render_template('connection.html')
+    try:
+        repository = exptrepo.ExperimentRepository(host=host)
+        bollingerbands = repository.get_bollinger_band()
+        return render_template('bollingerband.html', bollingerbands=bollingerbands)
+    except HostNotFoundException:
+        return render_template('connection.html', has_error=host)
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
