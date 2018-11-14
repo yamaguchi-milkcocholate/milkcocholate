@@ -49,3 +49,15 @@ class PopulationRepository(repository.Repository):
             return population
         except HostNotFoundException:
             raise
+
+    def find_max_fitness(self, experiment_id):
+        try:
+            results = self._reader(
+                table=self.POPULATIONS_TABLE
+            ).where(['experiment_id', '=', experiment_id]).get()
+            # 最後の記録のpopulationのfitnessを取り出す
+            fitness = pickle.loads(results[-1]['fitness'])
+            # 一番最初のエリートの適応度を最大とする(実際には違う場合もある)
+            return fitness[0]
+        except HostNotFoundException:
+            raise

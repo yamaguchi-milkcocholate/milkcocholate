@@ -95,3 +95,40 @@ class ExperimentRepository(repository.Repository):
             return return_expt
         except HostNotFoundException:
             raise
+
+    def get_bollinger_band(self):
+        try:
+            bollinger_band_linear_end = 2
+            results = self._reader(
+                table=self.EXPERIMENTS_TABLE
+            ).where(['fitness_function_id', '=', bollinger_band_linear_end]).get()
+            return_expt = list()
+            for i in range(len(results)):
+                hyper_params = pickle.loads(results[i]['hyper_parameter'])
+                situation = pickle.loads(results[i]['situation'])
+                crossover = self._reader(
+                    table=self.CROSSOVERS_TABLE
+                ).select().find(search_id=results[i]['crossover_id']).get()
+                crossover_name = crossover[0]['name']
+
+                fitness_function = self._reader(
+                    table=self.FITNESS_FUNCTIONS_TABLE
+                ).select().find(search_id=results[i]['fitness_function_id']).get()
+                fitness_function_name = fitness_function[0]['name']
+                return_expt.append(expt.Experiment(
+                    experiment_id=results[i]['id'],
+                    crossover_name=crossover_name,
+                    fitness_function_name=fitness_function_name,
+                    situation=situation,
+                    hyper_params=hyper_params,
+                    mutation_rate=results[i]['mutation_rate'],
+                    cross_rate=results[i]['cross_rate'],
+                    population=results[i]['population'],
+                    elite_num=results[i]['elite_num'],
+                    start_time=results[i]['start_at'],
+                    end_time=results[i]['end_at'],
+                    execute_time=results[i]['execute_time']
+                ))
+            return return_expt
+        except HostNotFoundException:
+            raise
