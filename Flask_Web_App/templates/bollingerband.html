@@ -15,14 +15,50 @@
             <div class="card bollingerband__card">
                 <div class="card-body">
                     <main role="main" class="col-md-12">
-
+                        <div class="table-responsive">
+                            <table id="foo-table" class="table table-striped table-sm">
+                                <thead>
+                                <tr>
+                                    <th>Experiment No.</th>
+                                    <th>Simple Moving Average</th>
+                                    <th>Standard Deviation</th>
+                                    <th>Stock Data Size</th>
+                                    <th>Inclination Alpha</th>
+                                    <th>Max Fitness</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {%  for line in bollingerbands %}
+                                <tr>
+                                    <td>{{ line['experiment'].id }}</td>
+                                    <th>{{ line['experiment'].hyper_params['sma_term'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['std_term'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['last_data_num'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['inclination_alpha'] }}</th>
+                                    <td>{{ line['max_fitness'] }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </main>
                 </div>
             </div>
         </div>
     </div>
     <script>
+    // 読み込み時
+        jQuery(function($){
+            $.extend( $.fn.dataTable.defaults, {
+                language: {
+                    url: "http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json"
+                }
+            });
+            var table = $("#foo-table").DataTable();
+            table.columns.adjust();
 
+            activateNav(2);
+        });
     </script>
     <style>
     .bollingerband__base
