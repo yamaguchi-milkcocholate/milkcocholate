@@ -45,6 +45,147 @@
                 </div>
             </div>
         </div>
+        <div class="container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HE" role="button" aria-expanded="true" aria-controls="#inclination-HE">
+                           <h3 class="h3">Hyper Expansion</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HE">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HE'] %}
+                            <tr>
+                                <td>{{ line }}</td>
+                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-E" role="button" aria-expanded="true" aria-controls="#inclination-E">
+                           <h3 class="h3">Expansion</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-E">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['E'] %}
+                            <tr>
+                                <td>{{ line }}</td>
+                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-S" role="button" aria-expanded="true" aria-controls="#inclination-S">
+                           <h3 class="h3">Squeeze</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-S">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['S'] %}
+                            <tr>
+                                <td>{{ line }}</td>
+                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HS" role="button" aria-expanded="true" aria-controls="#inclination-HS">
+                           <h3 class="h3">Hyper Squeeze</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HS">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HS'] %}
+                            <tr>
+                                <td>{{ line }}</td>
+                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-F" role="button" aria-expanded="true" aria-controls="#inclination-F">
+                            <h3 class="h3">Flat</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-F">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Location</th>
+                                <th scope="col">Operation</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['F'] %}
+                            <tr>
+                                <td>{{ line }}</td>
+                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         // 読み込み時
@@ -68,7 +209,32 @@
 
     .bollingerband__card
     {
+        margin-bottom: 20px;
+    }
+
+    .bollingerband__card-last
+    {
         margin-bottom: 500px;
+    }
+
+    .card-header a
+    {
+        display:block;
+        width: 100%; /* 横幅 */
+        color: black;
+    }
+
+     /* 以下マウスを載せたときのスタイル */
+    .card-header a:hover
+    {
+        text-decoration: none;
+        color: black;
+    }
+
+    .card-header a:link
+    {
+        text-decoration: none;
+        color: black;
     }
     </style>
 {% endblock %}
