@@ -1,9 +1,11 @@
 from flask_modules.loggraph.repository import exptrepo
 from flask_modules.loggraph.repository import poprepo
 from flask_modules.exceptions.dbhost import HostNotFoundException
+from collections import OrderedDict
 
 
 class BollingerBandController:
+    HEATMAP_DEFAULT_VALUE = 10
 
     def __init__(self, host):
         self.__host = host
@@ -66,34 +68,78 @@ class BollingerBandController:
             },
         }
         """
+        axis = ['U', 'U_U', 'U_M', 'M_L', 'L_L', 'L']
+        init_dict = OrderedDict()
+        init_dict['xaxis'] = axis
+        for i in range(len(axis)):
+            init_dict[axis[i]] = dict({
+                axis[0]: self.HEATMAP_DEFAULT_VALUE,
+                axis[1]: self.HEATMAP_DEFAULT_VALUE,
+                axis[2]: self.HEATMAP_DEFAULT_VALUE,
+                axis[3]: self.HEATMAP_DEFAULT_VALUE,
+                axis[4]: self.HEATMAP_DEFAULT_VALUE,
+                axis[5]: self.HEATMAP_DEFAULT_VALUE,
+            })
         result = dict()
-        result['HE'] = dict()
-        result['E'] = dict()
-        result['F'] = dict()
-        result['S'] = dict()
-        result['HS'] = dict()
+        result['HE'] = init_dict
+        result['E'] = init_dict
+        result['F'] = init_dict
+        result['S'] = init_dict
+        result['HS'] = init_dict
         index = 0
 
         for key in situation:
             if '-H_E' in key:
                 # Hyper Expansion
-                result['HE'][self.__start_location_pattern(key.replace('-H_E', ''))] = genome[index]
+                # y: 前回, x:現在
+                y_location, x_location = self.__location_pattern(key.replace('-H_E', ''))
+                result['HE'][y_location][x_location] = genome[index]
             elif '-E' in key:
                 # Expansion
-                result['E'][self.__start_location_pattern(key.replace('-E', ''))] = genome[index]
+                # y: 前回, x:現在
+                y_location, x_location = self.__location_pattern(key.replace('-E', ''))
+                result['E'][y_location][x_location] = genome[index]
             elif '-F' in key:
                 # Flat
-                result['F'][self.__start_location_pattern(key.replace('-F', ''))] = genome[index]
+                # y: 前回, x:現在
+                y_location, x_location = self.__location_pattern(key.replace('-F', ''))
+                result['F'][y_location][x_location] = genome[index]
             elif '-S' in key:
                 # Squeeze
-                result['S'][self.__start_location_pattern(key.replace('-S', ''))] = genome[index]
+                # y: 前回, x:現在
+                y_location, x_location = self.__location_pattern(key.replace('-S', ''))
+                result['S'][y_location][x_location] = genome[index]
             elif '-H_S' in key:
                 # Hyper Squeeze
-                result['HS'][self.__start_location_pattern(key.replace('-H_S', ''))] = genome[index]
+                # y: 前回, x:現在
+                y_location, x_location = self.__location_pattern(key.replace('-H_S', ''))
+                result['HS'][y_location][x_location] = genome[index]
             else:
                 raise TypeError('invalid')
             index += 1
         return result
+
+    def __location_pattern(self, pattern):
+        """
+        前回と現在のボラティリティと終値の位置をsituationインスタンスのキーから特定する
+        :param pattern: 前回と現在の位置を特定するためのキー
+        :return: 前回の位置を現す文字列, 現在の位置を表す文字列
+        """
+        # 分岐の順番は重要! U_はU-U_を含んでしまうなど
+        if 'U_U-' in pattern:
+            return 'U_U', self.__end_location_pattern(pattern.replace('U-U_', ''))
+        elif 'U_M-' in pattern:
+            return 'U_M', self.__end_location_pattern(pattern.replace('U-M_', ''))
+        elif 'M_L-' in pattern:
+            return 'M_L', self.__end_location_pattern(pattern.replace('M-L_', ''))
+        elif 'L_L-' in pattern:
+            return 'L_L', self.__end_location_pattern(pattern.replace('L-L_', ''))
+        elif 'U-' in pattern:
+            return 'U', self.__end_location_pattern(pattern.replace('U_', ''))
+        elif 'L-' in pattern:
+            return 'L', self.__end_location_pattern(pattern.replace('L_', ''))
+        else:
+            raise TypeError('invalid')
 
     def __start_location_pattern(self, pattern):
         """
@@ -127,16 +173,16 @@ class BollingerBandController:
         """
         # 分岐の順番は重要! UはU-Uを含んでしまうなど
         if 'U_U' in pattern:
-            return '1'
+            return 'U_U'
         elif 'U_M' in pattern:
-            return '2'
+            return 'M_M'
         elif 'M_L' in pattern:
-            return '3'
+            return 'M_L'
         elif 'L_L' in pattern:
-            return '4'
+            return 'L_L'
         elif 'U' in pattern:
-            return '5'
+            return 'U'
         elif 'L' in pattern:
-            return '6'
+            return 'L'
         else:
             raise TypeError('invalid')
