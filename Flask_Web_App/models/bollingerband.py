@@ -125,42 +125,19 @@ class BollingerBandController:
         :param pattern: 前回と現在の位置を特定するためのキー
         :return: 前回の位置を現す文字列, 現在の位置を表す文字列
         """
-        # 分岐の順番は重要! U_はU-U_を含んでしまうなど
+        # 分岐の順番は重要! U-はU_U-を含んでしまうなど
         if 'U_U-' in pattern:
-            return 'U_U', self.__end_location_pattern(pattern.replace('U-U_', ''))
+            return 'U_U', self.__end_location_pattern(pattern.replace('U_U-', ''))
         elif 'U_M-' in pattern:
-            return 'U_M', self.__end_location_pattern(pattern.replace('U-M_', ''))
+            return 'U_M', self.__end_location_pattern(pattern.replace('U_M-', ''))
         elif 'M_L-' in pattern:
-            return 'M_L', self.__end_location_pattern(pattern.replace('M-L_', ''))
+            return 'M_L', self.__end_location_pattern(pattern.replace('M_L-', ''))
         elif 'L_L-' in pattern:
-            return 'L_L', self.__end_location_pattern(pattern.replace('L-L_', ''))
+            return 'L_L', self.__end_location_pattern(pattern.replace('L_L-', ''))
         elif 'U-' in pattern:
-            return 'U', self.__end_location_pattern(pattern.replace('U_', ''))
+            return 'U', self.__end_location_pattern(pattern.replace('U-', ''))
         elif 'L-' in pattern:
-            return 'L', self.__end_location_pattern(pattern.replace('L_', ''))
-        else:
-            raise TypeError('invalid')
-
-    def __start_location_pattern(self, pattern):
-        """
-        前回と現在のボラティリティと終値の位置をsituationインスタンスのキーから特定する
-        この関数では前回の位置を特定して、さらに現在の位置を特定する関数を呼ぶ。
-        :param pattern: 前回と現在の位置を特定するためのキー
-        :return: 前回と現在の位置を現す文字列(キー)
-        """
-        # 分岐の順番は重要! U_はU-U_を含んでしまうなど
-        if 'U_U-' in pattern:
-            return '1' + ' to ' + self.__end_location_pattern(pattern.replace('U-U_', ''))
-        elif 'U_M-' in pattern:
-            return '2' + ' to ' + self.__end_location_pattern(pattern.replace('U-M_', ''))
-        elif 'M_L-' in pattern:
-            return '3' + ' to ' + self.__end_location_pattern(pattern.replace('M-L_', ''))
-        elif 'L_L-' in pattern:
-            return '4' + ' to ' + self.__end_location_pattern(pattern.replace('L-L_', ''))
-        elif 'U-' in pattern:
-            return '5' + ' to ' + self.__end_location_pattern(pattern.replace('U_', ''))
-        elif 'L-' in pattern:
-            return '6' + ' to ' + self.__end_location_pattern(pattern.replace('L_', ''))
+            return 'L', self.__end_location_pattern(pattern.replace('L-', ''))
         else:
             raise TypeError('invalid')
 
@@ -175,7 +152,7 @@ class BollingerBandController:
         if 'U_U' in pattern:
             return 'U_U'
         elif 'U_M' in pattern:
-            return 'M_M'
+            return 'U_M'
         elif 'M_L' in pattern:
             return 'M_L'
         elif 'L_L' in pattern:
