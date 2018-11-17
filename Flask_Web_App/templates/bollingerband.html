@@ -55,18 +55,31 @@
                     </div>
                     <div class="card-body collapse in" id="inclination-HE">
                         <table class="table">
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HE'] %}
+                            {% if line == 'xaxis' %}
                             <thead>
                             <tr>
-                                <th scope="col">Location</th>
-                                <th scope="col">Operation</th>
+                                <th></th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HE'] %}
+                            {% else %}
                             <tr>
-                                <td>{{ line }}</td>
-                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] }}</td>
+                                <th>{{ line }}</th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] %}
+                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                {% endif %}
+                                {% endfor %}
                             </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -82,18 +95,31 @@
                     </div>
                     <div class="card-body collapse in" id="inclination-E">
                         <table class="table">
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['E'] %}
+                            {% if line == 'xaxis' %}
                             <thead>
                             <tr>
-                                <th scope="col">Location</th>
-                                <th scope="col">Operation</th>
+                                <th></th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['E'] %}
+                            {% else %}
                             <tr>
-                                <td>{{ line }}</td>
-                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] }}</td>
+                                <th>{{ line }}</th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] %}
+                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                {% endif %}
+                                {% endfor %}
                             </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -111,18 +137,31 @@
                     </div>
                     <div class="card-body collapse in" id="inclination-S">
                         <table class="table">
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['S'] %}
+                            {% if line == 'xaxis' %}
                             <thead>
                             <tr>
-                                <th scope="col">Location</th>
-                                <th scope="col">Operation</th>
+                                <th></th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['S'] %}
+                            {% else %}
                             <tr>
-                                <td>{{ line }}</td>
-                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] }}</td>
+                                <th>{{ line }}</th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] %}
+                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                {% endif %}
+                                {% endfor %}
                             </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -138,18 +177,31 @@
                     </div>
                     <div class="card-body collapse in" id="inclination-HS">
                         <table class="table">
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HS'] %}
+                            {% if line == 'xaxis' %}
                             <thead>
                             <tr>
-                                <th scope="col">Location</th>
-                                <th scope="col">Operation</th>
+                                <th></th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HS'] %}
+                            {% else %}
                             <tr>
-                                <td>{{ line }}</td>
-                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] }}</td>
+                                <th>{{ line }}</th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] %}
+                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                {% endif %}
+                                {% endfor %}
                             </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -167,18 +219,31 @@
                     </div>
                     <div class="card-body collapse in" id="inclination-F">
                         <table class="table">
+                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['F'] %}
+                            {% if line == 'xaxis' %}
                             <thead>
                             <tr>
-                                <th scope="col">Location</th>
-                                <th scope="col">Operation</th>
+                                <th></th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['F'] %}
+                            {% else %}
                             <tr>
-                                <td>{{ line }}</td>
-                                <td>{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] }}</td>
+                                <th>{{ line }}</th>
+                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] %}
+                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                {% endif %}
+                                {% endfor %}
                             </tr>
+                            {% endif %}
                             {% endfor %}
                             </tbody>
                         </table>
@@ -235,6 +300,21 @@
     {
         text-decoration: none;
         color: black;
+    }
+
+    .bollingerband-cell-buy
+    {
+        background-color: #DB524B;
+    }
+
+    .bollingerband-cell-sell
+    {
+        background-color: #029688;
+    }
+
+    .bollingerband-cell-stay
+    {
+        background-color: #737375;
     }
     </style>
 {% endblock %}
