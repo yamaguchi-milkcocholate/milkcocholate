@@ -29,7 +29,7 @@
                                 </thead>
                                 <tbody>
                                 {%  for line in bollingerbands %}
-                                <tr>
+                                <tr class="experiment-button-{{ line['experiment'].id }} experiment-style">
                                     <td>{{ line['experiment'].id }}</td>
                                     <th>{{ line['experiment'].hyper_params['sma_term'] }}</th>
                                     <th>{{ line['experiment'].hyper_params['std_term'] }}</th>
@@ -45,7 +45,8 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        {% for experiment in bollingerbands %}
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
             <div class="col-sm-6">
                 <div class="card bollingerband__card">
                     <div class="card-header" style="background-color: #fff">
@@ -54,13 +55,13 @@
                         </a>
                     </div>
                     <div class="card-body collapse in" id="inclination-HE">
-                        <table class="table">
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HE'] %}
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_patterm']['HE'] %}
                             {% if line == 'xaxis' %}
                             <thead>
                             <tr>
                                 <th></th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] %}
+                                {% for cell in experiment['max_genome']['inclination_patterm']['HE'][line] %}
                                 <th>{{ cell }}</th>
                                 {% endfor %}
                             </tr>
@@ -69,13 +70,13 @@
                             {% else %}
                             <tr>
                                 <th>{{ line }}</th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line] %}
-                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] == 1 %}
-                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
-                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] == 2 %}
-                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                {% for cell in experiment['max_genome']['inclination_patterm']['HE'][line] %}
+                                {% if experiment['max_genome']['inclination_patterm']['HE'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ experiment['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                {% elif experiment['max_genome']['inclination_patterm']['HE'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ experiment['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
                                 {% else %}
-                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
+                                <td class="bollingerband-cell-stay">{{ experiment['max_genome']['inclination_patterm']['HE'][line][cell] }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -94,13 +95,13 @@
                         </a>
                     </div>
                     <div class="card-body collapse in" id="inclination-E">
-                        <table class="table">
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['E'] %}
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_patterm']['E'] %}
                             {% if line == 'xaxis' %}
                             <thead>
                             <tr>
                                 <th></th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] %}
+                                {% for cell in experiment['max_genome']['inclination_patterm']['E'][line] %}
                                 <th>{{ cell }}</th>
                                 {% endfor %}
                             </tr>
@@ -109,13 +110,13 @@
                             {% else %}
                             <tr>
                                 <th>{{ line }}</th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['E'][line] %}
-                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] == 1 %}
-                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
-                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] == 2 %}
-                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                {% for cell in experiment['max_genome']['inclination_patterm']['E'][line] %}
+                                {% if experiment['max_genome']['inclination_patterm']['E'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ experiment['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                {% elif experiment['max_genome']['inclination_patterm']['E'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ experiment['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
                                 {% else %}
-                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
+                                <td class="bollingerband-cell-stay">{{ experiment['max_genome']['inclination_patterm']['E'][line][cell] }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -127,7 +128,7 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
             <div class="col-sm-6">
                 <div class="card bollingerband__card">
                     <div class="card-header" style="background-color: #fff">
@@ -136,13 +137,13 @@
                         </a>
                     </div>
                     <div class="card-body collapse in" id="inclination-S">
-                        <table class="table">
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['S'] %}
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_patterm']['S'] %}
                             {% if line == 'xaxis' %}
                             <thead>
                             <tr>
                                 <th></th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] %}
+                                {% for cell in experiment['max_genome']['inclination_patterm']['S'][line] %}
                                 <th>{{ cell }}</th>
                                 {% endfor %}
                             </tr>
@@ -151,13 +152,13 @@
                             {% else %}
                             <tr>
                                 <th>{{ line }}</th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['S'][line] %}
-                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] == 1 %}
-                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
-                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] == 2 %}
-                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                {% for cell in experiment['max_genome']['inclination_patterm']['S'][line] %}
+                                {% if experiment['max_genome']['inclination_patterm']['S'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ experiment['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                {% elif experiment['max_genome']['inclination_patterm']['S'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ experiment['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
                                 {% else %}
-                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
+                                <td class="bollingerband-cell-stay">{{ experiment['max_genome']['inclination_patterm']['S'][line][cell] }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -176,13 +177,13 @@
                         </a>
                     </div>
                     <div class="card-body collapse in" id="inclination-HS">
-                        <table class="table">
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['HS'] %}
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_patterm']['HS'] %}
                             {% if line == 'xaxis' %}
                             <thead>
                             <tr>
                                 <th></th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] %}
+                                {% for cell in experiment['max_genome']['inclination_patterm']['HS'][line] %}
                                 <th>{{ cell }}</th>
                                 {% endfor %}
                             </tr>
@@ -191,13 +192,13 @@
                             {% else %}
                             <tr>
                                 <th>{{ line }}</th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line] %}
-                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] == 1 %}
-                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
-                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] == 2 %}
-                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                {% for cell in experiment['max_genome']['inclination_patterm']['HS'][line] %}
+                                {% if experiment['max_genome']['inclination_patterm']['HS'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ experiment['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                {% elif experiment['max_genome']['inclination_patterm']['HS'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ experiment['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
                                 {% else %}
-                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
+                                <td class="bollingerband-cell-stay">{{ experiment['max_genome']['inclination_patterm']['HS'][line][cell] }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -209,7 +210,7 @@
                 </div>
             </div>
         </div>
-        <div class="container">
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
             <div class="col-sm-6">
                 <div class="card bollingerband__card">
                     <div class="card-header" style="background-color: #fff">
@@ -218,13 +219,13 @@
                         </a>
                     </div>
                     <div class="card-body collapse in" id="inclination-F">
-                        <table class="table">
-                            {% for line in bollingerbands[0]['max_genome']['inclination_patterm']['F'] %}
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_patterm']['F'] %}
                             {% if line == 'xaxis' %}
                             <thead>
                             <tr>
                                 <th></th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] %}
+                                {% for cell in experiment['max_genome']['inclination_patterm']['F'][line] %}
                                 <th>{{ cell }}</th>
                                 {% endfor %}
                             </tr>
@@ -233,13 +234,13 @@
                             {% else %}
                             <tr>
                                 <th>{{ line }}</th>
-                                {% for cell in bollingerbands[0]['max_genome']['inclination_patterm']['F'][line] %}
-                                {% if bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] == 1 %}
-                                <td class="bollingerband-cell-buy">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
-                                {% elif bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] == 2 %}
-                                <td class="bollingerband-cell-sell">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                {% for cell in experiment['max_genome']['inclination_patterm']['F'][line] %}
+                                {% if experiment['max_genome']['inclination_patterm']['F'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">{{ experiment['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                {% elif experiment['max_genome']['inclination_patterm']['F'][line][cell] == 2 %}
+                                <td class="bollingerband-cell-sell">{{ experiment['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
                                 {% else %}
-                                <td class="bollingerband-cell-stay">{{ bollingerbands[0]['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
+                                <td class="bollingerband-cell-stay">{{ experiment['max_genome']['inclination_patterm']['F'][line][cell] }}</td>
                                 {% endif %}
                                 {% endfor %}
                             </tr>
@@ -251,8 +252,21 @@
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
     <script>
+        function ToggleCard(experimentId)
+        {
+            var classStr = '.experiment-card-' + experimentId;
+            jQuery.when(
+                jQuery("[class^=experiment-card-]").removeClass('experiment-active').addClass('experiment-inactive')
+            ).done(function(){
+                jQuery(classStr).removeClass('experiment-inactive');
+                jQuery("[class^=experiment-button-]").removeClass('line-selected');
+                jQuery('.experiment-button-' + experimentId).addClass('line-selected');
+            });
+        }
+
         // 読み込み時
         jQuery(function($){
             $.extend( $.fn.dataTable.defaults, {
@@ -264,6 +278,15 @@
             table.columns.adjust();
 
             activateNav(2);
+            ToggleCard(1);
+        });
+
+        //テーブルの行をクリックするとき
+        jQuery("[class^=experiment-button-]").click(function(){
+            var experimentId = jQuery(this).attr('class').replace(' odd', '')
+                .replace(' even', '').replace('experiment-button-', '')
+                .replace(' experiment-style', '').replace(' line-selected');
+            ToggleCard(experimentId);
         });
     </script>
     <style>
@@ -316,5 +339,45 @@
     {
         background-color: #737375;
     }
+
+    .genome-heatmap thead td, .genome-heatmap thead th, .genome-heatmap tbody td, .genome-heatmap tbody th
+    {
+        text-align: center;
+        border: 0 !important;
+    }
+
+    .genome-heatmap tbody td
+    {
+        width: 15%;
+    }
+
+    .card-header:hover
+    {
+        background-color: #F7F7F7 !important;
+    }
+
+    .experiment-inactive
+    {
+        display: none;
+    }
+
+    .experiment-active
+    {
+        display: block;
+    }
+
+    .experiment-style:hover
+    {
+        cursor: pointer;
+        background-color: #3498DA !important;
+        color: #fff !important;
+    }
+
+    .line-selected
+    {
+        background-color: #3498DA !important;
+        color: #fff !important;
+    }
+
     </style>
 {% endblock %}
