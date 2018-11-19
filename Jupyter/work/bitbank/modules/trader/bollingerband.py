@@ -48,10 +48,20 @@ class BollingerBandTrader:
         直近のデータをロウソク足データの終値で初期化する
         """
         # listで受け取る
-        candlestick = self.__api_gateway.use_candlestick(
-            time=datetime.datetime.today().strftime("%Y%m%d"),
+        today = datetime.datetime.today()
+        yesterday = today - datetime.timedelta(days=1)
+        candlestick_today = self.__api_gateway.use_candlestick(
+            time=today.strftime("%Y%m%d"),
             candle_type=candle_type
         )['candlestick'][0]['ohlcv']
+        candlestick_yesterday = self.__api_gateway.use_candlestick(
+            time=yesterday.strftime('%Y%m%d'),
+            candle_type=candle_type
+        )['candlestick'][0]['ohlcv']
+        candlestick_yesterday.extend(candlestick_today)
+        candlestick = candlestick_yesterday
+        del candlestick_today
+        del candlestick_yesterday
         candlestick = self.dispose_candlestick(
             stock_term=self.__stock_term,
             candlestick=candlestick
@@ -124,7 +134,7 @@ class BollingerBandTrader:
         data_size = stock_term * 3 - 2
         candlestick_size = len(candlestick)
         if candlestick_size < data_size:
-            raise TypeError('candlestick has much length')
+            raise TypeError('candlestick not  much length', candlestick_size, data_size)
         # [start:stop:steps] stopは含まれない
         return candlestick[candlestick_size - data_size:candlestick_size]
 
