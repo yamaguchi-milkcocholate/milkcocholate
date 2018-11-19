@@ -24,6 +24,7 @@ class Scheduler:
         :return: Runnerクラス(定期実行で実際に実行するprocessingメソッドをもつクラスのインスタンス)
         """
         self.schedule()
+        print('end of schedule')
         return self.runner
 
     def processing(self, *args):
@@ -39,9 +40,9 @@ class Scheduler:
         スケジュールを設定
         :return:
         """
-        print('start', self.start)
+        print('start ', self.start)
         print('second', self.second)
-        print('end', self.end)
+        print('end   ', self.end)
         print()
 
         time_i = int(time.mktime(self.start.timetuple()))
