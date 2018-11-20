@@ -16,7 +16,7 @@
                 <div class="card-body">
                     <main role="main" class="col-md-12">
                         <div class="table-responsive">
-                            <table id="foo-table" class="table table-striped table-sm">
+                            <table id="foo-table" class="table table-striped table-sm" data-first="{{ bollingerbands[0]['experiment'].id }}">
                                 <thead>
                                 <tr>
                                     <th>Experiment No.</th>
@@ -278,7 +278,8 @@
             table.columns.adjust();
 
             activateNav(3);
-            ToggleCard(1);
+            // テーブルの先頭をアクティブにする
+            ToggleCard(jQuery('#foo-table').data('first'));
         });
 
         //テーブルの行をクリックするとき
