@@ -52,52 +52,79 @@ class RealTimeTest:
         取引結果を表示、記録
         """
         operation = self.__trader.operation()
-        if operation is self.BUY and self.__has_bitcoin is False:
-            last_price, time = self.__fetch_ticker()
-            self.__bitcoin_position = float(self.__yen_position / last_price)
-            self.__yen_position = 0
-            self.__has_bitcoin = True
-            print(
-                time,
-                'last price', ': {:<10}'.format(last_price),
-                'yen position', ': {:<10}'.format(self.__yen_position),
-                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
-            )
-            if self.__should_log:
-                # id以外の挿入データ
-                values = [
-                    int(last_price),
-                    int(self.__yen_position),
-                    int(self.__bitcoin_position),
-                    # 資産の合計
-                    int(last_price * self.__bitcoin_position),
-                    time
-                ]
-                self.__log_dept.give_writer_task(values=[values])
-        elif operation is self.SELL and self.__has_bitcoin is True:
-            last_price, time = self.__fetch_ticker()
-            self.__yen_position = float(self.__bitcoin_position * last_price)
-            self.__bitcoin_position = 0
-            self.__has_bitcoin = False
-            print(
-                time,
-                'last price', ': {:<10}'.format(last_price),
-                'yen position', ': {:<10}'.format(self.__yen_position),
-                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
-            )
-            if self.__should_log:
-                # id以外の挿入データ
-                values = [
-                    int(last_price),
-                    int(self.__yen_position),
-                    int(self.__bitcoin_position),
-                    # 資産の合計
-                    int(self.__yen_position),
-                    time
-                ]
-                self.__log_dept.give_writer_task(values=[values])
+        last_price, time = self.__fetch_ticker()
+        if operation is self.BUY:
+            if self.__has_bitcoin is False:
+                self.__bitcoin_position = float(self.__yen_position / last_price)
+                self.__yen_position = 0
+                self.__has_bitcoin = True
+                print(
+                    time,
+                    '       BUY',
+                    'last price', ': {:<10}'.format(last_price),
+                    'yen position', ': {:<10}'.format(self.__yen_position),
+                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                )
+                if self.__should_log:
+                    # id以外の挿入データ
+                    values = [
+                        int(last_price),
+                        int(self.__yen_position),
+                        int(self.__bitcoin_position),
+                        # 資産の合計
+                        int(last_price * self.__bitcoin_position),
+                        time
+                    ]
+                    self.__log_dept.give_writer_task(values=[values])
+            else:
+                print(
+                    time,
+                    'CANNOT BUY',
+                    'last price', ': {:<10}'.format(last_price),
+                    'yen position', ': {:<10}'.format(self.__yen_position),
+                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                )
+        elif operation is self.SELL:
+            if self.__has_bitcoin is True:
+                self.__yen_position = float(self.__bitcoin_position * last_price)
+                self.__bitcoin_position = 0
+                self.__has_bitcoin = False
+                print(
+                    time,
+                    '       SELL',
+                    'last price', ': {:<10}'.format(last_price),
+                    'yen position', ': {:<10}'.format(self.__yen_position),
+                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                )
+                if self.__should_log:
+                    # id以外の挿入データ
+                    values = [
+                        int(last_price),
+                        int(self.__yen_position),
+                        int(self.__bitcoin_position),
+                        # 資産の合計
+                        int(self.__yen_position),
+                        time
+                    ]
+                    self.__log_dept.give_writer_task(values=[values])
+            else:
+                print(
+                    time,
+                    'CANNOT SELL',
+                    'last price', ': {:<10}'.format(last_price),
+                    'yen position', ': {:<10}'.format(self.__yen_position),
+                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                )
         elif operation is self.STAY:
-            pass
+            print(
+                time,
+                '       STAY',
+                'last price', ': {:<10}'.format(last_price),
+                'yen position', ': {:<10}'.format(self.__yen_position),
+                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+            )
+        else:
+            raise TypeError('operation is invalid', operation)
 
     def __fetch_ticker(self):
         """
