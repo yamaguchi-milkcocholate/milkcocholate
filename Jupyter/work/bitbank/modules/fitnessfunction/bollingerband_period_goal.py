@@ -30,7 +30,7 @@ class BollingerBandPeriodGoal(FitnessFunction):
 
     """
     1. 標準偏差σを線形回帰(次数M)
-    2. 
+    2. 前回と現在のボラティリティーと終値の位置
     """
 
     def __init__(self, candle_type, db_dept, hyper_paras):
@@ -243,6 +243,11 @@ class BollingerBandPeriodGoal(FitnessFunction):
         return fitness
 
     def inclination(self, data_i):
+        """
+        標準偏差の傾きを調べる。ボラティリティの広がりをパターンに分ける
+        :param data_i: int
+        :return: int: 定数、傾きのパターン
+        """
         pre_data = self._data.loc[data_i - self._last_data_num + 1:data_i, 'sigma'].values
         min_price = np.amin(pre_data)
         t = pre_data - np.full_like(a=pre_data, fill_value=min_price)
@@ -272,6 +277,11 @@ class BollingerBandPeriodGoal(FitnessFunction):
         return inclination_pattern
 
     def end_position(self, data_i):
+        """
+        ボラティリティと終値の位置を調べる
+        :param data_i: int
+        :return: int 位置のパターン
+        """
         end_price = self._data.loc[data_i, 'end']
         lower_band = self._data.loc[data_i, 'lower_band']
         lower_band_double = self._data.loc[data_i, 'lower_band_double']
