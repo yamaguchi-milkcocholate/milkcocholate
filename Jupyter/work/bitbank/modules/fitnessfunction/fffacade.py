@@ -1,6 +1,6 @@
 from modules.fitnessfunction import simple_macd_params
-from modules.fitnessfunction import bollingerband_linear_end
-from modules.fitnessfunction import bollinger_band_linear_end_period_goal
+from modules.fitnessfunction import bollingerband
+from modules.fitnessfunction import bollingerband_period_goal
 
 
 class Facade:
@@ -11,8 +11,8 @@ class Facade:
     def __init__(self, candle_type):
         self._functions = [
             'simple_macd_params',
-            'bollinger_band_linear_end',
-            'bollinger_band_linear_end_period_goal',
+            'bollingerband',
+            'bollingerband_period_goal',
         ]
         self._candle_type = candle_type
 
@@ -30,13 +30,13 @@ class Facade:
                 db_dept=db_dept,
             )
         elif function_name is self._functions[1]:
-            return bollingerband_linear_end.BollingerBandLinearEnd(
+            return bollingerband.BollingerBand(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_params=hyper_params
             )
         elif function_name is self._functions[2]:
-            return bollinger_band_linear_end_period_goal.BollingerBandLinearEndPeriodGoal(
+            return bollingerband_period_goal.BollingerBandPeriodGoal(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_paras=hyper_params

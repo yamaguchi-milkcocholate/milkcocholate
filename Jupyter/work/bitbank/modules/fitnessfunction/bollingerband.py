@@ -5,7 +5,7 @@ import numpy as np
 from enum import IntEnum
 
 
-class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
+class BollingerBand(fitnessfunction.FitnessFunction):
     FITNESS_FUNCTION_ID = 2
 
     UPPER = 0
@@ -94,19 +94,19 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperation.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
                 genome=genome
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
+            if int(operation) is int(BollingerBandOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
                 bitcoin = float(yen / end_price)
                 yen = 0
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 yen = float(bitcoin * end_price)
@@ -140,14 +140,14 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperation.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
                 genome=genome
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
+            if int(operation) is int(BollingerBandOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
@@ -160,7 +160,7 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
                     int(end_price),
                     time
                 ])
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 time = self._data.loc[data_i, 'time'].strftime(str_format)
@@ -235,7 +235,7 @@ class BollingerBandLinearEnd(fitnessfunction.FitnessFunction):
             return self.LOWER
 
 
-class BollingerBandLinearEndOperation(IntEnum):
+class BollingerBandOperation(IntEnum):
     """
     bitcoinの 買い、売り、保持を示すEnum
     """

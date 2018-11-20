@@ -1,5 +1,5 @@
 from modules.feature.genofeature import Situation
-from modules.fitnessfunction.bollingerband_linear_end import BollingerBandLinearEnd
+from modules.fitnessfunction.bollingerband import BollingerBand
 from collections import OrderedDict
 
 
@@ -31,6 +31,6 @@ def bollinger_band():
                    inclination[inclination_i]
                 ] = ranges
     situation = Situation()
-    situation.set_fitness_function_id(f_id=BollingerBandLinearEnd.FITNESS_FUNCTION_ID)
+    situation.set_fitness_function_id(f_id=BollingerBand.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
     return situation

@@ -4,7 +4,7 @@ from modules.trader.functions import standard_deviation
 from modules.trader.functions import volatility
 from modules.datamanager.functions import linear_regression
 from modules.datamanager.functions import Polynomial
-from modules.fitnessfunction.bollingerband_linear_end import BollingerBandLinearEndOperation
+from modules.fitnessfunction.bollingerband import BollingerBandOperation
 from modules.db.writer import Writer
 import datetime
 import numpy as np
@@ -146,7 +146,7 @@ class BollingerBandTrader:
         self.__fetch_recent_data()
         self.__location()
         inclination_pattern = self.__inclination()
-        action = BollingerBandLinearEndOperation.operation(
+        action = BollingerBandOperation.operation(
             last_end_position=pre_location,
             end_position=self.__last_location,
             inclination_pattern=inclination_pattern,

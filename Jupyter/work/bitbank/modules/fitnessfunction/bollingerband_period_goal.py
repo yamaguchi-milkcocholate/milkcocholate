@@ -1,11 +1,11 @@
 from modules.datamanager import bollingerband
 from modules.fitnessfunction.fitnessfunction import FitnessFunction
-from modules.fitnessfunction.bollingerband_linear_end import BollingerBandLinearEndOperation
+from modules.fitnessfunction.bollingerband import BollingerBandOperation
 from modules.datamanager import functions
 import numpy as np
 
 
-class BollingerBandLinearEndPeriodGoal(FitnessFunction):
+class BollingerBandPeriodGoal(FitnessFunction):
     FITNESS_FUNCTION_ID = 3
 
     UPPER = 0
@@ -96,14 +96,14 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperation.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
                 genome=genome
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
+            if int(operation) is int(BollingerBandOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
                 bitcoin = float(yen / end_price)
@@ -116,7 +116,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                     goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                     # ポジションを初期化
                     bitcoin, yen, has_bitcoin = self.init_position()
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 yen = float(bitcoin * end_price)
@@ -161,14 +161,14 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperation.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
                 genome=genome
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
+            if int(operation) is int(BollingerBandOperation.BUY) and has_bitcoin is False:
                 has_bitcoin = True
                 end_price = self._data.loc[data_i, 'end']
                 bitcoin = float(yen / end_price)
@@ -200,7 +200,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
                         int(end_price),
                         time
                     ])
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
+            elif int(operation) is int(BollingerBandOperation.SELL) and has_bitcoin is True:
                 has_bitcoin = False
                 end_price = self._data.loc[data_i, 'end']
                 yen = float(bitcoin * end_price)
