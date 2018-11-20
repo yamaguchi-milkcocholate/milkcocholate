@@ -9,6 +9,8 @@ class BollingerBand:
 
     def __init__(self, host):
         self.__host = host
+        self.__genome = list()
+        self.__situation = list()
 
     def __call__(self):
         """
@@ -27,6 +29,9 @@ class BollingerBand:
                 el = dict()
                 el['experiment'] = experiments[i]
                 result = pop_repository.find_max_fitness_and_genome(experiment_id=experiments[i].id)
+                # テスト用に遺伝子を取り出す
+                self.__genome.append(result['genome'])
+                self.__situation.append(experiments[i].situation)
                 el['max_fitness'] = result['fitness']
                 inclination_pattern = self.__inclination_pattern(
                     genome=result['genome'],
@@ -163,3 +168,17 @@ class BollingerBand:
             return 'L'
         else:
             raise TypeError('invalid')
+
+    def get_genome(self):
+        """
+        テスト用のゲッター
+        :return: array: 全てのエリート遺伝子
+        """
+        return self.__genome
+
+    def get_situation(self):
+        """
+        テスト用のゲッター
+        :return: array: 遺伝子情報
+        """
+        return self.__situation
