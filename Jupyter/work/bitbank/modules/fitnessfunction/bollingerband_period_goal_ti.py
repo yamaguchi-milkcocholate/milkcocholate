@@ -1,12 +1,12 @@
 from modules.datamanager import bollingerband
 from modules.fitnessfunction.fitnessfunction import FitnessFunction
-from modules.fitnessfunction.bollingerband_linear_end import BollingerBandLinearEndOperation
 from modules.datamanager import functions
+from enum import IntEnum
 import numpy as np
 
 
-class BollingerBandLinearEndPeriodGoal(FitnessFunction):
-    FITNESS_FUNCTION_ID = 3
+class BollingerBandPeriodGoalTi(FitnessFunction):
+    FITNESS_FUNCTION_ID = 4
 
     UPPER = 0
     UPPER_UPPER = 1
@@ -27,10 +27,10 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
     HYPER_SQUEEZE = 4
 
     GOAL_RATE = 1.1
-
+    FITNESS_PRODUCTION = 10
     """
     1. 標準偏差σを線形回帰(次数M)
-    2. 
+    2. 前回と現在のボラティリティーと終値の位置
     """
 
     def __init__(self, candle_type, db_dept, hyper_paras):
@@ -84,7 +84,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
     def calc_result(self, **kwargs):
         """
         過去のデータから取引を行って、10%の利益率で区切りをつける
-        :return:     int              利益率10%をどのくらい達成できたか
+        :return:     int              利益率10%をどのくらい達成できたか * FITNESS_PRODUCTION * 成立した取引率
         """
         genome = kwargs['genome']
         # ポジションを初期化
@@ -93,44 +93,70 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         goal_bitcoin, goal_yen = self.init_goal(data_i=0)
         fitness = 0
         last_end_position = self.end_position(data_i=self._last_data_num - 2)
+        # 取引を試みた回数
+        tries = 0
+        # 成功した取引の回数
+        transactions = 0
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperationTi.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
-                genome=genome
+                genome=genome,
+                has_bitcoin=has_bitcoin
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
-                has_bitcoin = True
-                end_price = self._data.loc[data_i, 'end']
-                bitcoin = float(yen / end_price)
-                yen = 0
-                # 目標達成!
-                if bitcoin > goal_bitcoin:
-                    # 適応度を更新
-                    fitness = self.goal(fitness=fitness)
-                    # 目標を更新
-                    goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
-                    # ポジションを初期化
-                    bitcoin, yen, has_bitcoin = self.init_position()
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
-                has_bitcoin = False
-                end_price = self._data.loc[data_i, 'end']
-                yen = float(bitcoin * end_price)
-                bitcoin = 0
-                # 目標達成!
-                if yen > goal_yen:
-                    # 適応度を更新
-                    fitness = self.goal(fitness=fitness)
-                    # 目標を更新
-                    goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
-                    # ポジションを初期化
-                    bitcoin, yen, has_bitcoin = self.init_position()
+            if int(operation) is int(BollingerBandOperationTi.BUY):
+                tries += 1
+                if has_bitcoin is False:
+                    # 取引成功
+                    transactions += 1
+                    has_bitcoin = True
+                    end_price = self._data.loc[data_i, 'end']
+                    bitcoin = float(yen / end_price)
+                    yen = 0
+                    # 目標達成!
+                    if bitcoin > goal_bitcoin:
+                        # 適応度を更新
+                        fitness = self.goal(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                else:
+                    # 取引失敗
+                    pass
+            elif int(operation) is int(BollingerBandOperationTi.SELL):
+                tries += 1
+                if has_bitcoin is True:
+                    transactions += 1
+                    # 取引成功
+                    has_bitcoin = False
+                    end_price = self._data.loc[data_i, 'end']
+                    yen = float(bitcoin * end_price)
+                    bitcoin = 0
+                    # 目標達成!
+                    if yen > goal_yen:
+                        # 適応度を更新
+                        fitness = self.goal(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                else:
+                    # 取引失敗
+                    pass
         # 目標達成の度合いを返す(適応度)
-        print('finally', 'fitness', fitness)
+        goal_reach_num = fitness
+        fitness = int(fitness * self.FITNESS_PRODUCTION * float(transactions / tries))
+        print('finally',
+              'goal',
+              goal_reach_num,
+              'fitness',
+              fitness
+              )
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
@@ -138,7 +164,7 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         過去のデータから取引を行って、10%の利益率で区切りをつける
         記録をデータベースに保存する
         :param population_id:   int              テーブル'populations'のid
-        :return:                int              最終日の持ち分(円)
+        :return:                int              利益率10%をどのくらい達成できたか * FITNESS_PRODUCTION * 成立した取引率
         """
         insert_list = list()
         str_format = '%Y-%m-%d %H:%M:%S'
@@ -158,79 +184,98 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
             self._data.at[0, 'time'].strftime(str_format)
         ])
         last_end_position = self.end_position(data_i=self._last_data_num - 2)
+        # 取引を試みた回数
+        tries = 0
+        # 成功した取引の回数
+        transactions = 0
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
-            operation = BollingerBandLinearEndOperation.operation(
+            operation = BollingerBandOperationTi.operation(
                 last_end_position=last_end_position,
                 end_position=end_position,
                 inclination_pattern=inclination_pattern,
-                genome=genome
+                genome=genome,
+                has_bitcoin=has_bitcoin
             )
             last_end_position = end_position
-            if int(operation) is int(BollingerBandLinearEndOperation.BUY) and has_bitcoin is False:
-                has_bitcoin = True
-                end_price = self._data.loc[data_i, 'end']
-                bitcoin = float(yen / end_price)
-                yen = 0
-                # DB
-                time = self._data.loc[data_i, 'time'].strftime(str_format)
-                insert_list.append([
-                    population_id,
-                    int(bitcoin * end_price + profit),
-                    int(end_price),
-                    time
-                ])
-                # 目標達成!
-                if bitcoin > goal_bitcoin:
-                    # 適応度を更新
-                    fitness = self.goal(fitness=fitness)
-                    # 目標を更新
-                    goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
-                    # 確定利益を更新
-                    profit += (bitcoin * end_price - end_price)
-                    # ポジションを初期化
-                    bitcoin, yen, has_bitcoin = self.init_position()
+            if int(operation) is int(BollingerBandOperationTi.BUY):
+                tries += 1
+                if has_bitcoin is False:
+                    # 取引成功
+                    transactions += 1
+                    has_bitcoin = True
+                    end_price = self._data.loc[data_i, 'end']
+                    bitcoin = float(yen / end_price)
+                    yen = 0
+                    # DB
                     time = self._data.loc[data_i, 'time'].strftime(str_format)
-                    # 同じ時間で初期化後のデータを入力
-                    # 確定利益 + 1bitcoin(=終値)
                     insert_list.append([
                         population_id,
-                        int(end_price + profit),
+                        int(bitcoin * end_price + profit),
                         int(end_price),
                         time
                     ])
-            elif int(operation) is int(BollingerBandLinearEndOperation.SELL) and has_bitcoin is True:
-                has_bitcoin = False
-                end_price = self._data.loc[data_i, 'end']
-                yen = float(bitcoin * end_price)
-                bitcoin = 0
-                # DB
-                time = self._data.loc[data_i, 'time'].strftime(str_format)
-                insert_list.append([
-                    population_id,
-                    int(yen + profit),
-                    int(end_price),
-                    time
-                ])
-                # 目標達成!
-                if yen > goal_yen:
-                    # 適応度を更新
-                    fitness = self.goal(fitness=fitness)
-                    # 目標を更新
-                    goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
-                    # 確定利益を更新
-                    profit += (yen - end_price)
-                    # ポジションを初期化
-                    bitcoin, yen, has_bitcoin = self.init_position()
-                    # 同じ時間で初期化後のデータを入力
-                    # 確定利益 + 1bitcoin(=終値)
+                    # 目標達成!
+                    if bitcoin > goal_bitcoin:
+                        # 適応度を更新
+                        fitness = self.goal(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # 確定利益を更新
+                        profit += (bitcoin * end_price - end_price)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        time = self._data.loc[data_i, 'time'].strftime(str_format)
+                        # 同じ時間で初期化後のデータを入力
+                        # 確定利益 + 1bitcoin(=終値)
+                        insert_list.append([
+                            population_id,
+                            int(end_price + profit),
+                            int(end_price),
+                            time
+                        ])
+                else:
+                    # 取引失敗
+                    pass
+            elif int(operation) is int(BollingerBandOperationTi.SELL) and has_bitcoin is True:
+                tries += 1
+                if has_bitcoin is True:
+                    # 取引成功
+                    transactions += 1
+                    has_bitcoin = False
+                    end_price = self._data.loc[data_i, 'end']
+                    yen = float(bitcoin * end_price)
+                    bitcoin = 0
+                    # DB
+                    time = self._data.loc[data_i, 'time'].strftime(str_format)
                     insert_list.append([
                         population_id,
-                        int(end_price + profit),
+                        int(yen + profit),
                         int(end_price),
                         time
                     ])
+                    # 目標達成!
+                    if yen > goal_yen:
+                        # 適応度を更新
+                        fitness = self.goal(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # 確定利益を更新
+                        profit += (yen - end_price)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        # 同じ時間で初期化後のデータを入力
+                        # 確定利益 + 1bitcoin(=終値)
+                        insert_list.append([
+                            population_id,
+                            int(end_price + profit),
+                            int(end_price),
+                            time
+                        ])
+                else:
+                    # 取引失敗
+                    pass
             if len(insert_list) >= 1:
                 self._db_dept.give_writer_task(insert_list)
                 insert_list = []
@@ -239,10 +284,22 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
             self._db_dept.give_writer_task(insert_list)
         del insert_list
         # 目標達成の度合いを返す(適応度)
-        print('finally', 'fitness', fitness)
+        goal_reach_num = fitness
+        fitness = int(fitness * self.FITNESS_PRODUCTION * float(transactions / tries))
+        print('finally',
+              'goal',
+              goal_reach_num,
+              'fitness',
+              fitness
+              )
         return fitness
 
     def inclination(self, data_i):
+        """
+        標準偏差の傾きを調べる。ボラティリティの広がりをパターンに分ける
+        :param data_i: int
+        :return: int: 定数、傾きのパターン
+        """
         pre_data = self._data.loc[data_i - self._last_data_num + 1:data_i, 'sigma'].values
         min_price = np.amin(pre_data)
         t = pre_data - np.full_like(a=pre_data, fill_value=min_price)
@@ -272,6 +329,11 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         return inclination_pattern
 
     def end_position(self, data_i):
+        """
+        ボラティリティと終値の位置を調べる
+        :param data_i: int
+        :return: int 位置のパターン
+        """
         end_price = self._data.loc[data_i, 'end']
         lower_band = self._data.loc[data_i, 'lower_band']
         lower_band_double = self._data.loc[data_i, 'lower_band_double']
@@ -314,3 +376,25 @@ class BollingerBandLinearEndPeriodGoal(FitnessFunction):
         :return: float, float   ビットコインの目標値, 円の目標値
         """
         return self.INIT_BIT_COIN_AMOUNT * self.GOAL_RATE, self._data.at[data_i, 'end'] * self.GOAL_RATE
+
+
+class BollingerBandOperationTi(IntEnum):
+    """
+    bitcoinの 買い、売り、保持を示すEnum
+    """
+    BUY = 1
+    SELL = 2
+    STAY = 3
+
+    @staticmethod
+    def operation(last_end_position, end_position, inclination_pattern, genome, has_bitcoin):
+        """
+        終値、上部バンド、下部バンドから(買い,売り,保持)を決める
+        ※ 遺伝子の特徴
+        [(前回の終値位置0~5 * 1)(現在の終値位置0~5 * 6)(傾きのパターン0~4 * 36)(ビットコインを持っているか0~1 * 180)]
+        """
+        if has_bitcoin:
+            has_bitcoin = 1
+        else:
+            has_bitcoin = 0
+        return genome[last_end_position * 1 + end_position * 6 + inclination_pattern * 36 + has_bitcoin * 180]
