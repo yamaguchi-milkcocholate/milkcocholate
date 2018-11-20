@@ -74,23 +74,23 @@ class BollingerBand:
         }
         """
         axis = ['U', 'U_U', 'U_M', 'M_L', 'L_L', 'L']
-        init_dict = OrderedDict()
-        init_dict['xaxis'] = axis
-        for i in range(len(axis)):
-            init_dict[axis[i]] = dict({
-                axis[0]: self.HEATMAP_DEFAULT_VALUE,
-                axis[1]: self.HEATMAP_DEFAULT_VALUE,
-                axis[2]: self.HEATMAP_DEFAULT_VALUE,
-                axis[3]: self.HEATMAP_DEFAULT_VALUE,
-                axis[4]: self.HEATMAP_DEFAULT_VALUE,
-                axis[5]: self.HEATMAP_DEFAULT_VALUE,
-            })
         result = dict()
-        result['HE'] = init_dict
-        result['E'] = init_dict
-        result['F'] = init_dict
-        result['S'] = init_dict
-        result['HS'] = init_dict
+        patterns = list()
+        patterns.append('HE')
+        patterns.append('E')
+        patterns.append('F')
+        patterns.append('S')
+        patterns.append('HS')
+        for key in patterns:
+            result[key] = dict({
+                    'xaxis': axis,
+                    axis[0]: dict(),
+                    axis[1]: dict(),
+                    axis[2]: dict(),
+                    axis[3]: dict(),
+                    axis[4]: dict(),
+                    axis[5]: dict(),
+                })
         index = 0
 
         for key in situation:
@@ -99,29 +99,33 @@ class BollingerBand:
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-H_E', ''))
                 result['HE'][y_location][x_location] = genome[index]
+                index += 1
             elif '-E' in key:
                 # Expansion
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-E', ''))
                 result['E'][y_location][x_location] = genome[index]
+                index += 1
             elif '-F' in key:
                 # Flat
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-F', ''))
                 result['F'][y_location][x_location] = genome[index]
+                index += 1
             elif '-S' in key:
                 # Squeeze
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-S', ''))
                 result['S'][y_location][x_location] = genome[index]
+                index += 1
             elif '-H_S' in key:
                 # Hyper Squeeze
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-H_S', ''))
                 result['HS'][y_location][x_location] = genome[index]
+                index += 1
             else:
                 raise TypeError('invalid')
-            index += 1
         return result
 
     def __location_pattern(self, pattern):
