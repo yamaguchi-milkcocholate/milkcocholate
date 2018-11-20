@@ -4,7 +4,7 @@ from flask_modules.exceptions.dbhost import HostNotFoundException
 from collections import OrderedDict
 
 
-class BollingerBandController:
+class BollingerBand:
     HEATMAP_DEFAULT_VALUE = 10
 
     def __init__(self, host):
