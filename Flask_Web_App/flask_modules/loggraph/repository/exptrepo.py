@@ -98,10 +98,19 @@ class ExperimentRepository(repository.Repository):
 
     def get_bollinger_band(self):
         try:
-            bollinger_band_linear_end = 2
-            results = self._reader(
+            bollinger_band = 2
+            bollinger_band_results = self._reader(
                 table=self.EXPERIMENTS_TABLE
-            ).where(['fitness_function_id', '=', bollinger_band_linear_end]).get()
+            ).where(['fitness_function_id', '=', bollinger_band]).get()
+            bollinger_band_period_goal = 3
+            bollinger_band_period_goal_results = self._reader(
+                table=self.EXPERIMENTS_TABLE
+            ).where(['fitness_function_id', '=', bollinger_band_period_goal]).get()
+            results = bollinger_band_results
+            if len(results) is 0:
+                results = bollinger_band_period_goal_results
+            else:
+                results = results + bollinger_band_period_goal_results
             return_expt = list()
             for i in range(len(results)):
                 hyper_params = pickle.loads(results[i]['hyper_parameter'])
