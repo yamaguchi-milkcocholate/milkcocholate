@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from modules.datamanager import picker
-import numpy as np
 
 
 class FitnessFunction(ABC):
@@ -10,7 +9,7 @@ class FitnessFunction(ABC):
 
     def __init__(self, candle_type, db_dept, fitness_function_id):
         if candle_type in self.BIT_BANK_CANDLE_STICK:
-            self._candlestick = picker.Picker(candle_type).get_candlestick()
+            self._candlestick = picker.Picker(candle_type, use_of_data='training').get_candlestick()
             self._db_dept = db_dept
             self._fitness_function_id = fitness_function_id
             self._approach = None
