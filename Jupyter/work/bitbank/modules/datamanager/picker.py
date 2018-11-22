@@ -8,20 +8,26 @@ class Picker:
     pickleファイルのデータを取り出す
     """
 
-    def __init__(self, span):
-        self._candlestick = self.load_data(span)
+    def __init__(self, span, use_of_data):
+        if use_of_data == 'training':
+            self._candlestick = self.load_data(span, folder='data')
+        elif use_of_data == 'validation':
+            self._candlestick = self.load_data(span, folder='validation')
+        else:
+            raise TypeError('invalid use of data')
 
     @staticmethod
-    def load_data(span):
+    def load_data(span, folder):
         """
         取り出したデータをプロパティに持たせる
-        :param span: string ロウソク足データの時間間隔(=candle_type)  ['5min' or '15min' or '1hour']
-        :return:
+        :param span:   string ロウソク足データの時間間隔(=candle_type)  ['5min' or '15min' or '1hour']
+        :param folder: string ロウソク足データがあるフォルダー名 ['data' or 'validation']
+        :return: candlestick: pandas.DataFrame
         """
         if not (span is '5min' or span is '15min' or span is '1hour'):
             raise FileNotFoundError("'5min' or '15min' or '1hour'")
         cur = os.path.dirname(os.path.abspath(__file__))
-        files_path = os.path.abspath(cur + '/../../') + '/' + span + '/data'
+        files_path = os.path.abspath(cur + '/../../') + '/' + span + '/' + folder
 
         # 文字列なので順番はバラバラ
         files = os.listdir(files_path)
