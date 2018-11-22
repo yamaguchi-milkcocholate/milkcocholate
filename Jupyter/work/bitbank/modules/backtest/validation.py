@@ -45,9 +45,9 @@ class Validation:
         :param candle_type: string ロウソク足データの期間
         """
         # 終値と取得時間のDataFrameを読み込む
-        candle_stick = self.__fetch_candlestick(candle_type=candle_type)
+        candlestick = self.__fetch_candlestick(candle_type=candle_type)
         # Traderにデータを渡す
-        self.__trader.set_candlestick(candle_stick=candle_stick)
+        self.__trader.set_candlestick(candlestick=candlestick)
         # operation == Falseになるまでループ（ロウソク足データを使い切るまで）
         while True:
             operation = self.__trader.operation()
