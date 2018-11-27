@@ -1,5 +1,7 @@
 from modules.db.facade import Facade
 from modules.datamanager.picker import Picker
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Validation:
@@ -19,6 +21,7 @@ class Validation:
         self.__has_bitcoin = True
         self.__log_dept = None
         self.__should_log = None
+        self.__total = list()
 
     def __call__(self, candle_type, should_log=False, host=None):
         """
@@ -38,6 +41,22 @@ class Validation:
             real_time_test_dept = db_facade.select_department('realtime_tests')
             population_id = self.__trader.get_populaiton_id()
             real_time_test_dept.give_writer_task(values=[[population_id]])
+        # plot
+        plt.title('Simulation')
+        # y軸
+        plt.ylabel('Yen')
+        # position
+        total_np = np.asarray(self.__total)
+        plt.ylim([0, np.max(total_np) + 100000])
+        # BitBank
+        batbank_np = self.__candlestick.end.tail(len(total_np)).values
+        # x軸
+        x_axis = np.arange(0, len(total_np))
+        plt.xlabel('Index')
+
+        plt.plot(x_axis, total_np, label='Position')
+        plt.plot(x_axis, batbank_np, label='BitBank')
+        plt.show()
 
     def __validation(self, candle_type):
         """
@@ -46,6 +65,7 @@ class Validation:
         """
         # 終値と取得時間のDataFrameを読み込む
         candlestick = self.__fetch_candlestick(candle_type=candle_type)
+        self.__candlestick = candlestick
         # Traderにデータを渡す
         self.__trader.set_candlestick(candlestick=candlestick)
         # operation == Falseになるまでループ（ロウソク足データを使い切るまで）
@@ -77,13 +97,16 @@ class Validation:
                 self.__bitcoin_position = float(self.__yen_position / last_price)
                 self.__yen_position = 0
                 self.__has_bitcoin = True
+                total = last_price * self.__bitcoin_position
                 print(
                     time,
                     '       BUY',
                     'last price', ': {:<10}'.format(last_price),
                     'yen position', ': {:<10}'.format(self.__yen_position),
                     'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'total', ': {:<10}'.format(total),
                 )
+                self.__total.append(total)
                 if self.__should_log:
                     # id以外の挿入データ
                     values = [
@@ -96,13 +119,16 @@ class Validation:
                     ]
                     self.__log_dept.give_writer_task(values=[values])
             else:
+                total = last_price * self.__bitcoin_position
                 print(
                     time,
                     'CANNOT BUY',
                     'last price', ': {:<10}'.format(last_price),
                     'yen position', ': {:<10}'.format(self.__yen_position),
                     'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'total', ': {:<10}'.format(total)
                 )
+                self.__total.append(total)
         elif operation is self.SELL:
             if self.__has_bitcoin is True:
                 self.__yen_position = float(self.__bitcoin_position * last_price)
@@ -114,7 +140,9 @@ class Validation:
                     'last price', ': {:<10}'.format(last_price),
                     'yen position', ': {:<10}'.format(self.__yen_position),
                     'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'total', ': {:<10}'.format(self.__yen_position)
                 )
+                self.__total.append(self.__yen_position)
                 if self.__should_log:
                     # id以外の挿入データ
                     values = [
@@ -133,14 +161,22 @@ class Validation:
                     'last price', ': {:<10}'.format(last_price),
                     'yen position', ': {:<10}'.format(self.__yen_position),
                     'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'total', ': {:<10}'.format(self.__yen_position)
                 )
+                self.__total.append(self.__yen_position)
         elif operation is self.STAY:
+            if self.__yen_position > 0:
+                total = self.__yen_position
+            else:
+                total = last_price * self.__bitcoin_position
             print(
                 time,
                 '       STAY',
                 'last price', ': {:<10}'.format(last_price),
                 'yen position', ': {:<10}'.format(self.__yen_position),
                 'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                'total', ': {:<10}'.format(total)
             )
+            self.__total.append(total)
         else:
             raise TypeError('operation is invalid', operation)

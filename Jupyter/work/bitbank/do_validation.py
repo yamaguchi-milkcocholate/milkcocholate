@@ -8,8 +8,8 @@ trader = BollingerBandValidationTrader(
 )
 trader.set_genome(
     host='localhost',
-    population_id=145,
-    individual_num=15
+    population_id=161,
+    individual_num=0
 )
 
 validation = Validation(
