@@ -10,11 +10,12 @@ class BackTest:
     DEFAULT_STEPS = 3000
     DEFAULT_LOG_SPAN = 20
 
-    def __init__(self, situation, candle_type, population, mutation,
+    def __init__(self, situation, candle_type, pair, population, mutation,
                  cross, elite_num, host, fitness_function_name, crossover_name, hyper_params=None):
         """
         :param situation:                Situation 遺伝子の要素の取りうる範囲などを表す
         :param candle_type:              string    ロウソク足データの種類
+        :param pair:                     string    コインの種類
         :param population:               int       個体数
         :param mutation:                 int       突然変異のパーセンテージ
         :param cross:                    int       交叉のパーセンテージ
@@ -25,7 +26,7 @@ class BackTest:
         :param hyper_params:             dict      ハイパーパラメータ
         """
         self._db_facade = facade.Facade(host=host)
-        ff_facade = fffacade.Facade(candle_type=candle_type)
+        ff_facade = fffacade.Facade(candle_type=candle_type, pair=pair)
         c_facade = cfacade.CrossoverFacade()
         expt_logs_dept = self._db_facade.select_department('experiment_logs')
         # 適応度関数

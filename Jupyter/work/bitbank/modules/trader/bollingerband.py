@@ -33,7 +33,7 @@ class BollingerBandTrader:
     SQUEEZE = 3
     HYPER_SQUEEZE = 4
 
-    def __init__(self, stock_term, inclination_alpha, candle_type):
+    def __init__(self, stock_term, inclination_alpha, candle_type, pair='btc_jpy'):
         self.__genome = None
         self.__recent_data = None
         self.__recent_sma = None
@@ -43,7 +43,7 @@ class BollingerBandTrader:
         self.__population_id = None
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
-        self.__api_gateway = ApiGateway(pair='btc_jpy')
+        self.__api_gateway = ApiGateway(pair=pair)
         self.__initialize(candle_type=candle_type)
 
     def __initialize(self, candle_type):

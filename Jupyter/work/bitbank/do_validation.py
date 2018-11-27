@@ -18,6 +18,7 @@ validation = Validation(
 
 validation(
     candle_type='5min',
+    pair='btc',
     should_log=False,
     host=None
 )

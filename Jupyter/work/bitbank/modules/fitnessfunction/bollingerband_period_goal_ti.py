@@ -33,7 +33,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
     2. 前回と現在のボラティリティーと終値の位置
     """
 
-    def __init__(self, candle_type, db_dept, hyper_paras):
+    def __init__(self, candle_type, db_dept, hyper_paras, pair):
         """
         :param candle_type:
         :param db_dept:
@@ -43,6 +43,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             candle_type=candle_type,
             db_dept=db_dept,
             fitness_function_id=self.FITNESS_FUNCTION_ID,
+            pair=pair
         )
         self._approach = bollingerband.BollingerBand(candlestick=self._candlestick)
         self._data = self._approach(

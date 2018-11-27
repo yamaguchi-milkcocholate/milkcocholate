@@ -3,16 +3,16 @@ import sys
 import os
 import pandas as pd
 sys.path.append(os.pardir+'/../')
-from modules.datamanager import savecandledata
+from modules.datamanager import savecandlestick
 
 
 class TestGetVariable(unittest.TestCase):
 
     def setUp(self):
-        self.bar = savecandledata.SaveCandleData()
+        self.bar = savecandlestick.SaveCandlestick()
 
     def test_save_candledata(self):
-        self.bar.save_candledata("1hour", "20181001", "20181007", "btc_jpy")
+        self.bar.save_candlestick("1hour", "20181001", "20181007", "btc_jpy")
         test_list = self.bar.get_test_list()
         list_len = len(test_list)
 

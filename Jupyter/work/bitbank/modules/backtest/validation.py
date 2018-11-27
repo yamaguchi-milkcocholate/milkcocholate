@@ -23,9 +23,11 @@ class Validation:
         self.__should_log = None
         self.__total = list()
 
-    def __call__(self, candle_type, should_log=False, host=None):
+    def __call__(self, candle_type, pair, should_log=False, host=None):
         """
         取引のシミュレーションを開始する
+        :param candle_type: string
+        :param pair: string
         :param should_log: bool 記録をデータベースに保存するかどうか
         :param host:  string データベースのホスト
         """
@@ -35,7 +37,7 @@ class Validation:
             db_facade = Facade(host=host)
             self.__log_dept = db_facade.select_department('realtime_test_logs')
         # 取引シミュレーションを開始
-        self.__validation(candle_type=candle_type)
+        self.__validation(candle_type=candle_type, pair=pair)
         # 実験を記録
         if self.__should_log:
             real_time_test_dept = db_facade.select_department('realtime_tests')
@@ -58,13 +60,13 @@ class Validation:
         plt.plot(x_axis, batbank_np, label='BitBank')
         plt.show()
 
-    def __validation(self, candle_type):
+    def __validation(self, candle_type, pair):
         """
         取引シミュレーションを実行する関数
         :param candle_type: string ロウソク足データの期間
         """
         # 終値と取得時間のDataFrameを読み込む
-        candlestick = self.__fetch_candlestick(candle_type=candle_type)
+        candlestick = self.__fetch_candlestick(candle_type=candle_type, pair=pair)
         self.__candlestick = candlestick
         # Traderにデータを渡す
         self.__trader.set_candlestick(candlestick=candlestick)
@@ -77,13 +79,14 @@ class Validation:
         print('finish validation')
 
     @staticmethod
-    def __fetch_candlestick(candle_type):
+    def __fetch_candlestick(candle_type, pair):
         """
         保存してあるロウソク足データ終値のpickleファイルを読み込んで返す関数
         :param candle_type: string ロウソク足データの期間
+        :param pair: string
         :return: candlestick: pandas.DataFrame
         """
-        candlestick = Picker(span=candle_type, use_of_data='validation').get_candlestick()
+        candlestick = Picker(span=candle_type, use_of_data='validation', pair=pair).get_candlestick()
         return candlestick
 
     def __transaction_result(self, operation):

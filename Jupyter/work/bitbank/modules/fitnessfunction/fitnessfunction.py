@@ -7,9 +7,9 @@ class FitnessFunction(ABC):
     BATCH_INSERT_NUM = 20
     INIT_BIT_COIN_AMOUNT = 1
 
-    def __init__(self, candle_type, db_dept, fitness_function_id):
+    def __init__(self, candle_type, db_dept, fitness_function_id, pair):
         if candle_type in self.BIT_BANK_CANDLE_STICK:
-            self._candlestick = picker.Picker(candle_type, use_of_data='training').get_candlestick()
+            self._candlestick = picker.Picker(candle_type, use_of_data='training', pair=pair).get_candlestick()
             self._db_dept = db_dept
             self._fitness_function_id = fitness_function_id
             self._approach = None

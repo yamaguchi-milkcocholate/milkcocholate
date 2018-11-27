@@ -10,7 +10,7 @@ from modules.datamanager import picker
 class TestBollingerBand(unittest.TestCase):
 
     def setUp(self):
-        self._candlestick = picker.Picker('1hour', use_of_data='training').get_candlestick()
+        self._candlestick = picker.Picker('1hour', use_of_data='training', pair='btc').get_candlestick()
         self._bollinger_band = bollingerband.BollingerBand(
             candlestick=self._candlestick
         )

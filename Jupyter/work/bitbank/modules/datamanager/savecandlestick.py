@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 
 
-class SaveCandleData:
+class SaveCandlestick:
     """
     指定した日付のろうそく足データを取得する
     """
@@ -15,7 +15,7 @@ class SaveCandleData:
     def __init__(self):
         self.test_list = list()
 
-    def save_candledata(self, timespace, start_day, finish_day, pair, folder):
+    def save_candlestick(self, timespace, start_day, finish_day, pair, folder):
         """
         指定した日付のろうそく足データを取得する
         引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,仮想通貨の名前）

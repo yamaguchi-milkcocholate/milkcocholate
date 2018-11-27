@@ -11,7 +11,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
     ゴールデンクロスとデッドクロスになったときに全額を取引する単純な方法
     """
 
-    def __init__(self, candle_type, db_dept):
+    def __init__(self, candle_type, db_dept, pair):
         """
         :param candle_type:
         :param db_dept:
@@ -19,7 +19,8 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
         super().__init__(
             candle_type=candle_type,
             db_dept=db_dept,
-            fitness_function_id=self.FITNESS_FUNCTION_ID
+            fitness_function_id=self.FITNESS_FUNCTION_ID,
+            pair=pair
         )
         self._approach = macd.MacD(self._candlestick)
 
