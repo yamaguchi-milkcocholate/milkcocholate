@@ -12,6 +12,9 @@ import pickle
 class BollingerBandValidationTrader:
     """
     BollingerBand, BollingerBandPeriodGoalの取引を想定
+    1. インスタンス化
+    2. set_genome()で遺伝子をセット
+    3. Validationクラスに引き数で渡す
     """
     UPPER = 0
     UPPER_UPPER = 1
@@ -83,7 +86,7 @@ class BollingerBandValidationTrader:
         データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
         :return: const int 取引方針を表す定数 / False 取引シミュレーション終了時
         """
-        pre_location = self.__last_location()
+        pre_location = self.__last_location
         # 更新するデータがあるかどうかで取引シミュレーションを終了するか続けるかを決める
         if self.__can_update():
             self.fetch_recent_data()
@@ -108,6 +111,9 @@ class BollingerBandValidationTrader:
             candlestick=self.__candlestick
         )
 
+    def fetch_information(self):
+        return self.__recent_data[-1], self.__time
+
     def dispose_candlestick(self, candlestick):
         """
         テスト用にパブリックフィールドで引き数を持つ。
@@ -123,7 +129,7 @@ class BollingerBandValidationTrader:
         # DataFrameの終値と時間の列を取り出してnumpyに変換する
         candlestick_np = candlestick.end.values
         # 取り出した
-        time = candlestick.at[data_size, 'time'].strftime('%Y%m%d')
+        time = candlestick.at[self.__update_num + data_size, 'time'].strftime('%Y-%m-%d %H:%M:%S')
         # [start:stop:steps] stopは含まれない
         candlestick_np = candlestick_np[self.__update_num:self.__update_num + data_size]
         # データ更新数を増やす
