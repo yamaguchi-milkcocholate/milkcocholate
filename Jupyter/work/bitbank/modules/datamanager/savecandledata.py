@@ -15,7 +15,7 @@ class SaveCandleData:
     def __init__(self):
         self.test_list = list()
 
-    def save_candledata(self, timespace, start_day, finish_day, pair):
+    def save_candledata(self, timespace, start_day, finish_day, pair, folder):
         """
         指定した日付のろうそく足データを取得する
         引数には（時間間隔,調べたい期間の最初の日,調べたい期間の最後の日,仮想通貨の名前）
@@ -23,10 +23,11 @@ class SaveCandleData:
         :param start_day:    string   調べたい期間の開始日　 例20181007
         :param finish_day:   string   調べたい期間の終了日　 例20181009
         :param pair:         string   調べたい仮想通貨      例btc_jpy
+        :param folder:       string   保存したいフォルダー   例validation, data
         :return:
         """
 
-        save_dir = '/data/'
+        save_dir = '/' + folder + '/'
         dayformat = '%Y%m%d'
         day = datetime.datetime.strptime(start_day, dayformat)
         end_day = datetime.datetime.strptime(finish_day, dayformat)
