@@ -161,8 +161,8 @@ class MacdOperation(Enum):
     (bitcoinを)買い、売り、保持を示すEnum
     """
     BUY = 1
-    SELL = 2
-    STAY = 3
+    STAY = 2
+    SELL = 3
 
     @staticmethod
     def operation(pre_macd, pre_signal, macd, signal, has_bitcoin):

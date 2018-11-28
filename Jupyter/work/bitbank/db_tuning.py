@@ -1,6 +1,5 @@
 import pymysql.cursors
 import pickle
-import pprint
 
 
 def toggle_sell_and_stay(genome):
@@ -60,7 +59,6 @@ for population in result:
 
 sql = "UPDATE `populations` SET `genome` = %s WHERE `id` = %s;"
 for update in update_list:
-    print(update)
     try:
         connection = pymysql.connect(
             host=host,
@@ -74,8 +72,8 @@ for update in update_list:
         raise
 
     placeholder = list()
-    placeholder.append(update['id'])
     placeholder.append(pickle.dumps(update['genome']))
+    placeholder.append(update['id'])
     try:
         with connection.cursor() as cursor:
             cursor.execute(sql, placeholder)
