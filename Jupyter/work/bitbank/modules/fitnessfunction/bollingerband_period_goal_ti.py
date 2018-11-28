@@ -384,8 +384,8 @@ class BollingerBandOperationTi(IntEnum):
     bitcoinの 買い、売り、保持を示すEnum
     """
     BUY = 1
-    SELL = 2
-    STAY = 3
+    STAY = 2
+    SELL = 3
 
     @staticmethod
     def operation(last_end_position, end_position, inclination_pattern, genome, has_bitcoin):
