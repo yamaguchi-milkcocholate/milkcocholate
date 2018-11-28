@@ -6,8 +6,8 @@ import numpy as np
 
 class Validation:
     BUY = 1
-    SELL = 2
-    STAY = 3
+    STAY = 2
+    SELL = 3
     DEFAULT_BITCOIN_AMOUNT = 1
     """
     学習した遺伝子について、妥当性をチェックする
@@ -72,6 +72,7 @@ class Validation:
         self.__trader.set_candlestick(candlestick=candlestick)
         # operation == Falseになるまでループ（ロウソク足データを使い切るまで）
         while True:
+            self.__trader.fetch_has_coin(has_coin=self.__has_bitcoin)
             operation = self.__trader.operation()
             if not operation:
                 break

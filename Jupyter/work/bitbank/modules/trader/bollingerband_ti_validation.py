@@ -3,7 +3,7 @@ from modules.trader.functions import standard_deviation
 from modules.trader.functions import volatility
 from modules.datamanager.functions import linear_regression
 from modules.datamanager.functions import Polynomial
-from modules.fitnessfunction.bollingerband import BollingerBandOperation
+from modules.fitnessfunction.bollingerband_period_goal_ti import BollingerBandOperationTi
 from modules.db.writer import Writer
 import numpy as np
 import pickle
@@ -11,7 +11,7 @@ import pickle
 
 class BollingerBandValidationTrader:
     """
-    BollingerBandPeriodGoalTiの取引を想定
+    BollingerBand, BollingerBandPeriodGoalの取引を想定
     1. インスタンス化
     2. set_genome()で遺伝子をセット
     3. Validationクラスに引き数で渡す
@@ -93,11 +93,12 @@ class BollingerBandValidationTrader:
             self.fetch_recent_data()
             self.__location()
             inclination_pattern = self.__inclination()
-            action = BollingerBandOperation.operation(
+            action = BollingerBandOperationTi.operation(
                 last_end_position=pre_location,
                 end_position=self.__last_location,
                 inclination_pattern=inclination_pattern,
-                genome=self.__genome
+                genome=self.__genome,
+                has_bitcoin=self.__has_coin
             )
             return int(action)
         else:
@@ -228,8 +229,6 @@ class BollingerBandValidationTrader:
     def fetch_has_coin(self, has_coin):
         """
         Validationクラスからコインを持っているかどうかを教えてもらうための関数
-        BollingerBandPeriodGoalTiで使用するのでこちらにも追加
         :param has_coin: bool
         """
         self.__has_coin = has_coin
-
