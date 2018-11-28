@@ -12,6 +12,9 @@ import pickle
 
 
 class BollingerBandTrader:
+    """
+    BollingerBand, BollingerBandPeriodGoalの取引を想定
+    """
     UPPER = 0
     UPPER_UPPER = 1
     UPPER_MIDDLE = 2
@@ -30,7 +33,7 @@ class BollingerBandTrader:
     SQUEEZE = 3
     HYPER_SQUEEZE = 4
 
-    def __init__(self, stock_term, inclination_alpha, candle_type):
+    def __init__(self, stock_term, inclination_alpha, candle_type, pair='btc_jpy'):
         self.__genome = None
         self.__recent_data = None
         self.__recent_sma = None
@@ -40,7 +43,7 @@ class BollingerBandTrader:
         self.__population_id = None
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
-        self.__api_gateway = ApiGateway(pair='btc_jpy')
+        self.__api_gateway = ApiGateway(pair=pair)
         self.__initialize(candle_type=candle_type)
 
     def __initialize(self, candle_type):
@@ -128,19 +131,20 @@ class BollingerBandTrader:
         一日のロウソク足データから使うデータのみを取り出す関数
         :param stock_term:
         :param candlestick:
-        :return:
+        :return: 計算に必要な部分のロウソク足データ
         """
         # 単純移動平均線 + 標準偏差 で(期間 - 1) * 2 を余分に使う
         data_size = stock_term * 3 - 2
         candlestick_size = len(candlestick)
         if candlestick_size < data_size:
-            raise TypeError('candlestick not  much length', candlestick_size, data_size)
+            raise TypeError('candlestick not have much length', candlestick_size, data_size)
         # [start:stop:steps] stopは含まれない
         return candlestick[candlestick_size - data_size:candlestick_size]
 
     def operation(self):
         """
         データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
+        :return: const int 取引方針をあらわす定数
         """
         pre_location = self.__last_location
         self.__fetch_recent_data()

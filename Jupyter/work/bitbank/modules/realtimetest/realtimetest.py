@@ -6,8 +6,8 @@ import datetime
 
 class RealTimeTest:
     BUY = 1
-    SELL = 2
-    STAY = 3
+    STAY = 2
+    SELL = 3
     DEFALT_BITCOIN_AMOUNT = 1
     """
     1. Schedulerインスタンスを持つ

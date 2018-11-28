@@ -10,7 +10,7 @@ from modules.datamanager import picker
 class TestBollingerBand(unittest.TestCase):
 
     def setUp(self):
-        self._candlestick = picker.Picker('1hour').get_candlestick()
+        self._candlestick = picker.Picker('1hour', use_of_data='training', pair='btc').get_candlestick()
         self._bollinger_band = bollingerband.BollingerBand(
             candlestick=self._candlestick
         )
@@ -18,7 +18,6 @@ class TestBollingerBand(unittest.TestCase):
     def test_bollinger_band(self):
         data = self._bollinger_band(
             sma_term=10,
-            volatility_term=10
         )
         # print(data)
         # pandas.DataFrame データ型はfloat32

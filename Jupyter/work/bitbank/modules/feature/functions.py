@@ -103,19 +103,31 @@ def bollinger_band_ti():
     bitcoin.append('Y')
     bitcoin.append('B')
 
-    ranges = (1, 3)
+    # 買い or 保持
+    yen_ranges = (1, 2)
+    # 売り or 保持
+    coin_ranges = (2, 3)
     situation_dict = OrderedDict()
 
-    for bitcoin_i in range(len(bitcoin)):
-        for inclination_i in range(len(inclination)):
-            for cur_i in range(len(end_position)):
-                for pre_i in range(len(end_position)):
-                    situation_dict[
-                       end_position[pre_i] + '-' +
-                       end_position[cur_i] + '-' +
-                       inclination[inclination_i] + '-' +
-                       bitcoin[bitcoin_i]
-                    ] = ranges
+    for inclination_i in range(len(inclination)):
+        for cur_i in range(len(end_position)):
+            for pre_i in range(len(end_position)):
+                situation_dict[
+                   end_position[pre_i] + '-' +
+                   end_position[cur_i] + '-' +
+                   inclination[inclination_i] + '-' +
+                   bitcoin[0]
+                ] = yen_ranges
+
+    for inclination_i in range(len(inclination)):
+        for cur_i in range(len(end_position)):
+            for pre_i in range(len(end_position)):
+                situation_dict[
+                   end_position[pre_i] + '-' +
+                   end_position[cur_i] + '-' +
+                   inclination[inclination_i] + '-' +
+                   bitcoin[1]
+                ] = coin_ranges
     situation = Situation()
     situation.set_fitness_function_id(f_id=BollingerBandPeriodGoalTi.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)

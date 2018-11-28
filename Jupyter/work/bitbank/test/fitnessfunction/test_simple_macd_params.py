@@ -10,7 +10,7 @@ from modules.db import facade
 class TestSimpleMacdParams(unittest.TestCase):
 
     def setUp(self):
-        ff_facade = fffacade.Facade(candle_type='1hour')
+        ff_facade = fffacade.Facade(candle_type='1hour', pair='btc')
         db_facade = facade.Facade(host='localhost')
         db_dept = db_facade.select_department(table='experiment_logs')
         self._fitness_function = ff_facade.select_department(

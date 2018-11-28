@@ -20,6 +20,7 @@ hyper_params['inclination_alpha'] = 1000
 
 back_test = backtest.BackTest(situation=situation,
                               candle_type=candle_type,
+                              pair='btc',
                               population=population,
                               mutation=mutation,
                               cross=cross,
