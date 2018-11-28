@@ -41,6 +41,7 @@ def experiments():
         repository = exptrepo.ExperimentRepository(host=host)
         experiment_list = repository.get_experiments()
     except HostNotFoundException:
+        del session['host']
         return render_template('connection.html', has_error=host)
     return render_template('experiments.html', experiments=experiment_list)
 
@@ -58,6 +59,7 @@ def populations():
         repository = exptrepo.ExperimentRepository(host=host)
         experiment = repository.get_experiment(experiment_id=experiment_id)
     except HostNotFoundException:
+        del session['host']
         return render_template('connection.html', has_error=host)
     return render_template('populations.html', populations=population_list, experiment=experiment)
 
@@ -75,6 +77,7 @@ def graph():
         repository = poprepo.PopulationRepository(host=host)
         population = repository.get_population(population_id=population_id)
     except HostNotFoundException:
+        del session['host']
         return render_template('connection.html', has_error=host)
     return render_template('graph.html', log_graph=log_graph, population=population)
 
@@ -90,6 +93,7 @@ def bollingerband():
         bollingerbands = bollingerband_controller()
         return render_template('bollingerband.html', bollingerbands=bollingerbands)
     except HostNotFoundException:
+        del session['host']
         return render_template('connection.html', has_error=host)
 
 
