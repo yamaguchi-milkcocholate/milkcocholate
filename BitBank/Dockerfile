@@ -13,4 +13,3 @@ EXPOSE 10080
 COPY . /home/bitbank/
 RUN cd /home/bitbank/ && pwd && ls
 ENTRYPOINT python /home/bitbank/bitbank.py
-
