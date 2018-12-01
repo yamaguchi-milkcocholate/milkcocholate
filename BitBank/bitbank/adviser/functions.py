@@ -3,10 +3,10 @@ import numpy as np
 
 def simple_moving_average(data, term):
     """
-    後ろ順で引き数のデータ長の単純移動平均線を返す関数
-    :param data: numpy
-    :param term: int
-    :return:     numpy
+    dataの時系列で新しい順に（後ろから）termの期間の単純移動平均線を返す関数
+    :param data: array like 時系列順のデータ
+    :param term: int   期間
+    :return:     numpy 単純移動平均線のリスト
     """
     average_list = list()
     start = term - 1
@@ -19,10 +19,10 @@ def simple_moving_average(data, term):
 
 def standard_deviation(data, term):
     """
-    後ろ順で引き数のデータ長の標準偏差を返す
-    :param data:
-    :param term:
-    :return: numpy
+    dataの時系列で新しい順に（後ろから）termの期間の標準偏差を返す関数
+    :param data: numpy データ(単純移動平均のリスト)
+    :param term: int   期間
+    :return:     numpy 標準偏差のリスト
     """
     std_list = list()
     start = term - 1
