@@ -6,11 +6,13 @@ class ApiGateway:
     BitBankのAPIをたたいて情報を取り出すクラス
     """
 
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key=None, api_secret=None):
         self.__pub = python_bitbankcc.public()
-        self.__pri = python_bitbankcc.private(
-            api_key=api_key, api_secret=api_secret
-        )
+        self.__pri = None
+        if api_key is not  None and api_secret is not None:
+            self.__pri = python_bitbankcc.private(
+                api_key=api_key, api_secret=api_secret
+            )
 
     def use_ticker(self, pair):
         """
@@ -72,6 +74,8 @@ class ApiGateway:
             "status": "string"
           }
         """
+        if self.__pri is None:
+            raise Exception('Private API is closed.')
         return self.__pri.order(
             pair=pair,
             price=price,
@@ -100,6 +104,8 @@ class ApiGateway:
             "status": "string"
           }
         """
+        if self.__pri is None:
+            raise Exception('Private API is closed.')
         return self.__pri.cancel_order(
             pair=pair,
             order_id=order_id
@@ -129,6 +135,8 @@ class ApiGateway:
             ]
           }
         """
+        if self.__pri is None:
+            raise Exception('Private API is closed.')
         return self.__pri.get_orders_info(
             pair=pair,
             order_ids=order_ids
