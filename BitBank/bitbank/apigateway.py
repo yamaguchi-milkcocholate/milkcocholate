@@ -141,3 +141,24 @@ class ApiGateway:
             pair=pair,
             order_ids=order_ids
         )
+
+    def use_asset(self):
+        """
+        BitBankのアセット
+        :return: dict アセットの一覧
+        {
+            "assets": [
+              {
+                "asset": "string",
+                "amount_precision": 0,
+                "onhand_amount": "string",
+                "locked_amount": "string",
+                "free_amount": "string",
+                "withdrawal_fee": "string"
+              }
+            ]
+          }
+        """
+        if self.__pri is None:
+            raise Exception('Private API is closed.')
+        return self.__pri.get_asset()

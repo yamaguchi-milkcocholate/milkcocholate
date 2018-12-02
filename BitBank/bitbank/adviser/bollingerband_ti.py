@@ -153,7 +153,7 @@ class BollingerBandTiAdviser:
     def operation(self, genome, has_coin):
         """
         データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
-        :return: const int 取引方針をあらわす定数
+        :return: const int 取引方針をあらわす定数, float　最新の価格
         """
         pre_location = self.__last_location
         self.fetch_recent_data()
@@ -166,7 +166,7 @@ class BollingerBandTiAdviser:
             genome=genome,
             has_coin=has_coin
         )
-        return action
+        return action, self.__recent_data[-1]
 
     def fetch_recent_data(self):
         """

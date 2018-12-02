@@ -1,10 +1,8 @@
-import python_bitbankcc
 import pymysql.cursors
 import pickle
 from pytz import timezone
 from datetime import datetime
 from bitbank.exceptions.schedcancel import SchedulerCancelException
-from bitbank.security import Security
 from bitbank.apigateway import ApiGateway
 from bitbank.order import Order
 
@@ -19,6 +17,8 @@ class Bot:
     DB = 'milkcocholate'
     CHARSET = 'utf8'
 
+    DEFAULT_TYPE = 'market'
+
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
         :param host:          string          データベースのホスト
@@ -32,15 +32,118 @@ class Bot:
         self.__host = host
         self.__adviser = adviser
         self.__pair = pair
+        self.__coin = pair.slice('_')[0]
+        self.__yen = pair.slice('_')[1]
         self.__api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
         self.order_ids = list()
         self.genome = None
-        self.__yen_position = None
-        self.__coin_position = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
 
     def __call__(self):
-        pass
+        # 注文の情報を確認
+        orders = self.fetch_orders()
+
+        # 注文があった場合
+        if orders is not False:
+            # 約定していない注文をキャンセル(その後リストから削除)。成立していればリストから削除
+            for order in orders:
+                # 約定注文
+                if order['status'] == 'FULLY_FILLED':
+                    # DBへ書き込む
+                    self.__insert_filled_order(
+                        order_id=order['order_id'],
+                        average_price=order['average_price'],
+                        filled_at=self.__now()
+                    )
+                    # リストから削除
+                    self.order_ids.remove(order['order_id'])
+                # 注文中
+                else:
+                    # DBへ書き込む
+                    self.__insert_canceled_order(
+                        order_id=order['order_id'],
+                        average_price=order['average_price'],
+                        remaining_amount=order['remaining_amount'],
+                        executed_amount=order['executed_amount'],
+                        status=order['status'],
+                        canceled_at=self.__now()
+                    )
+                    self.order_ids.remove(order['order_id'])
+        # アセットを読み込む
+        assets_free_amount = self.fetch_asset()
+        print(self.__now() + '   ', end='')
+        for key in assets_free_amount:
+            print(key + ': ' + assets_free_amount[key] + '    ', end='')
+        print()
+
+        # 日本円があるとき、新規注文する
+        if assets_free_amount[self.__yen] > 0:
+            operation, price = self.__adviser.operation(
+                genome=self.genome,
+                has_coin=False
+            )
+            # STAYではないとき
+            if operation is not self.STAY:
+                # 新規注文
+                result = self.new_orders(
+                    price=price,
+                    amount=assets_free_amount[self.__yen],
+                    side=self.__operation_to_side(operation=operation),
+                    order_type=self.DEFAULT_TYPE
+                )
+                # DBへ書き込み
+                self.__insert_order(
+                    order_id=result.order_id,
+                    pair=result.pair,
+                    side=result.side,
+                    type=result.type,
+                    price=result.price,
+                    amount=result.start_amount,
+                    ordered_at=result.ordered_at
+                )
+                self.order_ids.append(result.order_id)
+                print(result.ordered_at + '   ' + self.__operation_to_side(operation=operation)
+                      + ' ' + result.start_amount + ' ' + result.price)
+            else:
+                print(self.__now() + '   ' + 'stay')
+
+        # コインがあるとき、新規注文する
+        if assets_free_amount[self.__coin] > 0:
+            operation, price = self.__adviser.operation(
+                genome=self.genome,
+                has_coin=True
+            )
+            # STAYではないとき
+            if operation is not self.STAY:
+                # 新規注文
+                result = self.new_orders(
+                    price=price,
+                    amount=assets_free_amount[self.__coin],
+                    side=self.__operation_to_side(operation=operation),
+                    order_type=self.DEFAULT_TYPE
+                )
+
+                # DBへ書き込み
+                self.__insert_order(
+                    order_id=result.order_id,
+                    pair=result.pair,
+                    side=result.side,
+                    type=result.type,
+                    price=result.price,
+                    amount=result.start_amount,
+                    ordered_at=result.ordered_at
+                )
+                self.order_ids.append(result.order_id)
+                print(result.ordered_at + '   ' + self.__operation_to_side(operation=operation)
+                      + ' ' + result.start_amount + ' ' + result.price)
+            else:
+                print(self.__now() + '   ' + 'stay')
+
+    def __operation_to_side(self, operation):
+        if operation is self.BUY:
+            return 'buy'
+        elif operation is self.SELL:
+            return 'sell'
 
     def __load_genome(self, population_id, genome_id):
         """
@@ -64,6 +167,20 @@ class Bot:
         with connection.cursor() as cursor:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
+
+    def fetch_asset(self):
+        """
+        アセットの利用可能な量を読み込む
+        :return: dict 利用可能な量
+        """
+        results = self.__api_gateway.use_asset()
+        assets = dict()
+        for result in results:
+            if result['asset'] == self.__coin:
+                assets[self.__coin] = result['free_amount']
+            elif result['asset'] == self.__yen:
+                assets[self.__yen] = result['free_amount']
+        return assets
 
     def new_orders(self, price, amount, side, order_type):
         """

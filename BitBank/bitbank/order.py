@@ -5,7 +5,7 @@ class Order:
                  remaining_amount, executed_amount,
                  average_price, ordered_at, status
                  ):
-        self.id = order_id
+        self.order_id = order_id
         self.pair = pair
         self.side = side
         self.type = type
