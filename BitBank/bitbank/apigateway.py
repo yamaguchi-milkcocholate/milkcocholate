@@ -131,7 +131,7 @@ class ApiGateway:
                 "average_price": "string",
                 "ordered_at": 0,
                 "status": "string"
-              }
+              },
             ]
           }
         """
