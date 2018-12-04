@@ -15,7 +15,7 @@ class SampleRunner:
 
 
 if __name__ == '__main__':
-    scheduler = Scheduler(runner=SampleRunner)
+    scheduler = Scheduler(runner=SampleRunner())
     print('Scheduler start')
     scheduler()
     print('Scheduler finish')
