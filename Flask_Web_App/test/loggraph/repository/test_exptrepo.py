@@ -13,13 +13,13 @@ class TestExperimentRepository(unittest.TestCase):
 
     def test_get_experiments(self):
         result = self._repository.get_experiments()
-        for item in result:
-            pprint.pprint(vars(item))
 
     def test_get_experiment(self):
-        result = self._repository.get_experiment(experiment_id=1)
-        self.assertEqual(1, result.id)
-        self.assertEqual(410, result.execute_time)
+        result = self._repository.get_experiment(experiment_id=12)
+
+    def test_get_bollingerband_ti(self):
+        result = self._repository.get_bollingerband_ti()
+        print(len(result))
 
 
 if __name__ == '__main__':

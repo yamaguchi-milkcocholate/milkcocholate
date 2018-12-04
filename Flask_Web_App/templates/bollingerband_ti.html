@@ -1,0 +1,593 @@
+{% extends"base/base.html" %}
+{% block main %}
+    <div class="row bollingerband__base">
+        <div class="container">
+            <h2 class="h2">
+                Bollinger Band
+                <a href="javascript:history.back();">
+                    <button type="button" class="btn btn-primary">
+                    戻る
+                    </button>
+                </a>
+            </h2>
+        </div>
+        <div class="container">
+            <div class="card bollingerband__card">
+                <div class="card-body">
+                    <main role="main" class="col-md-12">
+                        <div class="table-responsive">
+                            <table id="foo-table" class="table table-striped table-sm" data-first="{{ bollingerbands[0]['experiment'].id }}">
+                                <thead>
+                                <tr>
+                                    <th>Experiment No.</th>
+                                    <th>Coin</th>
+                                    <th>Simple Moving Average</th>
+                                    <th>Standard Deviation</th>
+                                    <th>Stock Data Size</th>
+                                    <th>Inclination Alpha</th>
+                                    <th>Max Fitness</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {%  for line in bollingerbands %}
+                                <tr class="experiment-button-{{ line['experiment'].id }} experiment-style">
+                                    <td>{{ line['experiment'].id }}</td>
+                                    <td>{{ line['experiment'].coin }}</td>
+                                    <th>{{ line['experiment'].hyper_params['sma_term'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['std_term'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['last_data_num'] }}</th>
+                                    <th>{{ line['experiment'].hyper_params['inclination_alpha'] }}</th>
+                                    <td>{{ line['max_fitness'] }}</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+        {% for experiment in bollingerbands %}
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HE" role="button" aria-expanded="true" aria-controls="#inclination-HE">
+                           <h3 class="h3">Hyper Expansion (Yen)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HE">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['Y']['HE'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['HE'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['HE'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['Y']['HE'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['Y']['HE'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-E" role="button" aria-expanded="true" aria-controls="#inclination-E">
+                           <h3 class="h3">Expansion (Yen)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-E">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['Y']['E'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['E'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['E'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['Y']['E'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['Y']['E'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-S" role="button" aria-expanded="true" aria-controls="#inclination-S">
+                           <h3 class="h3">Squeeze (Yen)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-S">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['Y']['S'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['S'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['S'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['Y']['S'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['Y']['S'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HS" role="button" aria-expanded="true" aria-controls="#inclination-HS">
+                           <h3 class="h3">Hyper Squeeze (Yen)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HS">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['Y']['HS'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['HS'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['HS'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['Y']['HS'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['Y']['HS'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-F" role="button" aria-expanded="true" aria-controls="#inclination-F">
+                            <h3 class="h3">Flat (Yen)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-F">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['Y']['F'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['F'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['Y']['F'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['Y']['F'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['Y']['F'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HE" role="button" aria-expanded="true" aria-controls="#inclination-HE">
+                           <h3 class="h3">Hyper Expansion (Coin)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HE">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['B']['HE'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['HE'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['HE'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['B']['HE'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['B']['HE'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-E" role="button" aria-expanded="true" aria-controls="#inclination-E">
+                           <h3 class="h3">Expansion (Coin)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-E">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['B']['E'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['E'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['E'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['B']['E'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['B']['E'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-S" role="button" aria-expanded="true" aria-controls="#inclination-S">
+                           <h3 class="h3">Squeeze (Coin)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-S">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['B']['S'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['S'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['S'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['B']['S'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['B']['S'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-HS" role="button" aria-expanded="true" aria-controls="#inclination-HS">
+                           <h3 class="h3">Hyper Squeeze (Coin)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-HS">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['B']['HS'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['HS'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['HS'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['B']['HS'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['B']['HS'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="experiment-card-{{ experiment['experiment'].id }} container">
+            <div class="col-sm-6">
+                <div class="card bollingerband__card">
+                    <div class="card-header" style="background-color: #fff">
+                        <a class="" data-toggle="collapse" href="#inclination-F" role="button" aria-expanded="true" aria-controls="#inclination-F">
+                            <h3 class="h3">Flat (Coin)</h3>
+                        </a>
+                    </div>
+                    <div class="card-body collapse in" id="inclination-F">
+                        <table class="table genome-heatmap">
+                            {% for line in experiment['max_genome']['inclination_pattern']['B']['F'] %}
+                            {% if line == 'xaxis' %}
+                            <thead>
+                            <tr>
+                                <th>n-1\n</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['F'][line] %}
+                                <th>{{ cell }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% else %}
+                            <tr>
+                                <th>{{ line }}</th>
+                                {% for cell in experiment['max_genome']['inclination_pattern']['B']['F'][line] %}
+                                {% if experiment['max_genome']['inclination_pattern']['B']['F'][line][cell] == 1 %}
+                                <td class="bollingerband-cell-buy">buy</td>
+                                {% elif experiment['max_genome']['inclination_pattern']['B']['F'][line][cell] == 3 %}
+                                <td class="bollingerband-cell-sell">sell</td>
+                                {% else %}
+                                <td class="bollingerband-cell-stay">stay</td>
+                                {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        function ToggleCard(experimentId)
+        {
+            var classStr = '.experiment-card-' + experimentId;
+            jQuery.when(
+                jQuery("[class^=experiment-card-]").removeClass('experiment-active').addClass('experiment-inactive')
+            ).done(function(){
+                jQuery(classStr).removeClass('experiment-inactive');
+                jQuery("[class^=experiment-button-]").removeClass('line-selected');
+                jQuery('.experiment-button-' + experimentId).addClass('line-selected');
+            });
+        }
+
+        // 読み込み時
+        jQuery(function($){
+            $.extend( $.fn.dataTable.defaults, {
+                language: {
+                    url: "http://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json"
+                }
+            });
+            var table = $("#foo-table").DataTable();
+            table.columns.adjust();
+
+            activateNav(4);
+            // テーブルの先頭をアクティブにする
+            ToggleCard(jQuery('#foo-table').data('first'));
+        });
+
+        //テーブルの行をクリックするとき
+        jQuery("[class^=experiment-button-]").click(function(){
+            var experimentId = jQuery(this).attr('class').replace(' odd', '')
+                .replace(' even', '').replace('experiment-button-', '')
+                .replace(' experiment-style', '').replace(' line-selected');
+            ToggleCard(experimentId);
+        });
+    </script>
+    <style>
+    .bollingerband__base
+    {
+        background-color: #F7F7F7;
+    }
+
+    .bollingerband__card
+    {
+        margin-bottom: 20px;
+    }
+
+    .bollingerband__card-last
+    {
+        margin-bottom: 500px;
+    }
+
+    .card-header a
+    {
+        display:block;
+        width: 100%; /* 横幅 */
+        color: black;
+    }
+
+     /* 以下マウスを載せたときのスタイル */
+    .card-header a:hover
+    {
+        text-decoration: none;
+        color: black;
+    }
+
+    .card-header a:link
+    {
+        text-decoration: none;
+        color: black;
+    }
+
+    .bollingerband-cell-buy
+    {
+        background-color: #DB524B;
+    }
+
+    .bollingerband-cell-sell
+    {
+        background-color: #029688;
+    }
+
+    .bollingerband-cell-stay
+    {
+        background-color: #737375;
+    }
+
+    .genome-heatmap thead td, .genome-heatmap thead th, .genome-heatmap tbody td, .genome-heatmap tbody th
+    {
+        text-align: center;
+        border: 0 !important;
+    }
+
+    .genome-heatmap tbody td
+    {
+        width: 15%;
+    }
+
+    .card-header:hover
+    {
+        background-color: #F7F7F7 !important;
+    }
+
+    .experiment-inactive
+    {
+        display: none;
+    }
+
+    .experiment-active
+    {
+        display: block;
+    }
+
+    .experiment-style:hover
+    {
+        cursor: pointer;
+        background-color: #3498DA !important;
+        color: #fff !important;
+    }
+
+    .line-selected
+    {
+        background-color: #3498DA !important;
+        color: #fff !important;
+    }
+
+    </style>
+{% endblock %}
