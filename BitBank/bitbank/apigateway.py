@@ -9,7 +9,7 @@ class ApiGateway:
     def __init__(self, api_key=None, api_secret=None):
         self.__pub = python_bitbankcc.public()
         self.__pri = None
-        if api_key is not  None and api_secret is not None:
+        if api_key is not None and api_secret is not None:
             self.__pri = python_bitbankcc.private(
                 api_key=api_key, api_secret=api_secret
             )
