@@ -81,7 +81,7 @@ class BollingerBandTiAdviser:
         # 計算に使うデータはnumpyに変換
         self.__recent_data = np.asarray(
             a=data_list,
-            dtype=np.int32
+            dtype=np.float32
         )
         # 終値の位置を求める
         self.__location()
