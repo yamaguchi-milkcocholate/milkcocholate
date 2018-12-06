@@ -5,6 +5,7 @@ from datetime import datetime
 from bitbank.exceptions.schedcancel import SchedulerCancelException
 from bitbank.apigateway import ApiGateway
 from bitbank.order import Order
+from bitbank.line import Line
 
 
 class Bot:
@@ -38,6 +39,7 @@ class Bot:
         self.order_ids = list()
         self.genome = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
+        self.__line = Line()
 
     def __call__(self):
         # 注文の情報を確認
@@ -191,16 +193,18 @@ class Bot:
         :param order_type: string
         :return: bitbank.order.Order 注文情報
         """
-        result = self.__api_gateway.new_order(
-            pair=self.__pair,
-            price=price,
-            amount=amount,
-            side=side,
-            order_type=order_type
-        )
-        if result['order_id'] is None:
+        try:
+            result = self.__api_gateway.new_order(
+                pair=self.__pair,
+                price=price,
+                amount=amount,
+                side=side,
+                order_type=order_type
+            )
+            message = self.__new_order_message(result=result)
+        except Exception as e:
+            print(e)
             raise SchedulerCancelException('Fail to order')
-
         # DBへ書き込む
         self.__insert_order(
             order_id=result['order_id'],
@@ -372,7 +376,7 @@ class Bot:
         except pymysql.err.OperationalError:
             raise SchedulerCancelException('Fail to insert canceled order in connecting DB')
         sql = "INSERT INTO `canceled_orders` " \
-              "(`order_id`, `average_price`,  `remaining_amount`, `executed_amount`, `status`, `canceled_at`) " \
+              "(`order_id`      , `average_price`,  `remaining_amount`, `executed_amount`, `status`, `canceled_at`) " \
               "VALUES (%s, %s, %s, %s, %s, %s);"
         placeholder = [
             order_id,
@@ -397,3 +401,52 @@ class Bot:
     def __now():
         return datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H%M%S')
 
+    def __new_order_message(self, result):
+        side = self.__side_to_japanese(side=result['side'])
+        status = self.__status_to_japanese(status=result['status'])
+        message = "新規注文を行いました。\n" \
+                  "" + result['pair'] + " " + side + "注文 " + status + "\n" \
+                  "注文ID: " + result['order_id'] + "\n" \
+                  "時刻: " + result['ordered_at'] + "\n" \
+                  "価格: " + result['price'] + "\n" \
+                  "数量: " + result['start_amount']
+        message.replace('n', '%0D%0A')
+        self.__line(message=message)
+
+    def __cancel_order_message(self, result):
+        side = self.__side_to_japanese(side=result['side'])
+        status = self.__status_to_japanese(status=result['status'])
+        message = "注文を取り消しました。\n" \
+                  "" + result['pair'] + " " + side + "注文 " + status + "\n" \
+                  "注文ID: " + result['order_id'] + "\n" \
+                  "時刻: " + self.__now() + "\n" \
+                  "価格: " + result['price'] + "\n" \
+                  "平均価格: " + result['average_price'] + "\n" \
+                  "数量: " + result['start_amount'] + "\n" \
+                  "約定数量: " + result['executed_amount'] + "\n"
+        message.replace('n', '%0D%0A')
+        self.__line(message=message)
+
+    @staticmethod
+    def __side_to_japanese(side):
+        if side == 'buy':
+            japanese = '買い'
+        else:
+            japanese = '売り'
+        return japanese
+
+    @staticmethod
+    def __status_to_japanese(status):
+        if status == 'UNFILLED':
+            japanese = '注文中'
+        elif status == 'PARTIALLY_FILLED':
+            japanese = '注文中(一部約定)'
+        elif status == 'FULLY_FILLED':
+            japanese = '約定済み'
+        elif status == 'CANCELED_UNFILLED':
+            japanese = '取消済'
+        elif status == 'CANCELED_PARTIALLY_FILLED':
+            japanese = '取消済(一部約定)'
+        else:
+            japanese = None
+        return japanese
