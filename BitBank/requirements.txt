@@ -4,3 +4,4 @@ datetime
 numpy
 urllib3
 pandas
+line-bot-sdk
