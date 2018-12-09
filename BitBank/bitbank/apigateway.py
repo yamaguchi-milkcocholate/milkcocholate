@@ -78,8 +78,8 @@ class ApiGateway:
             raise Exception('Private API is closed.')
         return self.__pri.order(
             pair=pair,
-            price=price,
-            amount=amount,
+            price=str(price),
+            amount=str(amount),
             side=side,
             order_type=order_type
         )
