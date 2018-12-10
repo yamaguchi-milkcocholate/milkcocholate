@@ -3,7 +3,7 @@ from flask_modules.loggraph.repository import poprepo
 from flask_modules.exceptions.dbhost import HostNotFoundException
 
 
-class BollingerBand:
+class BollingerBandTi:
     HEATMAP_DEFAULT_VALUE = 10
 
     def __init__(self, host):
@@ -22,13 +22,12 @@ class BollingerBand:
         try:
             pop_repository = poprepo.PopulationRepository(host=self.__host)
             expt_repository = exptrepo.ExperimentRepository(host=self.__host)
-            experiments = expt_repository.get_bollingerband()
+            experiments = expt_repository.get_bollingerband_ti()
             bollingerbands = list()
             for i in range(len(experiments)):
                 el = dict()
                 el['experiment'] = experiments[i]
                 result = pop_repository.find_max_fitness_and_genome(experiment_id=experiments[i].id)
-                # テスト用に遺伝子を取り出す
                 self.__genome.append(result['genome'])
                 self.__situation.append(experiments[i].situation)
                 el['max_fitness'] = result['fitness']
@@ -44,6 +43,15 @@ class BollingerBand:
         except HostNotFoundException:
             raise
 
+    @staticmethod
+    def __position(key):
+        if '-Y' in key:
+            return key.replace('-Y', ''), 'Y'
+        elif '-B' in key:
+            return key.replace('-B', ''), 'B'
+        else:
+            raise TypeError('invalid')
+
     def __inclination_pattern(self, genome, situation):
         """
         Hyper Expansion
@@ -52,7 +60,7 @@ class BollingerBand:
         Squeeze
         Hyper Squeeze
         :param:  genome      numpy
-        :param:  situation   collections.OrderedDict
+        :param:  situation   collections.Ordered
         :return:             dictionary
         {
             'HE' : {
@@ -73,15 +81,18 @@ class BollingerBand:
         }
         """
         axis = ['U', 'U_U', 'U_M', 'M_L', 'L_L', 'L']
+        position_list = ['Y', 'B']
         result = dict()
-        patterns = list()
-        patterns.append('HE')
-        patterns.append('E')
-        patterns.append('F')
-        patterns.append('S')
-        patterns.append('HS')
-        for key in patterns:
-            result[key] = dict({
+        for position_i in range(2):
+            result[position_list[position_i]] = dict()
+            patterns = list()
+            patterns.append('HE')
+            patterns.append('E')
+            patterns.append('F')
+            patterns.append('S')
+            patterns.append('HS')
+            for key in patterns:
+                result[position_list[position_i]][key] = dict({
                     'xaxis': axis,
                     axis[0]: dict(),
                     axis[1]: dict(),
@@ -90,38 +101,40 @@ class BollingerBand:
                     axis[4]: dict(),
                     axis[5]: dict(),
                 })
+
         index = 0
 
         for key in situation:
+            key, key_position = self.__position(key)
             if '-H_E' in key:
                 # Hyper Expansion
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-H_E', ''))
-                result['HE'][y_location][x_location] = genome[index]
+                result[key_position]['HE'][y_location][x_location] = genome[index]
                 index += 1
             elif '-E' in key:
                 # Expansion
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-E', ''))
-                result['E'][y_location][x_location] = genome[index]
+                result[key_position]['E'][y_location][x_location] = genome[index]
                 index += 1
             elif '-F' in key:
                 # Flat
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-F', ''))
-                result['F'][y_location][x_location] = genome[index]
+                result[key_position]['F'][y_location][x_location] = genome[index]
                 index += 1
             elif '-S' in key:
                 # Squeeze
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-S', ''))
-                result['S'][y_location][x_location] = genome[index]
+                result[key_position]['S'][y_location][x_location] = genome[index]
                 index += 1
             elif '-H_S' in key:
                 # Hyper Squeeze
                 # y: 前回, x:現在
                 y_location, x_location = self.__location_pattern(key.replace('-H_S', ''))
-                result['HS'][y_location][x_location] = genome[index]
+                result[key_position]['HS'][y_location][x_location] = genome[index]
                 index += 1
             else:
                 raise TypeError('invalid')

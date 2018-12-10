@@ -40,6 +40,7 @@ class ExperimentRepository(repository.Repository):
 
                 experiment = expt.Experiment(
                     experiment_id=item['id'],
+                    coin=item['coin'],
                     crossover_name=crossover_name,
                     fitness_function_name=fitness_function_name,
                     situation=situation,
@@ -80,6 +81,7 @@ class ExperimentRepository(repository.Repository):
                 hyper_params = None
             return_expt = expt.Experiment(
                 experiment_id=result['id'],
+                coin=result['coin'],
                 crossover_name=crossover_name,
                 fitness_function_name=fitness_function_name,
                 situation=situation,
@@ -96,7 +98,7 @@ class ExperimentRepository(repository.Repository):
         except HostNotFoundException:
             raise
 
-    def get_bollinger_band(self):
+    def get_bollingerband(self):
         try:
             bollinger_band = 2
             bollinger_band_results = self._reader(
@@ -126,6 +128,47 @@ class ExperimentRepository(repository.Repository):
                 fitness_function_name = fitness_function[0]['name']
                 return_expt.append(expt.Experiment(
                     experiment_id=results[i]['id'],
+                    coin=results[i]['coin'],
+                    crossover_name=crossover_name,
+                    fitness_function_name=fitness_function_name,
+                    situation=situation,
+                    hyper_params=hyper_params,
+                    mutation_rate=results[i]['mutation_rate'],
+                    cross_rate=results[i]['cross_rate'],
+                    population=results[i]['population'],
+                    elite_num=results[i]['elite_num'],
+                    start_time=results[i]['start_at'],
+                    end_time=results[i]['end_at'],
+                    execute_time=results[i]['execute_time']
+                ))
+            return return_expt
+        except HostNotFoundException:
+            raise
+
+    def get_bollingerband_ti(self):
+        try:
+            bollingerband_ti = 4
+            bollingerband_ti_results = self._reader(
+                table=self.EXPERIMENTS_TABLE
+            ).where(['fitness_function_id', '=', bollingerband_ti]).get()
+            results = bollingerband_ti_results
+
+            return_expt = list()
+            for i in range(len(results)):
+                hyper_params = pickle.loads(results[i]['hyper_parameter'])
+                situation = pickle.loads(results[i]['situation'])
+                crossover = self._reader(
+                    table=self.CROSSOVERS_TABLE
+                ).select().find(search_id=results[i]['crossover_id']).get()
+                crossover_name = crossover[0]['name']
+
+                fitness_function = self._reader(
+                    table=self.FITNESS_FUNCTIONS_TABLE
+                ).select().find(search_id=results[i]['fitness_function_id']).get()
+                fitness_function_name = fitness_function[0]['name']
+                return_expt.append(expt.Experiment(
+                    experiment_id=results[i]['id'],
+                    coin=results[i]['coin'],
                     crossover_name=crossover_name,
                     fitness_function_name=fitness_function_name,
                     situation=situation,
