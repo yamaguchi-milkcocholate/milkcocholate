@@ -153,15 +153,28 @@ class Bot:
     def fetch_asset(self):
         """
         アセットの利用可能な量を読み込む
+        DBにアセットを書き込む(YEN, XRP)
+        insert_list[''] = [
+            'coin', 'amount', 'price', 'time'
+        ]
         :return: dict 利用可能な量
         """
         results = self.__api_gateway.use_asset()
         assets = dict()
+        insert_list = {self.__coin: [self.__coin], self.__yen: [self.__yen]}
         for result in results['assets']:
             if result['asset'] == self.__coin:
                 assets[self.__coin] = result['free_amount']
+                insert_list[self.__coin].append(result['onhand_amount'])
             elif result['asset'] == self.__yen:
                 assets[self.__yen] = result['free_amount']
+                insert_list[self.__yen].append(result['onhand_amount'])
+        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
+        insert_list[self.__coin].append(ticker['last'])
+        insert_list[self.__yen].append(ticker['last'])
+        insert_list[self.__coin].append(self.__now())
+        insert_list[self.__yen].append(self.__now())
+        self.__insert_assets(insert_list=insert_list)
         return assets
 
     def new_orders(self, price, amount, side, order_type, retry=0):
@@ -286,6 +299,56 @@ class Bot:
             )
             orders[result['order_id']] = order
         return orders
+
+    def __insert_assets(self, insert_list):
+        try:
+            connection = pymysql.connect(
+                host=self.__host,
+                user=self.USER,
+                db=self.DB,
+                password=self.PASSWORD,
+                charset=self.CHARSET,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except pymysql.err.OperationalError:
+            raise SchedulerCancelException('Fail to insert assets in connecting DB')
+        sql = "INSERT INTO `assets` " \
+              "(`coin`, `amount`, `price`, `time`) " \
+              "VALUES (%s, %s, %s, %s);"
+        placeholder = insert_list[self.__coin]
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, placeholder)
+        except Exception:
+            connection.rollback()
+            connection.close()
+            raise SchedulerCancelException('Fail to insert assets in inserting DB')
+        finally:
+            connection.commit()
+            connection.close()
+
+        try:
+            connection = pymysql.connect(
+                host=self.__host,
+                user=self.USER,
+                db=self.DB,
+                password=self.PASSWORD,
+                charset=self.CHARSET,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except pymysql.err.OperationalError:
+            raise SchedulerCancelException('Fail to insert assets in connecting DB')
+        placeholder = insert_list[self.__yen]
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, placeholder)
+        except Exception:
+            connection.rollback()
+            connection.close()
+            raise SchedulerCancelException('Fail to insert assets in inserting DB')
+        finally:
+            connection.commit()
+            connection.close()
 
     def __insert_order(self, order_id, pair, side, type, price, amount, ordered_at):
         try:
