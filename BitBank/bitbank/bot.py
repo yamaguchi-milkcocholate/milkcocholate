@@ -49,29 +49,29 @@ class Bot:
         # 注文があった場合
         if orders is not False:
             # 約定していない注文をキャンセル(その後リストから削除)。成立していればリストから削除
-            for order in orders:
+            for order_id in orders:
                 # 約定注文
-                if order['status'] == 'FULLY_FILLED':
+                if orders[order_id].status == 'FULLY_FILLED':
                     # DBへ書き込む
                     self.__insert_filled_order(
-                        order_id=order['order_id'],
-                        average_price=order['average_price'],
+                        order_id=orders[order_id].order_id,
+                        average_price=orders[order_id].average_price,
                         filled_at=self.__now()
                     )
                     # リストから削除
-                    self.order_ids.remove(order['order_id'])
+                    self.order_ids.remove(orders[order_id].order_id)
                 # 注文中
                 else:
                     # DBへ書き込む
                     self.__insert_canceled_order(
-                        order_id=order['order_id'],
-                        average_price=order['average_price'],
-                        remaining_amount=order['remaining_amount'],
-                        executed_amount=order['executed_amount'],
-                        status=order['status'],
+                        order_id=orders[order_id].order_id,
+                        average_price=orders[order_id].average_price,
+                        remaining_amount=orders[order_id].remaining_amount,
+                        executed_amount=orders[order_id].executed_amount,
+                        status=orders[order_id].status,
                         canceled_at=self.__now()
                     )
-                    self.order_ids.remove(order['order_id'])
+                    self.order_ids.remove(orders[order_id].order_id)
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
         print()
@@ -360,8 +360,12 @@ class Bot:
                 charset=self.CHARSET,
                 cursorclass=pymysql.cursors.DictCursor
             )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to insert order in connecting DB')
+        except pymysql.err.OperationalError as e:
+            print(e)
+            print('Fail to insert order in connecting DB')
+            exception = SchedulerCancelException('Fail to insert order in connecting DB')
+            exception.args = ('Fail to insert order in connecting DB', )
+            raise exception
         sql = "INSERT INTO `orders` " \
               "(`order_id`, `pair`, `side`, `type`, `price`, `amount`, `ordered_at`) " \
               "VALUES (%s, %s, %s, %s, %s, %s, %s);"
@@ -377,10 +381,14 @@ class Bot:
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, placeholder)
-        except Exception:
+        except Exception as e:
+            print(e)
             connection.rollback()
             connection.close()
-            raise SchedulerCancelException('Fail to insert order in inserting DB')
+            print('Fail to insert order in inserting DB')
+            exception = SchedulerCancelException('Fail to insert order in inserting DB')
+            exception.args = ('Fail to insert order in inserting DB',)
+            raise exception
         finally:
             connection.commit()
             connection.close()
@@ -395,22 +403,30 @@ class Bot:
                 charset=self.CHARSET,
                 cursorclass=pymysql.cursors.DictCursor
             )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to insert filled order in connecting DB')
+        except pymysql.err.OperationalError as e:
+            print(e)
+            print('Fail to insert filled order in connecting DB')
+            exception = SchedulerCancelException('Fail to insert filled order in connecting DB')
+            exception.args = ('Fail to insert filled order in connecting DB',)
+            raise exception
         sql = "INSERT INTO `filled_orders` " \
               "(`order_id`, `average_price`,  `filled_at`) " \
               "VALUES (%s, %s, %s);"
         placeholder = [
-            order_id,
-            average_price,
+            int(order_id),
+            float(average_price),
             filled_at
         ]
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, placeholder)
-        except Exception:
+        except Exception as e:
+            print(e)
             connection.rollback()
             connection.close()
+            print('Fail to insert filled order in inserting DB')
+            exception = SchedulerCancelException('Fail to insert filled order in inserting DB')
+            exception.args = ('Fail to insert filled order in inserting DB',)
             raise SchedulerCancelException('Fail to insert filled order in inserting DB')
         finally:
             connection.commit()
@@ -427,25 +443,33 @@ class Bot:
                 charset=self.CHARSET,
                 cursorclass=pymysql.cursors.DictCursor
             )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to insert canceled order in connecting DB')
+        except pymysql.err.OperationalError as e:
+            print(e)
+            print('Fail to insert canceled order in connecting DB')
+            exception = SchedulerCancelException('Fail to insert canceled order in connecting DB')
+            exception.args = ('Fail to insert canceled order in connecting DB',)
+            raise exception
         sql = "INSERT INTO `canceled_orders` " \
               "(`order_id`      , `average_price`,  `remaining_amount`, `executed_amount`, `status`, `canceled_at`) " \
               "VALUES (%s, %s, %s, %s, %s, %s);"
         placeholder = [
-            order_id,
-            average_price,
-            remaining_amount,
-            executed_amount,
+            int(order_id),
+            float(average_price),
+            float(remaining_amount),
+            float(executed_amount),
             status,
             canceled_at
         ]
         try:
             with connection.cursor() as cursor:
                 cursor.execute(sql, placeholder)
-        except Exception:
+        except Exception as e:
+            print(e)
             connection.rollback()
             connection.close()
+            print('Fail to insert canceled order in inserting DB')
+            exception = SchedulerCancelException('Fail to insert canceled order in inserting DB')
+            exception.args = ('Fail to insert canceled order in inserting DB',)
             raise SchedulerCancelException('Fail to insert canceled order in inserting DB')
         finally:
             connection.commit()

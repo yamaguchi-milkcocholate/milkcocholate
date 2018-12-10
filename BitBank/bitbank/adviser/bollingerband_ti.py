@@ -166,6 +166,12 @@ class BollingerBandTiAdviser:
             genome=genome,
             has_coin=has_coin
         )
+        print('| n - 1: ' + str(pre_location))
+        print('|   n  : ' + str(self.__last_location))
+        print('| inclination: ' + str(inclination_pattern))
+        print('| has coin: ' + str(has_coin))
+        print('| action: ' + str(action))
+        print(self.__recent_data)
         return action, self.__recent_data[-1]
 
     def fetch_recent_data(self):
@@ -217,6 +223,11 @@ class BollingerBandTiAdviser:
             t=t,
             basic_function=Polynomial(dim=2)
         )[1]
+        print('x')
+        print(x)
+        print('t')
+        print(t)
+        print('inclination: ' + str(inclination))
 
         if self.POSITIVE_INCLINATION < inclination:
             inclination_pattern = self.HYPER_EXPANSION
