@@ -52,6 +52,8 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         )
         self._last_data_num = hyper_paras['last_data_num']
         self._inclination_alpha = hyper_paras['inclination_alpha']
+        self.inclination_check = [0, 0, 0, 0, 0]
+        self.__inclination = None
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -94,10 +96,6 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         goal_bitcoin, goal_yen = self.init_goal(data_i=0)
         fitness = 0
         last_end_position = self.end_position(data_i=self._last_data_num - 2)
-        # 取引を試みた回数
-        tries = 0
-        # 成功した取引の回数
-        transactions = 0
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
@@ -110,10 +108,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             )
             last_end_position = end_position
             if int(operation) is int(BollingerBandOperationTi.BUY):
-                tries += 1
                 if has_bitcoin is False:
-                    # 取引成功
-                    transactions += 1
                     has_bitcoin = True
                     end_price = self._data.loc[data_i, 'end']
                     bitcoin = float(yen / end_price)
@@ -130,10 +125,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                     # 取引失敗
                     pass
             elif int(operation) is int(BollingerBandOperationTi.SELL):
-                tries += 1
                 if has_bitcoin is True:
-                    transactions += 1
-                    # 取引成功
                     has_bitcoin = False
                     end_price = self._data.loc[data_i, 'end']
                     yen = float(bitcoin * end_price)
@@ -150,13 +142,13 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                     # 取引失敗
                     pass
         # 目標達成の度合いを返す(適応度)
-        goal_reach_num = fitness
-        fitness = int(fitness * self.FITNESS_PRODUCTION * float(transactions / tries))
         print('finally',
               'goal',
-              goal_reach_num,
-              'fitness',
-              fitness
+              fitness,
+              'inclination',
+              self.__inclination,
+              'inclination check',
+              self.inclination_check
               )
         return fitness
 
@@ -185,10 +177,6 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             self._data.at[0, 'time'].strftime(str_format)
         ])
         last_end_position = self.end_position(data_i=self._last_data_num - 2)
-        # 取引を試みた回数
-        tries = 0
-        # 成功した取引の回数
-        transactions = 0
         for data_i in range(self._last_data_num - 1, len(self._data)):
             inclination_pattern = self.inclination(data_i=data_i)
             end_position = self.end_position(data_i=data_i)
@@ -201,10 +189,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             )
             last_end_position = end_position
             if int(operation) is int(BollingerBandOperationTi.BUY):
-                tries += 1
                 if has_bitcoin is False:
-                    # 取引成功
-                    transactions += 1
                     has_bitcoin = True
                     end_price = self._data.loc[data_i, 'end']
                     bitcoin = float(yen / end_price)
@@ -240,10 +225,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                     # 取引失敗
                     pass
             elif int(operation) is int(BollingerBandOperationTi.SELL) and has_bitcoin is True:
-                tries += 1
                 if has_bitcoin is True:
-                    # 取引成功
-                    transactions += 1
                     has_bitcoin = False
                     end_price = self._data.loc[data_i, 'end']
                     yen = float(bitcoin * end_price)
@@ -285,13 +267,13 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             self._db_dept.give_writer_task(insert_list)
         del insert_list
         # 目標達成の度合いを返す(適応度)
-        goal_reach_num = fitness
-        fitness = int(fitness * self.FITNESS_PRODUCTION * float(transactions / tries))
         print('finally',
               'goal',
-              goal_reach_num,
-              'fitness',
-              fitness
+              fitness,
+              'inclination',
+              self.__inclination,
+              'inclination check',
+              self.inclination_check
               )
         return fitness
 
@@ -304,6 +286,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         pre_data = self._data.loc[data_i - self._last_data_num + 1:data_i, 'sigma'].values
         min_price = np.amin(pre_data)
         t = pre_data - np.full_like(a=pre_data, fill_value=min_price)
+        t = t * 1000
         x = np.arange(
             start=0,
             step=self._inclination_alpha,
@@ -314,17 +297,23 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             t=t,
             basic_function=functions.Polynomial(dim=2)
         )[1]
+        self.__inclination = inclination
 
         if self.POSITIVE_INCLINATION < inclination:
             inclination_pattern = self.HYPER_EXPANSION
+            self.inclination_check[0] += 1
         elif (self.POSITIVE_MIDDLE_INCLINATION < inclination) and (inclination <= self.POSITIVE_INCLINATION):
             inclination_pattern = self.EXPANSION
+            self.inclination_check[1] += 1
         elif (self.NEGATIVE_MIDDLE_INCLINATION <= inclination) and (inclination <= self.POSITIVE_MIDDLE_INCLINATION):
             inclination_pattern = self.FLAT
+            self.inclination_check[2] += 1
         elif (self.NEGATIVE_INCLINATION <= inclination) and (inclination < self.NEGATIVE_MIDDLE_INCLINATION):
             inclination_pattern = self.SQUEEZE
+            self.inclination_check[3] += 1
         elif inclination < self.NEGATIVE_INCLINATION:
             inclination_pattern = self.HYPER_SQUEEZE
+            self.inclination_check[4] += 1
         else:
             inclination_pattern = None
         return inclination_pattern
