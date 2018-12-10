@@ -37,9 +37,9 @@ def volatility(sma, std):
     """
     引き数のデータ長の単純移動平均線の標準偏差を計算して、
     上部バンド、下部バンドを返す関数
-    :param sma:  numpy
-    :param std: int
-    :return:     numpy
+    :param sma:  float 単純移動平均の値
+    :param std:  float 標準偏差
+    :return:     dict  ボラティリティ
     """
     volatility_dict = dict()
     volatility_dict['double_upper'] = sma + 2 * std

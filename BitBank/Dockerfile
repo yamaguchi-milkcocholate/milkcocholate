@@ -7,10 +7,8 @@ RUN apt-get update -y && apt-get install -y python-pip python-dev build-essentia
 COPY ./requirements.txt /requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+RUN python3 -m pip install PyMySQL
 RUN pip install git+https://github.com/bitbankinc/python-bitbankcc.git
 
-EXPOSE 10080
 COPY . /home/bitbank/
-RUN cd /home/bitbank/ && pwd && ls
-ENTRYPOINT python /home/bitbank/bitbank.py
-
+ENTRYPOINT python

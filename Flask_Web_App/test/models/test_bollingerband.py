@@ -1,7 +1,6 @@
 import os
 import sys
 import unittest
-import pprint
 sys.path.append(os.pardir + '/../')
 from models.bollingerband import BollingerBand
 

@@ -1,8 +1,9 @@
 class Experiment:
 
-    def __init__(self, experiment_id, crossover_name, fitness_function_name, situation, hyper_params,
+    def __init__(self, experiment_id, coin, crossover_name, fitness_function_name, situation, hyper_params,
                  mutation_rate, cross_rate, population, elite_num, start_time, end_time, execute_time):
         self.id = experiment_id
+        self.coin = coin
         self.crossover_name = crossover_name
         self.fitness_function_name = fitness_function_name
         self.situation = situation

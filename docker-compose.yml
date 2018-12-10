@@ -1,5 +1,15 @@
 version: '2'
 services:
+  bitbank:
+    container_name: bitbank
+    build: ./BitBank
+    image: milkchocolate22/bitbank:latest
+    volumes:
+      - ./BitBank:/home/bitbank
+    links:
+      - mariadb
+    tty: true
+
   flask_web_app:
     container_name: flask-web-app
     build: ./Flask_Web_App

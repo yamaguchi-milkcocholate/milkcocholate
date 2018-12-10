@@ -4,6 +4,7 @@ from flask_modules.loggraph.repository import exptrepo
 from flask_modules.loggraph.repository import poprepo
 from flask_modules.exceptions.dbhost import HostNotFoundException
 from models.bollingerband import BollingerBand
+from models.bollingerband_ti import BollingerBandTi
 app = Flask(__name__)
 app.secret_key = 'milkcocholate'
 
@@ -89,9 +90,24 @@ def bollingerband():
     else:
         return render_template('connection.html')
     try:
-        bollingerband_controller = BollingerBand(host=host)
-        bollingerbands = bollingerband_controller()
+        bollingerband_model = BollingerBand(host=host)
+        bollingerbands = bollingerband_model()
         return render_template('bollingerband.html', bollingerbands=bollingerbands)
+    except HostNotFoundException:
+        del session['host']
+        return render_template('connection.html', has_error=host)
+
+
+@app.route("/bollingerband_ti", methods=['GET', 'POST'])
+def bollingerband_ti():
+    if 'host' in session:
+        host = session.get('host')
+    else:
+        return render_template('connection.html')
+    try:
+        bollingerband_ti_model = BollingerBandTi(host=host)
+        bollingerbands = bollingerband_ti_model()
+        return render_template('bollingerband_ti.html', bollingerbands=bollingerbands)
     except HostNotFoundException:
         del session['host']
         return render_template('connection.html', has_error=host)
