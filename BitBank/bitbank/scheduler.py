@@ -13,12 +13,11 @@ class Scheduler:
         self.__scheduler = sched.scheduler(time.time, time.sleep)
 
     def __call__(self):
-        print(self.__scheduler.queue)
         self.__schedule()
 
     def __schedule(self):
         now = datetime.datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
-        now_5min = now + datetime.timedelta(minutes=5)
+        now_5min = now + datetime.timedelta(minutes=1)
         now_a_week = now + datetime.timedelta(days=7)
         print('Start at ' + now.strftime('%Y-%m-%d %H:%M:%S'))
 

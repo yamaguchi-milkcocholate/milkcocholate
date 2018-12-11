@@ -48,7 +48,8 @@ class BackTest:
             crossover_method=crossover_method,
             fitness_function=fitness_function
         )
-        self._hyper_params=hyper_params
+        self._hyper_params = hyper_params
+        self.__pair = pair
 
     def __call__(self, steps=DEFAULT_STEPS, log_span=DEFAULT_LOG_SPAN):
         """
@@ -72,6 +73,7 @@ class BackTest:
         else:
             self._hyper_params = pickle.dumps(dict())
         values = [
+            self.__pair,
             self._ga.get_crossover_id(),
             self._ga.get_fitness_function_id(),
             pickle.dumps(self._ga.get_situation().get_genome_ranges()),
