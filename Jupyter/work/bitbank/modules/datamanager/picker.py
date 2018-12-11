@@ -8,7 +8,7 @@ class Picker:
     pickleファイルのデータを取り出す
     """
 
-    def __init__(self, span, use_of_data, pair):
+    def __init__(self, span, use_of_data, coin):
         if use_of_data == 'training' and pair == 'btc':
             self._candlestick = self.load_data(span, folder='data')
         elif use_of_data == 'validation' and pair == 'btc':

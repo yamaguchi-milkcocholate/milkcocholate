@@ -33,7 +33,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
     2. 前回と現在のボラティリティーと終値の位置
     """
 
-    def __init__(self, candle_type, db_dept, hyper_paras, pair):
+    def __init__(self, candle_type, db_dept, hyper_paras, coin):
         """
         :param candle_type:
         :param db_dept:
@@ -43,7 +43,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             candle_type=candle_type,
             db_dept=db_dept,
             fitness_function_id=self.FITNESS_FUNCTION_ID,
-            pair=pair
+            coin=coin
         )
         self._approach = bollingerband.BollingerBand(candlestick=self._candlestick)
         self._data = self._approach(
@@ -53,7 +53,6 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         self._last_data_num = hyper_paras['last_data_num']
         self._inclination_alpha = hyper_paras['inclination_alpha']
         self.inclination_check = [0, 0, 0, 0, 0]
-        self.__inclination = None
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -145,11 +144,10 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         print('finally',
               'goal',
               fitness,
-              'inclination',
-              self.__inclination,
               'inclination check',
               self.inclination_check
               )
+        self.inclination_check = [0, 0, 0, 0, 0]
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
@@ -270,11 +268,10 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         print('finally',
               'goal',
               fitness,
-              'inclination',
-              self.__inclination,
               'inclination check',
               self.inclination_check
               )
+        self.inclination_check = [0, 0, 0, 0, 0]
         return fitness
 
     def inclination(self, data_i):
@@ -297,7 +294,6 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
             t=t,
             basic_function=functions.Polynomial(dim=2)
         )[1]
-        self.__inclination = inclination
 
         if self.POSITIVE_INCLINATION < inclination:
             inclination_pattern = self.HYPER_EXPANSION

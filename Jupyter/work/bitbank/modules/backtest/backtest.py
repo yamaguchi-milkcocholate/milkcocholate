@@ -26,7 +26,7 @@ class BackTest:
         :param hyper_params:             dict      ハイパーパラメータ
         """
         self._db_facade = facade.Facade(host=host)
-        ff_facade = fffacade.Facade(candle_type=candle_type, pair=pair)
+        ff_facade = fffacade.Facade(candle_type=candle_type, coin=pair)
         c_facade = cfacade.CrossoverFacade()
         expt_logs_dept = self._db_facade.select_department('experiment_logs')
         # 適応度関数
