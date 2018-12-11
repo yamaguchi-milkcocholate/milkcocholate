@@ -2,7 +2,7 @@ from modules.feature import functions
 from modules.backtest import backtest
 
 
-situation = functions.bollinger_band()
+situation = functions.bollinger_band_ti()
 
 candle_type = '5min'
 population = 5
