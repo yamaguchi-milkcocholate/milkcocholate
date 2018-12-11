@@ -10,7 +10,7 @@ class Facade:
     BOLLINGER_BAND_LINEAR_BAND_PERIOD_GOAL = 3
     BOLLINGER_BAND_LINEAR_BAND_PERIOD_GOAL_TI = 4
 
-    def __init__(self, candle_type, pair):
+    def __init__(self, candle_type, coin):
         self._functions = [
             'simple_macd_params',
             'bollinger_band',
@@ -18,7 +18,7 @@ class Facade:
             'bollinger_band_period_goal_ti',
         ]
         self._candle_type = candle_type
-        self._pair = pair
+        self._pair = coin
 
     def select_department(self, function_name, db_dept, hyper_params):
         """
@@ -53,7 +53,7 @@ class Facade:
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_paras=hyper_params,
-                pair=self._pair
+                coin=self._pair
             )
         else:
             raise ValueError("fitness function '" + function_name + "' is not found")
