@@ -20,10 +20,10 @@ class BollingerBandTiAdviser:
     LOWER_LOWER = 4
     LOWER = 5
 
-    POSITIVE_INCLINATION = 1
-    NEGATIVE_INCLINATION = -1
-    POSITIVE_MIDDLE_INCLINATION = 1.7
-    NEGATIVE_MIDDLE_INCLINATION = -1.7
+    POSITIVE_INCLINATION = 1.376
+    NEGATIVE_INCLINATION = -1.376
+    POSITIVE_MIDDLE_INCLINATION = 0.325
+    NEGATIVE_MIDDLE_INCLINATION = -0.325
 
     HYPER_EXPANSION = 0
     EXPANSION = 1
@@ -37,6 +37,8 @@ class BollingerBandTiAdviser:
         self.__recent_sigma = None
         self.__volatility = None
         self.__last_location = None
+        self.__pre_location = None
+        self.__inclination_pattern = None
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
         self.__pair = pair
@@ -152,26 +154,16 @@ class BollingerBandTiAdviser:
 
     def operation(self, genome, has_coin):
         """
-        データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
-        :return: const int 取引方針をあらわす定数, float　最新の価格
+         データを更新して、複数個のシグマと前回、現在の終値の位置から取引の方針を決める
+        :param genome:
+        :param has_coin:
+        :return: const int 取引方針をあらわす定数, float 最新の価格
         """
-        pre_location = self.__last_location
-        self.fetch_recent_data()
-        self.__location()
-        inclination_pattern = self.__inclination()
+        self.__inclination_pattern = self.__inclination()
         action = self.determine_action(
-            pre_location=pre_location,
-            last_location=self.__last_location,
-            inclination_pattern=inclination_pattern,
             genome=genome,
             has_coin=has_coin
         )
-        print('| n - 1: ' + str(pre_location))
-        print('|   n  : ' + str(self.__last_location))
-        print('| inclination: ' + str(inclination_pattern))
-        print('| has coin: ' + str(has_coin))
-        print('| action: ' + str(action))
-        print(self.__recent_data)
         return action, self.__recent_data[-1]
 
     def fetch_recent_data(self):
@@ -179,11 +171,12 @@ class BollingerBandTiAdviser:
         現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
         """
         ticker = self.__api_gateway.use_ticker(pair=self.__pair)
-        ticker = ticker['last']
+        ticker = float(ticker['last'])
 
         # データを更新
-        np.append(self.__recent_data, ticker)
-        np.delete(self.__recent_data, -1)
+        print(ticker)
+        self.__recent_data = np.append(self.__recent_data, ticker)
+        self.__recent_data = np.delete(self.__recent_data, 0)
 
         # 直近の単純移動平均線を求める
         self.__recent_sma = simple_moving_average(
@@ -201,7 +194,11 @@ class BollingerBandTiAdviser:
             std=self.__recent_sigma[-1]
         )
         # 終値の位置を求める
+        self.__pre_location = self.__last_location
         self.__location()
+        print('pre', self.__pre_location)
+        print('last', self.__last_location)
+        print(self.__recent_data)
 
     def __inclination(self):
         """
@@ -211,6 +208,7 @@ class BollingerBandTiAdviser:
         min_sigma = np.amin(self.__recent_sigma)
         # 最小値との差分だけの行列を作る
         t = self.__recent_sigma - np.full_like(a=self.__recent_sigma, fill_value=min_sigma)
+        t = t * 1000
         x = np.arange(
             start=0,
             step=self.__inclination_alpha,
@@ -223,10 +221,6 @@ class BollingerBandTiAdviser:
             t=t,
             basic_function=Polynomial(dim=2)
         )[1]
-        print('x')
-        print(x)
-        print('t')
-        print(t)
         print('inclination: ' + str(inclination))
 
         if self.POSITIVE_INCLINATION < inclination:
@@ -243,8 +237,7 @@ class BollingerBandTiAdviser:
             raise TypeError('inclination is None')
         return inclination_pattern
 
-    @staticmethod
-    def determine_action(pre_location, last_location, inclination_pattern, genome, has_coin):
+    def determine_action(self, genome, has_coin):
         """
         終値、上部バンド、下部バンドから(買い,売り,保持)を決める
         ※ 遺伝子の特徴
@@ -254,4 +247,11 @@ class BollingerBandTiAdviser:
             has_coin = 1
         else:
             has_coin = 0
-        return genome[pre_location * 1 + last_location * 6 + inclination_pattern * 36 + has_coin * 180]
+        return genome[self.__pre_location * 1 + self.__last_location * 6 + self.__inclination_pattern * 36 + has_coin * 180]
+
+    def get_recent_data(self):
+        """
+        テスト用のゲッター
+        :return: numpy
+        """
+        return self.__recent_data

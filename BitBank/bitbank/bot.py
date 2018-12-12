@@ -80,6 +80,10 @@ class Bot:
             print(key + ': ' + assets_free_amount[key] + '    ', end='')
         print()
         print("--------------------------------------------------------")
+
+        # データを更新
+        self.__adviser.fetch_recent_data()
+
         # 日本円があるとき、新規注文する
         if float(assets_free_amount[self.__yen]) > 0:
             operation, price = self.__adviser.operation(

@@ -21,8 +21,8 @@ genome_id = input()
 genome_id = int(genome_id)
 
 adviser = BollingerBandTiAdviser(
-    stock_term=20,
-    inclination_alpha=600,
+    stock_term=12,
+    inclination_alpha=2,
     pair='xrp_jpy'
 )
 
