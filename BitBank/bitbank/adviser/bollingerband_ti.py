@@ -174,7 +174,6 @@ class BollingerBandTiAdviser:
         ticker = float(ticker['last'])
 
         # データを更新
-        print(ticker)
         self.__recent_data = np.append(self.__recent_data, ticker)
         self.__recent_data = np.delete(self.__recent_data, 0)
 

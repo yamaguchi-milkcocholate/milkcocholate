@@ -17,8 +17,8 @@ class Scheduler:
 
     def __schedule(self):
         now = datetime.datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
-        now_5min = now + datetime.timedelta(minutes=1)
-        now_a_week = now + datetime.timedelta(days=7)
+        now_5min = now + datetime.timedelta(minutes=5)
+        now_a_week = now + datetime.timedelta(days=1)
         print('Start at ' + now.strftime('%Y-%m-%d %H:%M:%S'))
 
         start_at = int(time.mktime(now.timetuple()))
