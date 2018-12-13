@@ -52,7 +52,6 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         )
         self._last_data_num = hyper_paras['last_data_num']
         self._inclination_alpha = hyper_paras['inclination_alpha']
-        self.inclination_check = [0, 0, 0, 0, 0]
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -142,12 +141,9 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                     pass
         # 目標達成の度合いを返す(適応度)
         print('finally',
-              'goal',
-              fitness,
-              'inclination check',
-              self.inclination_check
+              'fitness',
+              fitness
               )
-        self.inclination_check = [0, 0, 0, 0, 0]
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
@@ -266,12 +262,9 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         del insert_list
         # 目標達成の度合いを返す(適応度)
         print('finally',
-              'goal',
-              fitness,
-              'inclination check',
-              self.inclination_check
+              'fitness',
+              fitness
               )
-        self.inclination_check = [0, 0, 0, 0, 0]
         return fitness
 
     def inclination(self, data_i):
@@ -297,19 +290,14 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
 
         if self.POSITIVE_INCLINATION < inclination:
             inclination_pattern = self.HYPER_EXPANSION
-            self.inclination_check[0] += 1
         elif (self.POSITIVE_MIDDLE_INCLINATION < inclination) and (inclination <= self.POSITIVE_INCLINATION):
             inclination_pattern = self.EXPANSION
-            self.inclination_check[1] += 1
         elif (self.NEGATIVE_MIDDLE_INCLINATION <= inclination) and (inclination <= self.POSITIVE_MIDDLE_INCLINATION):
             inclination_pattern = self.FLAT
-            self.inclination_check[2] += 1
         elif (self.NEGATIVE_INCLINATION <= inclination) and (inclination < self.NEGATIVE_MIDDLE_INCLINATION):
             inclination_pattern = self.SQUEEZE
-            self.inclination_check[3] += 1
         elif inclination < self.NEGATIVE_INCLINATION:
             inclination_pattern = self.HYPER_SQUEEZE
-            self.inclination_check[4] += 1
         else:
             inclination_pattern = None
         return inclination_pattern
