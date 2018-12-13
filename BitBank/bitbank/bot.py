@@ -80,6 +80,10 @@ class Bot:
             print(key + ': ' + assets_free_amount[key] + '    ', end='')
         print()
         print("--------------------------------------------------------")
+
+        # データを更新
+        self.__adviser.fetch_recent_data()
+
         # 日本円があるとき、新規注文する
         if float(assets_free_amount[self.__yen]) > 0:
             operation, price = self.__adviser.operation(
@@ -89,14 +93,13 @@ class Bot:
             # STAYではないとき
             if operation != int(self.STAY):
                 # 新規注文
-                result = self.new_orders(
+                self.new_orders(
                     price=price,
                     amount=(float(assets_free_amount[self.__yen]) / price),
                     side=self.__operation_to_side(operation=operation),
                     order_type=self.DEFAULT_TYPE
                 )
-                print(result.ordered_at + '   ' + self.__operation_to_side(operation=operation)
-                      + ' ' + result.start_amount + ' ' + result.price)
+
             else:
                 print(self.__now() + '   ' + 'stay')
 
@@ -109,14 +112,13 @@ class Bot:
             # STAYではないとき
             if operation != int(self.STAY):
                 # 新規注文
-                result = self.new_orders(
+                self.new_orders(
                     price=price,
                     amount=assets_free_amount[self.__coin],
                     side=self.__operation_to_side(operation=operation),
                     order_type=self.DEFAULT_TYPE
                 )
-                print(result.ordered_at + '   ' + self.__operation_to_side(operation=operation)
-                      + ' ' + result.start_amount + ' ' + result.price)
+
             else:
                 print(self.__now() + '   ' + 'stay')
         print("========================================================")
@@ -185,7 +187,6 @@ class Bot:
         :param side:       string
         :param order_type: string
         :param retry:      integer
-        :return: bitbank.order.Order 注文情報
         """
         try:
             result = self.__api_gateway.new_order(
@@ -221,22 +222,30 @@ class Bot:
             )
             self.new_order_message(order=order, retry=retry)
             self.order_ids.append(result['order_id'])
+            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
         except Exception as e:
             print(e)
             if '60002' in e.args[0]:
                 #  60002 内容: 成行買い注文の数量上限を上回っています
                 amount = float(amount) / 2.0
-                order = self.new_orders(price, amount, side, order_type, retry=retry + 1)
-            elif '70009' in e.args[0]:
+                # 数量が10.0以上の場合のみ
+                if amount > 10.0:
+                    self.new_orders(price, amount, side, order_type, retry=retry + 1)
+                    # 連続して成り行き注文すると怒られる
+                    time.sleep(20)
+                    self.new_orders(price, amount, side, order_type, retry=retry + 1)
+                else:
+                    pass
+            elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
+                # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
                 print('60秒の遅らせて再度注文します。')
                 self.__line(message='60秒の遅らせて再度注文します。')
                 time.sleep(60)
-                order = self.new_orders(price, amount, side, order_type, retry=retry + 1)
+                self.new_orders(price, amount, side, order_type, retry=retry + 1)
             else:
                 self.error_message(message=e.args[0])
                 raise SchedulerCancelException('Fail to order')
-        return order
 
     def cancel_orders(self, order_id):
         """
