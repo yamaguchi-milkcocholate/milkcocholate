@@ -28,6 +28,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
 
     GOAL_RATE = 1.1
     FITNESS_PRODUCTION = 10
+    LOSS_CUT_RATE = 0.95
     """
     1. 標準偏差σを線形回帰(次数M)
     2. 前回と現在のボラティリティーと終値の位置
@@ -52,6 +53,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         )
         self._last_data_num = hyper_paras['last_data_num']
         self._inclination_alpha = hyper_paras['inclination_alpha']
+        self.__loss_cut = 0
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -119,6 +121,15 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                         goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                         # ポジションを初期化
                         bitcoin, yen, has_bitcoin = self.init_position()
+                    # 損切
+                    elif bitcoin < self.INIT_BIT_COIN_AMOUNT * self.LOSS_CUT_RATE:
+                        # 適応度を更新
+                        fitness = self.loss_cut(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        self.__loss_cut += 1
                 else:
                     # 取引失敗
                     pass
@@ -136,14 +147,26 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                         goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
                         # ポジションを初期化
                         bitcoin, yen, has_bitcoin = self.init_position()
+                    # 損切
+                    elif yen < self.INIT_BIT_COIN_AMOUNT * end_price * self.LOSS_CUT_RATE:
+                        # 適応度を更新
+                        fitness = self.loss_cut(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        self.__loss_cut += 1
                 else:
                     # 取引失敗
                     pass
         # 目標達成の度合いを返す(適応度)
         print('finally',
               'fitness',
-              fitness
+              fitness,
+              'loss cut',
+              str(self.__loss_cut)
               )
+        self.__loss_cut = 0
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
@@ -215,6 +238,15 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                             int(end_price),
                             time
                         ])
+                    # 損切
+                    elif bitcoin < self.INIT_BIT_COIN_AMOUNT * self.LOSS_CUT_RATE:
+                        # 適応度を更新
+                        fitness = self.loss_cut(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        self.__loss_cut += 1
                 else:
                     # 取引失敗
                     pass
@@ -250,6 +282,15 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
                             int(end_price),
                             time
                         ])
+                    # 損切
+                    elif yen < self.INIT_BIT_COIN_AMOUNT * end_price * self.LOSS_CUT_RATE:
+                        # 適応度を更新
+                        fitness = self.loss_cut(fitness=fitness)
+                        # 目標を更新
+                        goal_bitcoin, goal_yen = self.init_goal(data_i=data_i)
+                        # ポジションを初期化
+                        bitcoin, yen, has_bitcoin = self.init_position()
+                        self.__loss_cut += 1
                 else:
                     # 取引失敗
                     pass
@@ -263,8 +304,11 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         # 目標達成の度合いを返す(適応度)
         print('finally',
               'fitness',
-              fitness
+              fitness,
+              'loss cut',
+              str(self.__loss_cut)
               )
+        self.__loss_cut = 0
         return fitness
 
     def inclination(self, data_i):
@@ -335,6 +379,11 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         :return:        int 更新した適応度
         """
         return fitness + 1
+
+    @staticmethod
+    def loss_cut(fitness):
+        fitness = int(fitness * 0.5)
+        return fitness
 
     def init_position(self):
         """
