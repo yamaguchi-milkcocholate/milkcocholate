@@ -81,7 +81,7 @@ def bollinger_band_period_goal():
 
 def bollinger_band_ti():
     """
-    BollingerBandPeriodGoalTiの遺伝子情報を揃える関数
+    BollingerBandPeriodGoalTi, BollingerBandSAMTiの遺伝子情報を揃える関数
     :return: Situation: 遺伝子情報を持つクラスのインスタンス
     """
     end_position = list()

@@ -10,13 +10,13 @@ mutation = 2
 cross = 50
 elite_num = 2
 host = 'localhost'
-fitness_function_name = 'bollinger_band_period_goal_ti'
+fitness_function_name = 'bollinger_band_sma_ti'
 crossover_name = 'uniform'
 hyper_params = dict()
-hyper_params['sma_term'] = 12
-hyper_params['std_term'] = 12
-hyper_params['last_data_num'] = 12
-hyper_params['inclination_alpha'] = 2
+hyper_params['sma_term'] = 20
+hyper_params['std_term'] = 20
+hyper_params['last_data_num'] = 20
+hyper_params['inclination_alpha'] = 9
 
 back_test = backtest.BackTest(situation=situation,
                               candle_type=candle_type,

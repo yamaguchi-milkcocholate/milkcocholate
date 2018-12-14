@@ -11,12 +11,12 @@ class InclinationOptimization:
     POSITIVE_MIDDLE_INCLINATION = 0.325
     NEGATIVE_MIDDLE_INCLINATION = -0.325
 
-    def __init__(self, sma_term, std_term, stock_term, inclination_alpha, candle_type='5min'):
+    def __init__(self, sma_term, std_term, stock_term, inclination_alpha, candle_type='5min', target='sigma', data_set=True):
         self.__candlestick = Picker(
             candle_type,
             use_of_data='training',
             coin='xrp',
-            is_inclination=True
+            is_inclination=data_set
         ).get_candlestick()
         self.__approach = BollingerBand(
             candlestick=self.__candlestick
@@ -27,6 +27,7 @@ class InclinationOptimization:
         )
         self.__stock_term = stock_term
         self.__inclination_alpha = inclination_alpha
+        self.__target = target
         self.__inclination_check = None
         self.__inclination_list = list()
         self.__inclination_init()
@@ -48,7 +49,7 @@ class InclinationOptimization:
         :param data_i: 
         :return: 
         """
-        pre_data = self.__data.loc[data_i - self.__stock_term + 1:data_i, 'sigma'].values
+        pre_data = self.__data.loc[data_i - self.__stock_term + 1:data_i, self.__target].values
         min_price = np.amin(pre_data)
         t = pre_data - np.full_like(a=pre_data, fill_value=min_price)
         t = t * 1000
