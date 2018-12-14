@@ -5,7 +5,7 @@ from enum import IntEnum
 import numpy as np
 
 
-class BollingerBandSAM(FitnessFunction):
+class BollingerBandSAMTi(FitnessFunction):
     FITNESS_FUNCTION_ID = 5
 
     UPPER = 0
