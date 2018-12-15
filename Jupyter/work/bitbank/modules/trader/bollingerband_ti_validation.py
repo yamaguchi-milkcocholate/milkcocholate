@@ -162,6 +162,7 @@ class BollingerBandValidationTrader:
         min_sigma = np.amin(self.__recent_sigma)
         # 最小値との差分だけの行列を作る
         t = self.__recent_sigma - np.full_like(a=self.__recent_sigma, fill_value=min_sigma)
+        t = t * 1000
         x = np.arange(
             start=0,
             step=self.__inclination_alpha,
