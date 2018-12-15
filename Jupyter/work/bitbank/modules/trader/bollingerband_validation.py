@@ -23,10 +23,10 @@ class BollingerBandValidationTrader:
     LOWER_LOWER = 4
     LOWER = 5
 
-    POSITIVE_INCLINATION = 1
-    NEGATIVE_INCLINATION = -1
-    POSITIVE_MIDDLE_INCLINATION = 1.7
-    NEGATIVE_MIDDLE_INCLINATION = -1.7
+    POSITIVE_INCLINATION = 1.376
+    NEGATIVE_INCLINATION = -1.376
+    POSITIVE_MIDDLE_INCLINATION = 0.325
+    NEGATIVE_MIDDLE_INCLINATION = -0.325
 
     HYPER_EXPANSION = 0
     EXPANSION = 1
@@ -161,6 +161,7 @@ class BollingerBandValidationTrader:
         min_sigma = np.amin(self.__recent_sigma)
         # 最小値との差分だけの行列を作る
         t = self.__recent_sigma - np.full_like(a=self.__recent_sigma, fill_value=min_sigma)
+        t = t * 1000
         x = np.arange(
             start=0,
             step=self.__inclination_alpha,
