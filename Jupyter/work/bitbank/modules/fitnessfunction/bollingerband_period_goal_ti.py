@@ -3,6 +3,7 @@ from modules.fitnessfunction.fitnessfunction import FitnessFunction
 from modules.datamanager import functions
 from enum import IntEnum
 import numpy as np
+import math
 
 
 class BollingerBandPeriodGoalTi(FitnessFunction):
@@ -383,7 +384,12 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         return fitness + 1
 
     def loss_cut(self, fitness):
-        fitness = fitness - 0.5 * self.__loss_cut
+        """
+        fitness = G - 1/2 * G * (log2(L + 1))^2
+        :param fitness: integer 適応度
+        :return: 損切を含めた適応度
+        """
+        fitness = fitness - 0.5 * fitness * (math.log(x=self.__loss_cut, base=2))
         if fitness <= 0:
             fitness = 1
         return fitness
