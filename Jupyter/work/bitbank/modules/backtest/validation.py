@@ -23,11 +23,11 @@ class Validation:
         self.__should_log = None
         self.__total = list()
 
-    def __call__(self, candle_type, pair, should_log=False, host=None):
+    def __call__(self, candle_type, coin, should_log=False, host=None):
         """
         取引のシミュレーションを開始する
         :param candle_type: string
-        :param pair: string
+        :param coin: string
         :param should_log: bool 記録をデータベースに保存するかどうか
         :param host:  string データベースのホスト
         """
@@ -37,7 +37,7 @@ class Validation:
             db_facade = Facade(host=host)
             self.__log_dept = db_facade.select_department('realtime_test_logs')
         # 取引シミュレーションを開始
-        self.__validation(candle_type=candle_type, pair=pair)
+        self.__validation(candle_type=candle_type, coin=coin)
         # 実験を記録
         if self.__should_log:
             real_time_test_dept = db_facade.select_department('realtime_tests')
@@ -49,7 +49,6 @@ class Validation:
         plt.ylabel('Yen')
         # position
         total_np = np.asarray(self.__total)
-        plt.ylim([0, np.max(total_np) + 100000])
         # BitBank
         batbank_np = self.__candlestick.end.tail(len(total_np)).values
         # x軸
@@ -58,15 +57,16 @@ class Validation:
 
         plt.plot(x_axis, total_np, label='Position')
         plt.plot(x_axis, batbank_np, label='BitBank')
+        plt.legend()
         plt.show()
 
-    def __validation(self, candle_type, pair):
+    def __validation(self, candle_type, coin):
         """
         取引シミュレーションを実行する関数
         :param candle_type: string ロウソク足データの期間
         """
         # 終値と取得時間のDataFrameを読み込む
-        candlestick = self.__fetch_candlestick(candle_type=candle_type, pair=pair)
+        candlestick = self.__fetch_candlestick(candle_type=candle_type, coin=coin)
         self.__candlestick = candlestick
         # Traderにデータを渡す
         self.__trader.set_candlestick(candlestick=candlestick)
@@ -80,14 +80,14 @@ class Validation:
         print('finish validation')
 
     @staticmethod
-    def __fetch_candlestick(candle_type, pair):
+    def __fetch_candlestick(candle_type, coin):
         """
         保存してあるロウソク足データ終値のpickleファイルを読み込んで返す関数
         :param candle_type: string ロウソク足データの期間
-        :param pair: string
+        :param coin: string
         :return: candlestick: pandas.DataFrame
         """
-        candlestick = Picker(span=candle_type, use_of_data='validation', pair=pair).get_candlestick()
+        candlestick = Picker(span=candle_type, use_of_data='validation', coin=coin).get_candlestick()
         return candlestick
 
     def __transaction_result(self, operation):
@@ -104,11 +104,11 @@ class Validation:
                 total = last_price * self.__bitcoin_position
                 print(
                     time,
-                    '       BUY',
-                    'last price', ': {:<10}'.format(last_price),
-                    'yen position', ': {:<10}'.format(self.__yen_position),
-                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
-                    'total', ': {:<10}'.format(total),
+                    '       BUY ',
+                    'last price', ': {:<10}'.format(round(last_price, 2)),
+                    'yen position', ': {:<10}'.format(round(self.__yen_position, 2)),
+                    'bitcoin position', ': {:<10}'.format(round(self.__bitcoin_position, 2)),
+                    'total', ': {:<10}'.format(total)
                 )
                 self.__total.append(total)
                 if self.__should_log:
@@ -126,10 +126,10 @@ class Validation:
                 total = last_price * self.__bitcoin_position
                 print(
                     time,
-                    'CANNOT BUY',
-                    'last price', ': {:<10}'.format(last_price),
-                    'yen position', ': {:<10}'.format(self.__yen_position),
-                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'CANNOT BUY ',
+                    'last price', ': {:<10}'.format(round(last_price, 2)),
+                    'yen position', ': {:<10}'.format(round(self.__yen_position, 2)),
+                    'bitcoin position', ': {:<10}'.format(round(self.__bitcoin_position, 2)),
                     'total', ': {:<10}'.format(total)
                 )
                 self.__total.append(total)
@@ -141,9 +141,9 @@ class Validation:
                 print(
                     time,
                     '       SELL',
-                    'last price', ': {:<10}'.format(last_price),
-                    'yen position', ': {:<10}'.format(self.__yen_position),
-                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'last price', ': {:<10}'.format(round(last_price, 2)),
+                    'yen position', ': {:<10}'.format(round(self.__yen_position, 2)),
+                    'bitcoin position', ': {:<10}'.format(round(self.__bitcoin_position, 2)),
                     'total', ': {:<10}'.format(self.__yen_position)
                 )
                 self.__total.append(self.__yen_position)
@@ -162,9 +162,9 @@ class Validation:
                 print(
                     time,
                     'CANNOT SELL',
-                    'last price', ': {:<10}'.format(last_price),
-                    'yen position', ': {:<10}'.format(self.__yen_position),
-                    'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                    'last price', ': {:<10}'.format(round(last_price, 2)),
+                    'yen position', ': {:<10}'.format(round(self.__yen_position, 2)),
+                    'bitcoin position', ': {:<10}'.format(round(self.__bitcoin_position, 2)),
                     'total', ': {:<10}'.format(self.__yen_position)
                 )
                 self.__total.append(self.__yen_position)
@@ -176,9 +176,9 @@ class Validation:
             print(
                 time,
                 '       STAY',
-                'last price', ': {:<10}'.format(last_price),
-                'yen position', ': {:<10}'.format(self.__yen_position),
-                'bitcoin position', ': {:<10}'.format(self.__bitcoin_position),
+                'last price', ': {:<10}'.format(round(last_price, 2)),
+                'yen position', ': {:<10}'.format(round(self.__yen_position, 2)),
+                'bitcoin position', ': {:<10}'.format(round(self.__bitcoin_position, 2)),
                 'total', ': {:<10}'.format(total)
             )
             self.__total.append(total)
