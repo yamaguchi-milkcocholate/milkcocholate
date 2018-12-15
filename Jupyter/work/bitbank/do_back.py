@@ -9,7 +9,7 @@ population = 5
 mutation = 2
 cross = 50
 elite_num = 2
-host = 'localhost'
+host = '192.168.99.100'
 fitness_function_name = 'bollinger_band_sma_ti'
 crossover_name = 'uniform'
 hyper_params = dict()
@@ -31,4 +31,4 @@ back_test = backtest.BackTest(situation=situation,
                               hyper_params=hyper_params
                               )
 
-back_test(steps=1, log_span=10)
+back_test(steps=50, log_span=10)

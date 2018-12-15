@@ -364,7 +364,7 @@ class BollingerBandSAMTi(FitnessFunction):
         return fitness + 1
 
     def loss_cut(self, fitness):
-        fitness = fitness - 0.5 * fitness * (math.log(self.__loss_cut, 2))
+        fitness = fitness - 0.5 * fitness * (math.log(self.__loss_cut, 10))
         if fitness <= 0:
             fitness = 1
         return fitness
