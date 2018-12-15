@@ -31,7 +31,7 @@ class BollingerBand(fitnessfunction.FitnessFunction):
     2. 直近の終値とボリンジャーバンドの位置
     """
 
-    def __init__(self, candle_type, db_dept, hyper_params, pair):
+    def __init__(self, candle_type, db_dept, hyper_params, coin):
         """
         :param candle_type:
         :param db_dept:
@@ -42,7 +42,7 @@ class BollingerBand(fitnessfunction.FitnessFunction):
             candle_type=candle_type,
             db_dept=db_dept,
             fitness_function_id=self.FITNESS_FUNCTION_ID,
-            pair=pair
+            coin=coin
         )
         self._approach = bollingerband.BollingerBand(candlestick=self._candlestick)
         # 平均移動戦と標準偏差はハイパーパラメータなので最初に計算するだけ

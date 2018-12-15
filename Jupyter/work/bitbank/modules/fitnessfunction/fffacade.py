@@ -42,14 +42,14 @@ class Facade:
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_params=hyper_params,
-                pair=self._coin
+                coin=self._coin
             )
         elif function_name is self._functions[2]:
             return bollingerband_period_goal.BollingerBandPeriodGoal(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_paras=hyper_params,
-                pair=self._coin
+                coin=self._coin
             )
         elif function_name is self._functions[3]:
             return bollingerband_period_goal_ti.BollingerBandPeriodGoalTi(
