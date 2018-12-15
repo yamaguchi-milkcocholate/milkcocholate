@@ -1,8 +1,8 @@
 from modules.backtest.validation import Validation
-from modules.trader.bollingerband_ti_validation import BollingerBandValidationTrader
+from modules.trader.bollingerband_sma_ti_validation import BollingerBandSMATiValidationTrader
 
 
-trader = BollingerBandValidationTrader(
+trader = BollingerBandSMATiValidationTrader(
     stock_term=20,
     inclination_alpha=9
 )
