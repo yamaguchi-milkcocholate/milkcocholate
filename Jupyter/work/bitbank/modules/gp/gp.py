@@ -1,7 +1,7 @@
 import numpy as np
 import pickle
 import random
-from modules.gp.gpgenome import GNPenome
+from modules.gp.gpgenome import GPGenome
 from modules.gp.condition import Condition
 from modules.gp.fitnessfunction import *
 
