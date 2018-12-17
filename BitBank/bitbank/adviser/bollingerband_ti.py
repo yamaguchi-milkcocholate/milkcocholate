@@ -195,9 +195,6 @@ class BollingerBandTiAdviser:
         # 終値の位置を求める
         self.__pre_location = self.__last_location
         self.__location()
-        print('pre', self.__pre_location)
-        print('last', self.__last_location)
-        print(self.__recent_data)
 
     def __inclination(self):
         """

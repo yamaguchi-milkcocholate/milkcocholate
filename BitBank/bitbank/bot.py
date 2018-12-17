@@ -243,6 +243,9 @@ class Bot:
                 self.__line(message='60秒の遅らせて再度注文します。')
                 time.sleep(60)
                 self.new_orders(price, amount, side, order_type, retry=retry + 1)
+            elif '60004' in e.args[0]:
+                #  60004 内容: 指定した数量がしきい値を下回っています
+                pass
             else:
                 self.error_message(message=e.args[0])
                 raise SchedulerCancelException('Fail to order')
