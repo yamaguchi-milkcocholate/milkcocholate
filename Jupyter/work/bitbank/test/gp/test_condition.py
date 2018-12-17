@@ -2,7 +2,7 @@ import sys
 import os
 import unittest
 sys.path.append(os.pardir + '/../')
-from modules.gn.condition import Condition
+from modules.gp.condition import Condition
 
 
 class TestCondition(unittest.TestCase):

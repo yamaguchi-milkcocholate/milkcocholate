@@ -1,7 +1,7 @@
-from modules.gn.node import Node
+from modules.gp.node import Node
 
 
-class GNGenome:
+class GPGenome:
 
     def __init__(self, condition):
         self.condition = condition

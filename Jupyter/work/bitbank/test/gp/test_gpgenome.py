@@ -2,11 +2,11 @@ import sys
 import os
 import unittest
 sys.path.append(os.pardir + '/../')
-from modules.gn.gngenome import GNGenome
-from modules.gn.condition import Condition
+from modules.gp.gpgenome import GPGenome
+from modules.gp.condition import Condition
 
 
-class TestGNGenome(unittest.TestCase):
+class TestGPGenome(unittest.TestCase):
 
     def setUp(self):
         condition = Condition()
@@ -20,7 +20,7 @@ class TestGNGenome(unittest.TestCase):
             lower_limit=0.3,
             upper_limit=0.5
         )
-        self.genome = GNGenome(condition=condition)
+        self.genome = GPGenome(condition=condition)
 
     def test_add_node(self):
         self.genome.tree.show_node()
