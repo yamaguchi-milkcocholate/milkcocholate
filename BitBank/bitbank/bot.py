@@ -239,16 +239,16 @@ class Bot:
                 if amount > 10.0:
                     self.new_orders(price, amount, side, order_type, retry=retry + 1)
                     # 連続して成り行き注文すると怒られる
-                    time.sleep(20)
+                    time.sleep(5)
                     self.new_orders(price, amount, side, order_type, retry=retry + 1)
                 else:
                     pass
             elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
                 # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
-                print('60秒の遅らせて再度注文します。')
-                self.__line(message='60秒の遅らせて再度注文します。')
-                time.sleep(60)
+                print('10秒の遅らせて再度注文します。')
+                self.__line(message='5秒の遅らせて再度注文します。')
+                time.sleep(5)
                 self.new_orders(price, amount, side, order_type, retry=retry + 1)
             elif '60004' in e.args[0]:
                 #  60004 内容: 指定した数量がしきい値を下回っています
