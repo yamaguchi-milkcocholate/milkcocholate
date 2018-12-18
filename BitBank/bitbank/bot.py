@@ -20,6 +20,7 @@ class Bot:
     CHARSET = 'utf8'
 
     DEFAULT_TYPE = 'market'
+    PRICE_LIMIT = 1.0
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -41,6 +42,7 @@ class Bot:
         self.genome = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
         self.__line = Line()
+        self.__start_price = self.fetch_price()
 
     def __call__(self):
         # 注文の情報を確認
@@ -93,13 +95,15 @@ class Bot:
             # STAYではないとき
             if operation != int(self.STAY):
                 # 新規注文
-                self.new_orders(
-                    price=price,
-                    amount=(float(assets_free_amount[self.__yen]) / price),
-                    side=self.__operation_to_side(operation=operation),
-                    order_type=self.DEFAULT_TYPE
-                )
-
+                if self.can_order():
+                    self.new_orders(
+                        price=price,
+                        amount=(float(assets_free_amount[self.__yen]) / price),
+                        side=self.__operation_to_side(operation=operation),
+                        order_type=self.DEFAULT_TYPE
+                    )
+                else:
+                    raise SchedulerCancelException('price belows the limit. ')
             else:
                 print(self.__now() + '   ' + 'stay')
 
@@ -112,12 +116,15 @@ class Bot:
             # STAYではないとき
             if operation != int(self.STAY):
                 # 新規注文
-                self.new_orders(
-                    price=price,
-                    amount=assets_free_amount[self.__coin],
-                    side=self.__operation_to_side(operation=operation),
-                    order_type=self.DEFAULT_TYPE
-                )
+                if self.can_order():
+                    self.new_orders(
+                        price=price,
+                        amount=assets_free_amount[self.__coin],
+                        side=self.__operation_to_side(operation=operation),
+                        order_type=self.DEFAULT_TYPE
+                    )
+                else:
+                    raise SchedulerCancelException('price belows the limit. ')
 
             else:
                 print(self.__now() + '   ' + 'stay')
@@ -565,3 +572,39 @@ class Bot:
         else:
             japanese = None
         return japanese
+
+    def fetch_price(self):
+        """
+        開始時の価格を返す
+        :return: string
+        """
+        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
+        return float(ticker['last'])
+
+    def can_order(self):
+        """
+        開始時よりも価格が大幅に下がった時に強制終了させるためのメソッド
+        :return: bool:
+        """
+        price = self.fetch_price()
+        if price >= (self.__start_price - self.PRICE_LIMIT):
+            return True
+        else:
+            # 全てのコインを売る
+            assets_free_amount = self.fetch_asset()
+            self.new_orders(
+                price=price,
+                amount=assets_free_amount[self.__coin],
+                side='sell',
+                order_type=self.DEFAULT_TYPE
+            )
+            message = "開始時の価格を大きく下回りました。\n" \
+                      "取引を中止します。 \n" \
+                      "===================\n" \
+                      "時刻: {}\n" \
+                      "===================".format(
+                       self.__now()
+                       )
+            message.replace('n', '%0D%0A')
+            self.__line(message=message)
+            return False
