@@ -13,6 +13,7 @@ class Node:
         self.operation = None
         self.left_node = None
         self.right_node = None
+        self.node_id = None
         self.depth = depth
         self.__new(condition=condition)
 
@@ -43,7 +44,7 @@ class Node:
             self.right_node = self.EON
 
     def show_node(self):
-        print('depth: ' + str(self.depth), self.tech_name, self.threshold, self.operation)
+        print('depth: ' + str(self.depth), self.tech_name, self.threshold, self.operation, self.node_id)
         self.__line_branch()
         if self.left_node == self.EON:
             print('EON')
@@ -58,3 +59,16 @@ class Node:
     def __line_branch(self):
         for i in range(self.depth + 1):
             print('--', end='')
+
+    def update_id(self, node_id):
+        """
+        ノードIDを更新
+        :param node_id: integer
+        :return: integer 自分のIDを返す
+        """
+        self.node_id = node_id
+        if isinstance(self.left_node, Node):
+            node_id = self.left_node.update_id(node_id=node_id + 1)
+        if isinstance(self.right_node, Node):
+            node_id = self.right_node.update_id(node_id=node_id + 1)
+        return node_id

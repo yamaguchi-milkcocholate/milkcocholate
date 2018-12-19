@@ -46,8 +46,9 @@ class GeneticNetwork:
     def init_population(self):
         """
         遺伝子の初期化(乱数)
+        GPGenomeに木を生成させる
         """
-        pass
+        self.genome = GPGenome(condition=self.__condition)
 
     def generation(self, steps, experiment_id, log_span, population_dept):
         """
