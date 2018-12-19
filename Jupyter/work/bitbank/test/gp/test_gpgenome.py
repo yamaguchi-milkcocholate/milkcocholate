@@ -23,7 +23,7 @@ class TestGPGenome(unittest.TestCase):
         self.genome = GPGenome(condition=condition)
 
     def test_add_node(self):
-        self.genome.tree.show_node()
+        self.genome.show_tree()
 
 
 if __name__ == '__main__':

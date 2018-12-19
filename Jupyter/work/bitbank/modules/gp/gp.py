@@ -40,7 +40,7 @@ class GeneticNetwork:
         self.__elite_num = elite_num
         self.__population = population
         self.__fitness_function = fitness_function
-        self.genome = None
+        self.genomes = None
         self.fitness = None
 
     def init_population(self):
@@ -48,7 +48,8 @@ class GeneticNetwork:
         遺伝子の初期化(乱数)
         GPGenomeに木を生成させる
         """
-        self.genome = GPGenome(condition=self.__condition)
+        for i in range(self.__population):
+            self.genomes.append(GPGenome(condition=self.__condition))
 
     def generation(self, steps, experiment_id, log_span, population_dept):
         """
@@ -82,16 +83,55 @@ class GeneticNetwork:
         :param is_log:        bool  ログを記録するかどうか
         """
         self.fitness = self.__fitness_function.calc_fitness(
-            genome=self.genome,
+            genomes=self.genomes,
             population_id=population_id,
             is_log=is_log
         )
 
-    def determine_next_generation(self):
+    # def determine_next_generation(self):
         """
         次の世代を決定する
         """
-        pass
+        sum_fitness = 0
+        roulette = list()
+        # 総和とルーレットをつくる
+        for fitness in self.fitness:
+            sum_fitness += fitness
+            roulette.append(sum_fitness)
+        roulette = np.asarray(roulette)
+        # 次世代の遺伝子リスト
+        new_genomes = list()
+        elites = self.select_elites()
+
+        # エリート以外の遺伝子を交叉
+        for geno_i in range(len(self.genomes) - self.__elite_num):
+            # rouletteはソートされている。要素がしきい値をちょうど越える時のインデックスを取る
+            # 親a
+            par_a = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))]
+            # 親b
+            par_b = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))]
+            new_genomes.append([self.crossover(par_a, par_b)])
+
+        # 突然変異
+
+    @staticmethod
+    def crossover(a, b):
+        """
+        交叉させて子の遺伝子を返す
+        :param a: GPGenome
+        :param b: GPGenome
+        :return: GPGenome
+        """
+        node_a = a.random_node()
+        node_b = b.random_node()
+        a.put_node(node=node_b, node_id=node_a.get_node_id())
+        b.put_node(node=node_a, node_id=node_b.get_node_id())
+        return a, b
+
+    def select_elites(self):
+        fitness = np.argsort(self.fitness)[::-1]
+        elites = self.genomes[fitness[:self.__elite_num]]
+        return elites
 
     def __log_population(self, experiment_id, step_i, population_dept):
         """
@@ -106,7 +146,7 @@ class GeneticNetwork:
             [
                 experiment_id,
                 step_i,
-                pickle.dumps(self.genome),
+                pickle.dumps(self.genomes),
                 pickle.dumps(self.fitness),
             ],
         ])

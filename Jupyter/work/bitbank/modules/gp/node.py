@@ -114,3 +114,49 @@ class Node:
         else:
             result = False
         return result
+
+    def get_node_id(self):
+        return self.node_id
+
+    def put_node(self, node, node_id):
+        """
+        子ノードを調べて、IDが一致すればノードを入れ替える
+        :param node:    差し替えるノード
+        :param node_id: 対象のID
+        :return: bool 見つかったかどうか
+        """
+        # まずは右のノードから調べる
+
+        if self.right_node:
+            if self.right_node.get_node_id() == node_id:
+                # 正解なら入れ替えてTrue
+                self.right_node = node
+                return True
+            else:
+                # 失敗ならノードに調べさせる
+                if self.right_node.put_node(node=node, node_id=node_id):
+                    return True
+                else:
+                    pass
+        # ノードがないならFalse
+        else:
+            pass
+
+        # 右のノードで見つからなかったら、次は左ノード
+
+        if self.left_node:
+            if self.left_node.get_node_id() == node_id:
+                # 正解なら入れ替えてTrue
+                self.left_node = node
+                return True
+            else:
+                # 失敗ならノードに調べさせる
+                if self.left_node.put_node(node=node, node_id=node_id):
+                    return True
+                else:
+                    pass
+        else:
+            pass
+
+        # このノードにはない
+        return False
