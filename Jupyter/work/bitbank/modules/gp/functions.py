@@ -4,6 +4,8 @@ import math
 
 PATTERN = 9
 INC = 1
+TINY = 0.000000001
+FEW = 0.000001
 
 
 def show_wave(**kwargs):
@@ -42,7 +44,7 @@ def template(size, number):
         size += 1
 
     if number is 0:
-        data = np.zeros(size)
+        data = np.ones(size)
         return data
     elif number is 1:
         data = np.arange(-1 * size / 2, size / 2)
@@ -134,7 +136,7 @@ def cosine_similarity(x, y):
     x_norm = np.linalg.norm(x)
     y_norm = np.linalg.norm(y)
     sim = np.sum(x * y)
-    sim = sim / (x_norm * y_norm + 0.00000000001)
+    sim = sim / (x_norm * y_norm + TINY)
     return sim
 
 
@@ -150,8 +152,8 @@ def correlation_coefficient(x, y):
         print(y)
         raise Exception()
 
-    x = x - np.average(x)
-    y = y - np.average(y)
+    x = x - np.average(x) + FEW
+    y = y - np.average(y) + FEW
     return cosine_similarity(x, y)
 
 

@@ -6,6 +6,7 @@ import numpy as np
 sys.path.append(os.pardir + '/../')
 from modules.gp.functions import *
 from modules.datamanager.picker import Picker
+from modules.datamanager.bollingerband import BollingerBand
 
 
 class TestFunctions(unittest.TestCase):
@@ -144,6 +145,23 @@ class TestFunctions(unittest.TestCase):
         for i in range(0):
             start = random.randint(0, len(candlestick) - term)
             data = candlestick.loc[start:start + term].end.values
+            print()
+            sim = pattern_analysis(data)
+            print(sim)
+            tpl = template(size=len(data), number=sim)
+            show_wave(
+                data=tpl,
+                candlestick=data
+            )
+        data = np.asarray([1, 1, 1])
+        sim = pattern_analysis(data)
+        print(sim)
+
+        bollingerband = BollingerBand(candlestick=candlestick)
+        bollingerband = bollingerband(20, 20)
+        for i in range(10):
+            start = random.randint(0, len(candlestick) - term)
+            data = bollingerband.loc[start:start + term].simple_moving_average.values
             print()
             sim = pattern_analysis(data)
             print(sim)
