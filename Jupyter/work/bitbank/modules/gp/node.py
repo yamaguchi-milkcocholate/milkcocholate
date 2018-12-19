@@ -72,3 +72,45 @@ class Node:
         if isinstance(self.right_node, Node):
             node_id = self.right_node.update_id(node_id=node_id + 1)
         return node_id
+
+    def get_node(self, node_id):
+        if node_id == self.node_id:
+            return self.node_id
+        else:
+            # False or node_id
+            right = self.__get_right_node(node_id=node_id)
+            left = self.__get_left_node(node_id=node_id)
+            # 答えがあれば答えを、なければFalseを返す
+            if right:
+                # 右側に答えがあった
+                return right
+            elif left:
+                # 左側に答えがあった
+                return left
+            else:
+                # 両方とも答えがなかった
+                return False
+
+    def __get_right_node(self, node_id):
+        """
+        右側のノートに問い合わせる
+        :param node_id:
+        :return:
+        """
+        if isinstance(self.left_node, Node):
+            result = self.left_node.get_node(node_id=node_id)
+        else:
+            result = False
+        return result
+
+    def __get_left_node(self, node_id):
+        """
+        左側のノードに問い合わせる
+        :param node_id:
+        :return:
+        """
+        if isinstance(self.left_node, Node):
+            result = self.left_node.get_node(node_id=node_id)
+        else:
+            result = False
+        return result
