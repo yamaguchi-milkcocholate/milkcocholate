@@ -105,14 +105,31 @@ class GeneticNetwork:
 
         # エリート以外の遺伝子を交叉
         for geno_i in range(len(self.genomes) - self.__elite_num):
-            # rouletteはソートされている。要素がしきい値をちょうど越える時のインデックスを取る
-            # 親a
-            par_a = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))]
-            # 親b
-            par_b = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))]
-            new_genomes.append([self.crossover(par_a, par_b)])
+            par_a, par_b = self.roulette_select(roulette=roulette, sum_fitness=sum_fitness)
+            child_a, child_b = self.crossover(par_a, par_b)
+            new_genomes.append(child_a)
+            new_genomes.append(child_b)
 
         # 突然変異
+        for new_genome in new_genomes:
+            # 何回の突然変異を起こすか
+            count = int(self.__mutation * new_genome.get_total())
+            for i in range(count):
+                new_genome.mutate()
+
+        # エリートを結合
+        new_genomes[0:0] = elites
+        self.genomes = new_genomes
+
+    def roulette_select(self, roulette, sum_fitness):
+        """
+        ルーレット選択する
+        :return: GPGenome, GPGenome
+        """
+        # rouletteはソートされている。要素がしきい値をちょうど越える時のインデックスを取る
+        par_a = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))[0]]
+        par_b = self.genomes[np.where(roulette >= random.randrange(0, sum_fitness))[0]]
+        return par_a, par_b
 
     @staticmethod
     def crossover(a, b):

@@ -22,13 +22,7 @@ class Node:
         このノードのテクニカル分析指標を決定する
         :param condition: Condition
         """
-        tech_analysis = condition.random_choice()
-        self.tech_name = tech_analysis['name']
-        self.threshold = random.uniform(tech_analysis['lower_limit'], tech_analysis['upper_limit'])
-        if random.randint(0, 9) % 2 == 0:
-            self.operation = self.MORE_THAN
-        else:
-            self.operation = self.LESS_THAN
+        self.random_tech_analysis(condition=condition)
         if self.depth <= self.MAX_DEPTH:
             # 1/5でEON
             if random.randint(1, 100) % 5 == 0:
@@ -160,3 +154,63 @@ class Node:
 
         # このノードにはない
         return False
+
+    def mutate(self, node_id, condition):
+        """
+        突然変異を起こす
+        違ければ、子ノードを調べる
+        :param node_id:   integer
+        :param condition: Condition
+        :return: bool
+        """
+        if node_id == self.node_id:
+            self.random_tech_analysis(condition=condition)
+            return True
+        else:
+            right = self.__mutate_right_node(node_id=node_id, condition=condition)
+            left = self.__mutate_left_node(node_id=node_id, condition=condition)
+            # 答えがあれば答えを、なければFalseを返す
+            if right:
+                # 右側に答えがあった
+                return right
+            elif left:
+                # 左側に答えがあった
+                return left
+            else:
+                # 両方とも答えがなかった
+                return False
+
+    def random_tech_analysis(self, condition):
+        tech_analysis = condition.random_choice()
+        self.tech_name = tech_analysis['name']
+        self.threshold = random.uniform(tech_analysis['lower_limit'], tech_analysis['upper_limit'])
+        if random.randint(0, 9) % 2 == 0:
+            self.operation = self.MORE_THAN
+        else:
+            self.operation = self.LESS_THAN
+
+    def __mutate_right_node(self, node_id, condition):
+        """
+        右ノードを調べて突然変異を起こす
+        :param node_id:
+        :param condition:
+        :return: bool
+        """
+        if isinstance(self.right_node, Node):
+            result = self.right_node.mutate(node_id=node_id, condition=condition)
+        else:
+            result = False
+        return result
+
+    def __mutate_left_node(self, node_id, condition):
+        """
+        左ノードを調べて突然変異を起こす
+        :param node_id:
+        :param condition:
+        :return: bool
+        """
+        if isinstance(self.left_node, Node):
+            result = self.left_node.mutate(node_id=node_id, condition=condition)
+        else:
+            result = False
+        return result
