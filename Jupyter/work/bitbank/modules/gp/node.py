@@ -27,11 +27,9 @@ class Node:
             # 1/5でEON
             if random.randint(1, 100) % 5 == 0:
                 self.left_node = self.EON
-            else:
-                self.left_node = Node(condition=condition, depth=self.depth + 1)
-            if random.randint(1, 100) % 5 == 0:
                 self.right_node = self.EON
             else:
+                self.left_node = Node(condition=condition, depth=self.depth + 1)
                 self.right_node = Node(condition=condition, depth=self.depth + 1)
         else:
             self.left_node = self.EON
