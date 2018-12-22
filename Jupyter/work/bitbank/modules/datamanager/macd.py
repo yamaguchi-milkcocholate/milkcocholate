@@ -11,7 +11,6 @@ class MACD:
         self.short_term = None
         self.long_term = None
         self.signal = None
-        self.__list = None
         self.data = None
 
     def __call__(self, short_term=12, long_term=26, signal=9):
@@ -24,7 +23,6 @@ class MACD:
         self.short_term = short_term
         self.long_term = long_term
         self.signal = signal
-        self.__list = []
         columns = ['price', '15min', '5min', '1min', 'time']
         self.data = pd.DataFrame([], columns=columns)
         self.calculate()
@@ -36,50 +34,185 @@ class MACD:
         5min        EMA
         1min + 5min EMA
         """
-        data_15min, data_5min = self.normalize_data()
-        sma = self.fitst_sma(data_15min, data_5min)
-        columns = ['end', 'short_term', 'long_term', 'time']
-        line = self.__new_first_line()
-        self.__append_line(line, columns)
-        pre_line = self.__peek_line()
+        data_15min, data_5min, data_1min = self.normalize_data()
+        data_1min = self.cut_for_ema_1min(data_1min)
+        macd, data_15min, data_5min = self.first_sma_data_frame(data_15min, data_5min)
+        macd = self.macd_data_frame(macd, data_15min, data_5min, data_1min)
+        signal = self.macd_signal_data_frame(macd)
 
-        for index in range(self.long_term, len(self.candlestick)):
-            line = self.__new_following_line(index, pre_line)
-            self.__append_line(line, columns)
-            pre_line = self.__peek_line()
+    def macd_signal_data_frame(self, macd):
+        """
+        MACDシグナル
+        :param macd: pandas.DataFrame
+        :return:     pandas.DataFrame
+        """
+        part = macd.loc[:self.signal - 1]
+        sma_15min = float(np.sum(part.macd_15min.values) / self.signal)
+        sma_5min = float(np.sum(part.macd_5min.values) / self.signal)
+        sma_1min = float(np.sum(part.macd_1min.values) / self.signal)
+        macd = macd.loc[self.signal:].reset_index(drop=True)
+        signal = pd.DataFrame([[
+            part.tail(1).macd_15min,
+            sma_15min,
+            part.tail(1).macd_5min,
+            sma_5min,
+            part.tail(1).macd_1min,
+            sma_1min,
+            part.tail(1).macd_15min - sma_15min,
+            part.tail(1).macd_5min - sma_5min,
+            part.tail(1).macd_1min - sma_1min,
+            part.tail(1).time
+        ]], columns=[
+            'macd_15min',
+            'signal_15min',
+            'macd_5min',
+            'signal_5min',
+            'macd_1min',
+            'signal_1min',
+            'histogram_15min',
+            'histogram_5min',
+            'histogram_1min',
+            'time'
+        ])
+        signal_15min = sma_15min
+        signal_5min = sma_5min
+        signal_1min = sma_1min
+        for macd_i in range(len(macd)):
+            signal_15min = self.__exponential_moving_average(
+                value=macd.loc[macd_i].macd_15min,
+                pre_value=signal_15min,
+                term=self.signal
+            )
+            signal_5min = self.__exponential_moving_average(
+                value=macd.loc[macd_i].macd_5min,
+                pre_value=signal_5min,
+                term=self.signal
+            )
+            signal_1min = self.__exponential_moving_average(
+                value=macd.loc[macd_i].macd_1min,
+                pre_value=signal_1min,
+                term=self.signal
+            )
+            signal.loc[macd_i + 1] = [
+                macd.loc[macd_i].macd_15min,
+                signal_15min,
+                macd.loc[macd_i].macd_5min,
+                signal_5min,
+                macd.loc[macd_i].macd_1min,
+                signal_1min,
+                macd.loc[macd_i].macd_15min - signal_15min,
+                macd.loc[macd_i].macd_5min - signal_5min,
+                macd.loc[macd_i].macd_1min - signal_1min,
+                macd.loc[macd_i].time,
+            ]
+        return signal
 
-        columns = ['end', 'short_term', 'long_term', 'time', 'macd', 'macd_signal']
-        for item in self.__list:
-            macd = float(item['short_term']) - float(item['long_term'])
-            item['macd'] = macd
+    def macd_data_frame(self, ema, data_15min, data_5min, data_1min):
+        """
+        平滑移動平均
+        :param ema:        pandas.DataFrame
+        :param data_15min: pandas.DataFrame
+        :param data_5min:  pandas.DataFrame
+        :param data_1min:  pandas.DataFrame
+        :return:           pandas.DataFrame
+        """
+        ema_15min_short = ema.loc[0].short_15min
+        ema_15min_long = ema.loc[0].long_15min
+        ema_5min_short = ema.loc[0].short_5min
+        ema_5min_long = ema.loc[0].long_5min
+        i_15min = 1
+        i_5min = 1
+        for i_1min in range(len(data_1min)):
+            if i_1min % 15 == 0 and i_1min != 0:
+                ema_15min_short = self.__exponential_moving_average(
+                    value=data_15min.loc[i_15min].end,
+                    pre_value=ema_15min_short,
+                    term=self.short_term
+                )
+                ema_15min_long = self.__exponential_moving_average(
+                    value=data_15min.loc[i_15min].end,
+                    pre_value=ema_15min_long,
+                    term=self.long_term
+                )
+                i_15min += 1
+            if i_1min % 5 == 0 and i_1min != 0:
+                ema_5min_short = self.__exponential_moving_average(
+                    value=data_5min.loc[i_5min].end,
+                    pre_value=ema_5min_short,
+                    term=self.short_term
+                )
+                ema_5min_long = self.__exponential_moving_average(
+                    value=data_5min.loc[i_5min].end,
+                    pre_value=ema_5min_long,
+                    term=self.long_term
+                )
+                i_5min += 1
+            ema_1min_short = self.__exponential_moving_average(
+                    value=data_1min.loc[i_1min].end,
+                    pre_value=ema_5min_short,
+                    term=self.short_term
+            )
+            ema_1min_long = self.__exponential_moving_average(
+                value=data_1min.loc[i_1min].end,
+                pre_value=ema_5min_long,
+                term=self.long_term
+            )
+            ema.loc[i_1min + 1] = [
+                ema_15min_short,
+                ema_15min_long,
+                ema_5min_short,
+                ema_5min_long,
+                ema_1min_short,
+                ema_1min_long,
+                ema_15min_short - ema_15min_long,
+                ema_5min_short - ema_5min_long,
+                ema_1min_short - ema_1min_long,
+                data_1min.loc[i_1min].time,
+            ]
+        return ema
 
-        self.__replace_line_to_data_frame()
+    @staticmethod
+    def __exponential_moving_average(value, pre_value, term):
+        return pre_value + (2 / (term + 1)) * (value - pre_value)
 
-        line = self.__extend_first_line()
-        self.__append_line(line, columns)
-        pre_line = self.__peek_line()
-
-        for index in range(self.signal, len(self.data)):
-            line = self.__extend_following_line(index, pre_line)
-            self.__append_line(line, columns)
-            pre_line = self.__peek_line()
-
-        self.__replace_line_to_data_frame()
-
-    def first_sma(self, data_15min, data_5min):
+    def first_sma_data_frame(self, data_15min, data_5min):
         """
         最初は単純移動平均
         :param data_15min: pandas.DataFrame
         :param data_5min: pandas.DataFrame
-        :return: pandas.DataFrame, pandas.DataFrame
-        ['15min_short', '15min_long', '5min_short', '5min_long', 'price'], candlestick
+        :return: pandas.DataFrame, pandas.DataFrame, pandas.DataFrame
+        ['short_15min', 'long_15min', 'short_5min', 'long_5min''], candlestick_15min, candlestick_5min
         """
-        sma_15min_short = self.sma_15min_short(data_15min)
-        sma_15min_long = self.sma_15min_long(data_15min)
+        sma_15min_short = self.sma_15min_short(data_15min)[0]
+        sma_15min_long = self.sma_15min_long(data_15min)[0]
         data_15min = self.cut_for_ema_15min(data_15min)
-        sma_5min_short = self.sma_5min_short(data_5min)
-        sma_5min_long = self.sma_5min_long(data_5min)
+        sma_5min_short = self.sma_5min_short(data_5min)[0]
+        sma_5min_long = self.sma_5min_long(data_5min)[0]
         data_5min = self.cut_for_ema_5min(data_5min)
+        ema = pd.DataFrame([[
+            sma_15min_short,
+            sma_15min_long,
+            sma_5min_short,
+            sma_5min_long,
+            sma_5min_short,
+            sma_5min_long,
+            sma_15min_short - sma_15min_long,
+            sma_5min_short - sma_5min_long,
+            sma_5min_short - sma_5min_long,
+            data_5min.loc[0, 'time']
+        ]], columns=[
+            'short_15min',
+            'long_15min',
+            'short_5min',
+            'long_5min',
+            'short_1min',
+            'long_1min',
+            'macd_15min',
+            'macd_5min',
+            'macd_1min',
+            'time'
+        ])
+        return ema, data_15min, data_5min
 
     def sma_15min_short(self, data_15min):
         """
@@ -132,10 +265,10 @@ class MACD:
         15, 5の倍数に揃える
         :return:
         """
-        self.data = self.data.loc[0:len(self.data) - len(self.data) % 15 - 1]
-        data_15min = self.data.loc[::15].reset_index(drop=True)
-        data_5min = self.data.loc[::5].reset_index(drop=True)
-        return data_15min, data_5min
+        self.candlestick = self.candlestick.loc[0:len(self.candlestick) - len(self.candlestick) % 15 - 1]
+        data_15min = self.candlestick.loc[::15].reset_index(drop=True)
+        data_5min = self.candlestick.loc[::5].reset_index(drop=True)
+        return data_15min, data_5min, self.candlestick
 
     def cut_for_ema_15min(self, data_15min):
         """
@@ -153,77 +286,10 @@ class MACD:
         """
         return data_5min[self.long_term * 3:].reset_index(drop=True)
 
-    def __new_first_line(self):
-        end = self.long_term - 1
-        short_term_sma = self.__simple_moving_average(self.candlestick, self.short_term, end)
-        long_term_sma = self.__simple_moving_average(self.candlestick, self.long_term, end)
-        row = self.candlestick.loc[end]
-        return [row['end'], short_term_sma, long_term_sma, row['time']]
-
-    def __new_following_line(self, index, pre_line):
-        row = self.candlestick.loc[index]
-        end_value = float(row['end'])
-        short_term_ema = self.__exponential_moving_average(end_value, float(pre_line.at[0, 'short_term']),
-                                                           float(2 / (self.short_term + 1)))
-        long_term_ema = self.__exponential_moving_average(end_value, float(pre_line.at[0, 'long_term']),
-                                                          float(2 / (self.long_term + 1)))
-        return [end_value, short_term_ema, long_term_ema, row['time']]
-
-    def __replace_line_to_data_frame(self):
-        self.data = pd.concat(self.__list, ignore_index=True)
-        self.__list = []
-
-    def __extend_first_line(self):
-        end = self.signal - 1
-        macd_signal = self.__simple_moving_average(self.data, self.signal, end)
-        row = self.data.loc[end]
-        return [row['end'], row['short_term'], row['long_term'], row['time'], row['macd'], macd_signal]
-
-    def __extend_following_line(self, index, pre_line):
-        row = self.data.loc[index]
-        macd_value = float(row['macd'])
-        macd_signal = self.__exponential_moving_average(macd_value, float(pre_line.at[0, 'macd']),
-                                                        float(2 / (self.signal + 1)))
-        return [row['end'], row['short_term'], row['long_term'], row['time'], macd_value, macd_signal]
-
-    @staticmethod
-    def __simple_moving_average(df, span, end):
+    def cut_for_ema_1min(self, data_1min):
         """
-        :param df:
-        :param span:
-        :param end: int index of the end day
+        SMAで使った部分を切り捨てる
+        :param data_1min:
         :return:
         """
-        wa = 0
-        start = end - span + 1
-        part = df.loc[start:end]
-        for index, row in part.iterrows():
-            wa += int(row['end'])
-        return float(wa / span)
-
-    @staticmethod
-    def __exponential_moving_average(value, pre_value, alpha):
-        return pre_value + alpha * (value - pre_value)
-
-    @staticmethod
-    def __calc_simple_mean(df, span, end):
-        """
-        :param df:
-        :param span:
-        :param end: int index of the end day
-        :return:
-        """
-        wa = 0
-        start = end - span + 1
-        part = df.loc[start:end]
-        for index, row in part.iterrows():
-            wa += int(row['end'])
-        return float(wa/span)
-
-    def __append_line(self, array, columns):
-        line = pd.DataFrame([array], columns=columns)
-        self.__list.append(line)
-
-    def __peek_line(self):
-        last = len(self.__list) - 1
-        return self.__list[last]
+        return data_1min[self.long_term * 15:].reset_index(drop=True)
