@@ -52,23 +52,13 @@ class MACD:
         sma_1min = float(np.sum(part.macd_1min.values) / self.signal)
         macd = macd.loc[self.signal:].reset_index(drop=True)
         signal = pd.DataFrame([[
-            part.tail(1).macd_15min,
-            sma_15min,
-            part.tail(1).macd_5min,
-            sma_5min,
-            part.tail(1).macd_1min,
-            sma_1min,
+            part.tail(1).price,
             part.tail(1).macd_15min - sma_15min,
             part.tail(1).macd_5min - sma_5min,
             part.tail(1).macd_1min - sma_1min,
             part.tail(1).time
         ]], columns=[
-            'macd_15min',
-            'signal_15min',
-            'macd_5min',
-            'signal_5min',
-            'macd_1min',
-            'signal_1min',
+            'price',
             'histogram_15min',
             'histogram_5min',
             'histogram_1min',
@@ -94,12 +84,7 @@ class MACD:
                 term=self.signal
             )
             signal.loc[macd_i + 1] = [
-                macd.loc[macd_i].macd_15min,
-                signal_15min,
-                macd.loc[macd_i].macd_5min,
-                signal_5min,
-                macd.loc[macd_i].macd_1min,
-                signal_1min,
+                macd.loc[macd_i].price,
                 macd.loc[macd_i].macd_15min - signal_15min,
                 macd.loc[macd_i].macd_5min - signal_5min,
                 macd.loc[macd_i].macd_1min - signal_1min,
@@ -158,6 +143,7 @@ class MACD:
                 term=self.long_term
             )
             ema.loc[i_1min + 1] = [
+                data_1min.loc[i_1min + 1].end,
                 ema_15min_short,
                 ema_15min_long,
                 ema_5min_short,
@@ -190,6 +176,7 @@ class MACD:
         sma_5min_long = self.sma_5min_long(data_5min)[0]
         data_5min = self.cut_for_ema_5min(data_5min)
         ema = pd.DataFrame([[
+            data_5min.loc[0].end,
             sma_15min_short,
             sma_15min_long,
             sma_5min_short,
@@ -201,6 +188,7 @@ class MACD:
             sma_5min_short - sma_5min_long,
             data_5min.loc[0, 'time']
         ]], columns=[
+            'price',
             'short_15min',
             'long_15min',
             'short_5min',
