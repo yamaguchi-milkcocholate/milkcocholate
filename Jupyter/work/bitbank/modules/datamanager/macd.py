@@ -11,7 +11,6 @@ class MACD:
         self.short_term = None
         self.long_term = None
         self.signal = None
-        self.data = None
 
     def __call__(self, short_term=12, long_term=26, signal=9):
         """
@@ -23,10 +22,7 @@ class MACD:
         self.short_term = short_term
         self.long_term = long_term
         self.signal = signal
-        columns = ['price', '15min', '5min', '1min', 'time']
-        self.data = pd.DataFrame([], columns=columns)
-        self.calculate()
-        return self.data
+        return self.calculate()
 
     def calculate(self):
         """
@@ -39,6 +35,7 @@ class MACD:
         macd, data_15min, data_5min = self.first_sma_data_frame(data_15min, data_5min)
         macd = self.macd_data_frame(macd, data_15min, data_5min, data_1min)
         signal = self.macd_signal_data_frame(macd)
+        return signal
 
     def macd_signal_data_frame(self, macd):
         """
