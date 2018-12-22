@@ -18,6 +18,10 @@ class TestFunctions(unittest.TestCase):
     def test_wave_template(self):
         waves = {'sma': 20, 'ema': 10}
         situation = functions.wave_template(waves=waves, pattern_num=3)
+        # pprint.pprint(situation.get_genome_ranges())
+
+    def test_macd(self):
+        situation = functions.macd()
         pprint.pprint(situation.get_genome_ranges())
 
     def tearDown(self):

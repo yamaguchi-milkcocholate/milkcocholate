@@ -3,6 +3,7 @@ from modules.fitnessfunction.bollingerband import BollingerBand
 from modules.fitnessfunction.bollingerband_period_goal import BollingerBandPeriodGoal
 from modules.fitnessfunction.bollingerband_period_goal_ti import BollingerBandPeriodGoalTi
 from modules.fitnessfunction.wavetpl import WaveTemplate
+from modules.fitnessfunction.macd import MACD
 from collections import OrderedDict
 
 WAVE_TEMPLATE_NUM = 9
@@ -172,5 +173,29 @@ def wave_template(waves, pattern_num):
 
     situation = Situation()
     situation.set_fitness_function_id(f_id=WaveTemplate.FITNESS_FUNCTION_ID)
+    situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
+    return situation
+
+
+def macd():
+    """
+    MACD
+    :return: Situation
+    """
+    # 下降トレンドで買うのでマイナス
+    situation_dict = OrderedDict()
+    situation_dict['BUY-15MIN-THRESHOLD'] = (-1, 0)
+    situation_dict['BUY-5MIN-THRESHOLD'] = (-1, 0)
+    situation_dict['BUY-HISTOGRAM-MAX'] = (-1, 0)
+    situation_dict['BUY-HISTOGRAM-DECREASE-RATE'] = (-1, 0)
+
+    # 上昇トレンドで売るのでプラス
+    situation_dict['SELL-15MIN-THRESHOLD'] = (0, 1)
+    situation_dict['SELL-5MIN-THRESHOLD'] = (0, 1)
+    situation_dict['SELL-HISTOGRAM-MAX'] = (0, 1)
+    situation_dict['SELL-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+
+    situation = Situation()
+    situation.set_fitness_function_id(f_id=MACD.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
     return situation
