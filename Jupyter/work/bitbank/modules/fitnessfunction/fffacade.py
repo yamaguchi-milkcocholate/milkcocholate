@@ -79,7 +79,7 @@ class Facade:
                 coin=self._coin
             )
         elif function_name is self._functions[6]:
-            return macd.MACD(
+            return macd.MACD_(
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_params=hyper_params,

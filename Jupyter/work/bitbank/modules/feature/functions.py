@@ -3,7 +3,7 @@ from modules.fitnessfunction.bollingerband import BollingerBand
 from modules.fitnessfunction.bollingerband_period_goal import BollingerBandPeriodGoal
 from modules.fitnessfunction.bollingerband_period_goal_ti import BollingerBandPeriodGoalTi
 from modules.fitnessfunction.wavetpl import WaveTemplate
-from modules.fitnessfunction.macd import MACD
+from modules.fitnessfunction.macd import MACD_
 from collections import OrderedDict
 
 WAVE_TEMPLATE_NUM = 9
@@ -196,6 +196,6 @@ def macd():
     situation_dict['SELL-HISTOGRAM-DECREASE-RATE'] = (0, 1)
 
     situation = Situation()
-    situation.set_fitness_function_id(f_id=MACD.FITNESS_FUNCTION_ID)
+    situation.set_fitness_function_id(f_id=MACD_.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
     return situation

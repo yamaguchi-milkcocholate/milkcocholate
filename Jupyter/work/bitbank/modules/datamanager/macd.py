@@ -104,7 +104,7 @@ class MACD:
         ema_5min_long = ema.loc[0].long_5min
         i_15min = 1
         i_5min = 1
-        for i_1min in range(len(data_1min)):
+        for i_1min in range(len(data_1min) - 1):
             if i_1min % 15 == 0 and i_1min != 0:
                 ema_15min_short = self.__exponential_moving_average(
                     value=data_15min.loc[i_15min].end,
