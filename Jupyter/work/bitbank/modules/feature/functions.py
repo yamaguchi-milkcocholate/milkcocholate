@@ -187,7 +187,7 @@ def macd():
     situation_dict['BUY-15MIN-THRESHOLD'] = (-1, 0)
     situation_dict['BUY-5MIN-THRESHOLD'] = (-1, 0)
     situation_dict['BUY-HISTOGRAM-MAX'] = (-1, 0)
-    situation_dict['BUY-HISTOGRAM-DECREASE-RATE'] = (-1, 0)
+    situation_dict['BUY-HISTOGRAM-DECREASE-RATE'] = (0, 1)
 
     # 上昇トレンドで売るのでプラス
     situation_dict['SELL-15MIN-THRESHOLD'] = (0, 1)
