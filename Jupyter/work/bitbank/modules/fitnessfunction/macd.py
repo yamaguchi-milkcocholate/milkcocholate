@@ -150,7 +150,7 @@ class MACD_(FitnessFunction):
             factor_1 = self.is_exceed(threshold_15min, ave_15min)
             factor_2 = self.is_exceed(threshold_5min, ave_5min)
             factor_3 = self.is_exceed(max_histogram, max_histogram_5min)
-            factor_4 = self.is_exceed(histogram_1min, decrease_rate * max_histogram)
+            factor_4 = self.is_exceed(histogram_1min, decrease_rate * max_histogram_5min)
             if factor_1 and factor_2 and factor_3 and factor_4:
                 operation = self.BUY
             else:
@@ -176,7 +176,7 @@ class MACD_(FitnessFunction):
 
     @staticmethod
     def loss_cut(fitness, loss_cut, transaction):
-        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 10) + math.log(transaction + 1, 100))
+        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 100) + math.log(transaction + 1, 100))
         if fitness <= 0:
             fitness = 1
         return fitness

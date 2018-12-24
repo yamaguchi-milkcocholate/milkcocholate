@@ -57,9 +57,9 @@ class GeneticAlgorithm:
             range_tuple_list = self._situation.range_to_tuple_list()
             for situ_i in range(len(range_tuple_list)):
                 value = range_tuple_list[situ_i]
-                inter_list.append(random.randint(value[0], value[1]))
-            pop_list.append(np.asarray(inter_list, int))
-        return np.asarray(pop_list, int)
+                inter_list.append(random.uniform(value[0], value[1]))
+            pop_list.append(np.asarray(inter_list))
+        return np.asarray(pop_list)
 
     def generation(self, steps, experiment_id, log_span, population_dept):
         """

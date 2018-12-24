@@ -23,7 +23,7 @@ class UniformCrossover(crossover.Crossover):
         for pop_i in range(population):
             sum_fitness += fitness[pop_i]
             field.append(sum_fitness)
-        field = np.asarray(field, int)
+        field = np.asarray(field)
         new_geno_type = np.empty((0, feature_num), int)
         elites = self.select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
 
@@ -51,10 +51,10 @@ class UniformCrossover(crossover.Crossover):
                 if rand >= mutation:
                     continue
                 value = range_tuple_list[situ_i]
-                geno_type[geno_i][situ_i] = random.randrange(value[0], value[1])
+                geno_type[geno_i][situ_i] = random.uniform(value[0], value[1])
 
         rest = geno_type[elite_num:]
-        geno_type = np.asarray(np.r_[elites, rest], int)
+        geno_type = np.asarray(np.r_[elites, rest])
         return geno_type
 
     def select_elites(self, elite_num, geno_type, fitness):
