@@ -6,7 +6,7 @@ from modules.datamanager.picker import Picker
 class MACD:
 
     def __init__(self):
-        picker = Picker(span='5min', use_of_data='training', coin='xrp')
+        picker = Picker(span='5min', use_of_data='training', coin='xrp', is_inclination=True)
         self.candlestick = picker.get_candlestick()
         self.short_term = None
         self.long_term = None
@@ -64,7 +64,7 @@ class MACD:
         signal_15min = sma_15min
         signal_5min = sma_5min
         signal_1min = sma_1min
-        for macd_i in range(len(macd)):
+        for macd_i in range(len(macd) - 1):
             signal_15min = self.__exponential_moving_average(
                 value=macd.loc[macd_i].macd_15min,
                 pre_value=signal_15min,

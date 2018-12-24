@@ -113,9 +113,9 @@ class MACD_(FitnessFunction):
     def operation(self, data_i, has_coin,
                   genome, trend_15min, trend_5min, area_15min, area_5min, max_histogram_5min
                   ):
-        histogram_15min = self.__data.loc[data_i].histogram_15min
-        histogram_5min = self.__data.loc[data_i].histogram_5min
-        histogram_1min = self.__data.loc[data_i].histogram_1min
+        histogram_15min = float(self.__data.loc[data_i].histogram_15min)
+        histogram_5min = float(self.__data.loc[data_i].histogram_5min)
+        histogram_1min = float(self.__data.loc[data_i].histogram_1min)
         pre_trend_15min = trend_15min
         pre_trend_5min = trend_5min
         if histogram_15min >= 0:
