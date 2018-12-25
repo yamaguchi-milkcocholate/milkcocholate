@@ -71,8 +71,9 @@ class GeneticAlgorithm:
         :return:                   numpy, numpy         遺伝子, 適応度
         """
         self._geno_type = self.init_population()
+        print('No. 0')
         self._fitness = self.calc_fitness(should_log=False)
-        for step_i in range(steps + 1):
+        for step_i in range(1, steps + 1):
             print('No. ', step_i)
             self._geno_type = self.determine_next_generation()
             if step_i % log_span is 0:

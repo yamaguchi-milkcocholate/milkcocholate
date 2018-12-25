@@ -37,8 +37,16 @@ class MACD_(FitnessFunction):
         self.__data = self._approach(
             short_term=hyper_params['short_term'],
             long_term=hyper_params['long_term'],
-            signal=hyper_params['signal']
+            signal=hyper_params['signal'],
+            is_pickle=False
         )
+        self.trend_15min = None
+        self.trend_5min = None
+        self.area_15min = None
+        self.area_5min = None
+        self.max_histogram_5min = None
+        self.check = None
+        self.check_detail = None
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
@@ -56,30 +64,27 @@ class MACD_(FitnessFunction):
         return np.asarray(a=fitness_list)
 
     def calc_result(self, **kwargs):
+        self.trend_15min = self.PLUS
+        self.trend_5min = self.PLUS
+        self.area_15min = list()
+        self.area_5min = list()
+        self.max_histogram_5min = 0
+        self.check = [0, 0, 0, 0]
+        self.check_detail = [0, 0, 0, 0]
+
         genome = kwargs['genome']
         coin = 0
-        benefit = 0
         has_coin = False
         loss_cut = 0
         fitness = 0
         transaction = 0
-        trend_15min = 1
-        trend_5min = 1
-        area_15min = [0]
-        area_5min = [0]
-        max_histogram_5min = 0
         for data_i in range(len(self.__data)):
             price = self.__data.loc[data_i].price
 
-            operation, trend_15min, trend_5min, area_15min, area_5min, max_histogram_5min = self.operation(
+            operation = self.operation(
                 data_i=data_i,
                 has_coin=has_coin,
                 genome=genome,
-                trend_15min=trend_15min,
-                trend_5min=trend_5min,
-                area_15min=area_15min,
-                area_5min=area_5min,
-                max_histogram_5min=max_histogram_5min
             )
 
             if self.BUY == operation:
@@ -91,11 +96,11 @@ class MACD_(FitnessFunction):
                 has_coin = False
                 fitness += benefit
                 transaction += 1
+                # 損切り
+                if benefit <= self.LOSS_CUT:
+                    loss_cut += 1
 
-            # 損切り
-            if benefit <= self.LOSS_CUT:
-                loss_cut += 1
-
+        benefit = fitness
         fitness = self.loss_cut(fitness=fitness, loss_cut=loss_cut, transaction=transaction)
         print(
             'fitness',
@@ -103,80 +108,106 @@ class MACD_(FitnessFunction):
             'loss cut',
             loss_cut,
             'transaction',
-            transaction
+            transaction,
+            'benefit',
+            benefit
         )
+        print(self.check)
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
         return None
 
-    def operation(self, data_i, has_coin,
-                  genome, trend_15min, trend_5min, area_15min, area_5min, max_histogram_5min
-                  ):
+    def operation(self, data_i, has_coin, genome):
         histogram_15min = float(self.__data.loc[data_i].histogram_15min)
-        histogram_5min = float(self.__data.loc[data_i].histogram_5min)
         histogram_1min = float(self.__data.loc[data_i].histogram_1min)
-        pre_trend_15min = trend_15min
-        pre_trend_5min = trend_5min
+        pre_trend_15min = self.trend_15min
+        pre_trend_5min = self.trend_5min
         if histogram_15min >= 0:
-            trend_15min = self.PLUS
+            self.trend_15min = self.PLUS
         elif histogram_15min < 0:
-            trend_15min = self.MINUS
+            self.trend_15min = self.MINUS
         if histogram_1min >= 0:
-            trend_5min = self.PLUS
+            self.trend_5min = self.PLUS
         elif histogram_1min < 0:
-            trend_5min = self.MINUS
+            self.trend_5min = self.MINUS
 
-        if pre_trend_15min == trend_15min:
-            area_15min.append(histogram_15min)
+        if pre_trend_15min == self.trend_15min:
+            self.area_15min.append(histogram_15min)
         else:
-            area_15min = [histogram_15min]
-        if pre_trend_5min == trend_5min:
-            area_5min.append(histogram_5min)
-            if abs(max_histogram_5min) < abs(histogram_5min):
-                max_histogram_5min = histogram_5min
+            self.area_15min = list()
+            self.area_15min.append(histogram_15min)
+        if pre_trend_5min == self.trend_5min:
+            self.area_5min.append(histogram_1min)
+            if abs(self.max_histogram_5min) < abs(histogram_1min):
+                self.max_histogram_5min = histogram_1min
         else:
-            area_5min = [histogram_5min]
-            max_histogram_5min = histogram_5min
+            self.area_5min = list()
+            self.area_5min.append(histogram_1min)
+            self.max_histogram_5min = histogram_1min
 
-        # 買い
-        if has_coin is False:
-            threshold_15min = genome[0]
-            threshold_5min = genome[1]
-            max_histogram = genome[2]
-            decrease_rate = genome[3]
-            ave_15min = sum(area_15min) / len(area_15min)
-            ave_5min = sum(area_5min) / len(area_5min)
-            factor_1 = self.is_exceed(threshold_15min, ave_15min)
-            factor_2 = self.is_exceed(threshold_5min, ave_5min)
-            factor_3 = self.is_exceed(max_histogram, max_histogram_5min)
-            factor_4 = self.is_exceed(histogram_1min, decrease_rate * max_histogram_5min)
-            if factor_1 and factor_2 and factor_3 and factor_4:
-                operation = self.BUY
+        # 山が下がり始めたら
+        if len(self.area_5min) > 1 and self.is_exceed(abs(self.area_5min[-1]), abs(self.area_5min[-2])):
+            step_size = len(self.area_5min)
+            start_decrease = True
+        else:
+            step_size = None
+            start_decrease = False
+
+        if start_decrease:
+
+            # 買い
+            if has_coin is False:
+                threshold_15min = genome[0]
+                threshold_5min = genome[1]
+                decrease_rate = genome[2]
+                step_rate = genome[3]
+                max_step_rate = genome[4]
+                # MAX条件
+                max_threshold = step_rate * step_size * step_size
+                # 降下条件
+                decrease_threshold = self.max_histogram_5min * decrease_rate
+                factor_3 = self.is_exceed(self.max_histogram_5min, max_threshold)
+                factor_4 = self.is_exceed(decrease_threshold, histogram_1min)
+                # print(decrease_threshold, histogram_1min)
+
+                if factor_3:
+                    self.check[2] += 1
+                if factor_4:
+                    self.check[3] += 1
+                if factor_3 and factor_4:
+                    operation = self.BUY
+                else:
+                    operation = self.STAY
+            # 売り
             else:
-                operation = self.STAY
-        # 売り
+                threshold_15min = genome[5]
+                threshold_5min = genome[6]
+                decrease_rate = genome[7]
+                step_rate = genome[8]
+                max_step_rate = genome[9]
+                # MAX条件
+                max_threshold = step_rate * step_size * step_size
+                # 降下条件
+                decrease_threshold = self.max_histogram_5min * decrease_rate
+                factor_3 = self.is_exceed(max_threshold, self.max_histogram_5min)
+                factor_4 = self.is_exceed(histogram_1min, decrease_threshold)
+                """
+                print('--')
+                print(max_threshold, self.max_histogram_5min)
+                print(histogram_1min, decrease_threshold)
+                """
+                if factor_3 and factor_4:
+                    operation = self.SELL
+                else:
+                    operation = self.STAY
         else:
-            threshold_15min = genome[4]
-            threshold_5min = genome[5]
-            max_histogram = genome[6]
-            decrease_rate = genome[7]
-            ave_15min = sum(area_15min) / len(area_15min)
-            ave_5min = sum(area_5min) / len(area_5min)
-            factor_1 = self.is_exceed(threshold_15min, ave_15min)
-            factor_2 = self.is_exceed(threshold_5min, ave_5min)
-            factor_3 = self.is_exceed(max_histogram, max_histogram_5min)
-            factor_4 = self.is_exceed(histogram_1min, decrease_rate * max_histogram)
-            if factor_1 and factor_2 and factor_3 and factor_4:
-                operation = self.SELL
-            else:
-                operation = self.STAY
+            operation = self.STAY
 
-        return operation, trend_15min, trend_5min, area_15min, area_5min, max_histogram_5min
+        return operation
 
-    @staticmethod
-    def loss_cut(fitness, loss_cut, transaction):
-        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 100) + math.log(transaction + 1, 100))
+    def loss_cut(self, fitness, loss_cut, transaction):
+        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 100) + math.log(transaction + 1, 100)) + self.DEFAULT_YEN_POSITION
         if fitness <= 0:
             fitness = 1
         return fitness
@@ -186,10 +217,8 @@ class MACD_(FitnessFunction):
         """
         :param x: 小さい
         :param y: 大きい
-        :return:
+        :return: bool
         """
-        x = abs(x)
-        y = abs(y)
         if y > x:
             return True
         else:

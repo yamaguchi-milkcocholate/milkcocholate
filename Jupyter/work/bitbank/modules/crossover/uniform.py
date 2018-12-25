@@ -28,7 +28,7 @@ class UniformCrossover(crossover.Crossover):
         elites = self.select_elites(elite_num=elite_num, geno_type=geno_type, fitness=fitness)
 
         for geno_i in range(0, population):
-            roulette = random.randrange(0, sum_fitness)
+            roulette = random.uniform(0, sum_fitness)
             select_index = np.where(field >= roulette)
             new_geno_type = np.r_[new_geno_type, geno_type[select_index[0][:1]]]
 
