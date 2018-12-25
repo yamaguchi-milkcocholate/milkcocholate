@@ -5,11 +5,11 @@ from modules.backtest import backtest
 situation = functions.macd()
 
 candle_type = '5min'
-population = 3
+population = 30
 mutation = 2
 cross = 50
 elite_num = 2
-host = 'localhost'
+host = '192.168.99.100'
 fitness_function_name = 'macd'
 crossover_name = 'uniform'
 hyper_params = dict()

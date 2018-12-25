@@ -7,6 +7,7 @@ from modules.fitnessfunction.fitnessfunction import FitnessFunction
 class MACD_(FitnessFunction):
     FITNESS_FUNCTION_ID = 6
     DEFAULT_YEN_POSITION = 1000
+    STEP_RATE_COEFFICIENT = 1
     LOSS_CUT = 1000
     MINUS = -1
     PLUS = 1
@@ -38,7 +39,7 @@ class MACD_(FitnessFunction):
             short_term=hyper_params['short_term'],
             long_term=hyper_params['long_term'],
             signal=hyper_params['signal'],
-            is_pickle=False
+            is_pickle=True
         )
         self.trend_15min = None
         self.trend_5min = None
@@ -97,7 +98,7 @@ class MACD_(FitnessFunction):
                 fitness += benefit
                 transaction += 1
                 # 損切り
-                if benefit <= self.LOSS_CUT:
+                if benefit <= 0:
                     loss_cut += 1
 
         benefit = fitness
@@ -120,7 +121,7 @@ class MACD_(FitnessFunction):
 
     def operation(self, data_i, has_coin, genome):
         histogram_15min = float(self.__data.loc[data_i].histogram_15min)
-        histogram_1min = float(self.__data.loc[data_i].histogram_1min)
+        histogram_1min = float(self.__data.loc[data_i].histogram_5min)
         pre_trend_15min = self.trend_15min
         pre_trend_5min = self.trend_5min
         if histogram_15min >= 0:
@@ -164,7 +165,7 @@ class MACD_(FitnessFunction):
                 step_rate = genome[3]
                 max_step_rate = genome[4]
                 # MAX条件
-                max_threshold = step_rate * step_size * step_size
+                max_threshold = step_rate * step_size * self.max_histogram_5min * self.STEP_RATE_COEFFICIENT
                 # 降下条件
                 decrease_threshold = self.max_histogram_5min * decrease_rate
                 factor_3 = self.is_exceed(self.max_histogram_5min, max_threshold)
@@ -187,17 +188,17 @@ class MACD_(FitnessFunction):
                 step_rate = genome[8]
                 max_step_rate = genome[9]
                 # MAX条件
-                max_threshold = step_rate * step_size * step_size
+                max_threshold = step_rate * step_size * self.max_histogram_5min * self.STEP_RATE_COEFFICIENT
                 # 降下条件
                 decrease_threshold = self.max_histogram_5min * decrease_rate
                 factor_3 = self.is_exceed(max_threshold, self.max_histogram_5min)
                 factor_4 = self.is_exceed(histogram_1min, decrease_threshold)
-                """
-                print('--')
-                print(max_threshold, self.max_histogram_5min)
-                print(histogram_1min, decrease_threshold)
-                """
                 if factor_3 and factor_4:
+                    """
+                    print('--')
+                    print(max_threshold, self.max_histogram_5min)
+                    print(histogram_1min, decrease_threshold)
+                    """
                     operation = self.SELL
                 else:
                     operation = self.STAY
@@ -207,7 +208,7 @@ class MACD_(FitnessFunction):
         return operation
 
     def loss_cut(self, fitness, loss_cut, transaction):
-        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 100) + math.log(transaction + 1, 100)) + self.DEFAULT_YEN_POSITION
+        fitness = fitness + 0.5 * fitness * (-math.log(loss_cut + 1, 10) + 10 * math.log(transaction + 1, 100)) + self.DEFAULT_YEN_POSITION
         if fitness <= 0:
             fitness = 1
         return fitness
