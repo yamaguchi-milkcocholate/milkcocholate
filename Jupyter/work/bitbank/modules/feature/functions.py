@@ -184,18 +184,16 @@ def macd():
     """
     # 下降トレンドで買うのでマイナス
     situation_dict = OrderedDict()
-    situation_dict['BUY-15MIN-THRESHOLD'] = (-0.1, 0)
-    situation_dict['BUY-5MIN-THRESHOLD'] = (-0.1, 0)
-    situation_dict['BUY-HISTOGRAM-DECREASE-RATE'] = (0.5, 1)
-    situation_dict['BUY-STEP-RATE'] = (0, 1)
-    situation_dict['BUY-MAX-STEP-RATE'] = (0, 1)
+    situation_dict['BUY-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['BUY-15MIN-STEP-RATE'] = (0, 1)
+    situation_dict['BUY-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['BUY-5MIN-STEP-RATE'] = (0, 1)
 
     # 上昇トレンドで売るのでプラス
-    situation_dict['SELL-15MIN-THRESHOLD'] = (0, 0.1)
-    situation_dict['SELL-5MIN-THRESHOLD'] = (0, 0.1)
-    situation_dict['SELL-HISTOGRAM-DECREASE-RATE'] = (0.5, 1)
-    situation_dict['SELL-STEP-RATE'] = (0, 1)
-    situation_dict['SELL-MAX-STEP-RATE'] = (0, 1)
+    situation_dict['SELL-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['SELL-15MIN-STEP-RATE'] = (0, 1)
+    situation_dict['SELL-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['SELL-5MIN-STEP-RATE'] = (0, 1)
 
     situation = Situation()
     situation.set_fitness_function_id(f_id=MACD_.FITNESS_FUNCTION_ID)
