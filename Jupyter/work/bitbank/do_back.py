@@ -30,4 +30,4 @@ back_test = backtest.BackTest(situation=situation,
                               hyper_params=hyper_params
                               )
 
-back_test(steps=5, log_span=10)
+back_test(steps=100, log_span=20)
