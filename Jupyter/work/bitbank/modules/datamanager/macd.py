@@ -58,12 +58,24 @@ class MACD:
         macd = macd.loc[self.signal:].reset_index(drop=True)
         signal = pd.DataFrame([[
             part.tail(1).price,
+            part.tail(1).macd_15min,
+            part.tail(1).macd_5min,
+            part.tail(1).macd_1min,
+            sma_15min,
+            sma_5min,
+            sma_1min,
             part.tail(1).macd_15min - sma_15min,
             part.tail(1).macd_5min - sma_5min,
             part.tail(1).macd_1min - sma_1min,
             part.tail(1).time
         ]], columns=[
             'price',
+            'macd_15min',
+            'macd_5min',
+            'macd_1min',
+            'signal_15min',
+            'signal_5min',
+            'signal_1min',
             'histogram_15min',
             'histogram_5min',
             'histogram_1min',
@@ -93,6 +105,12 @@ class MACD:
             )
             signal.loc[macd_i + 1] = [
                 macd.loc[macd_i].price,
+                macd.loc[macd_i].macd_15min,
+                macd.loc[macd_i].macd_5min,
+                macd.loc[macd_i].macd_1min,
+                signal_15min,
+                signal_5min,
+                signal_1min,
                 macd.loc[macd_i].macd_15min - signal_15min,
                 macd.loc[macd_i].macd_5min - signal_5min,
                 macd.loc[macd_i].macd_1min - signal_1min,
