@@ -46,6 +46,10 @@ class MACD_(FitnessFunction):
         self.area_5min = None
         self.max_histogram_5min = None
         self.max_histogram_15min = None
+        self.start_macd_15min = None
+        self.start_macd_5min = None
+        self.start_signal_15min = None
+        self.start_signal_5min = None
         self.check = None
         self.check_detail = None
 
@@ -71,8 +75,10 @@ class MACD_(FitnessFunction):
         self.area_5min = list()
         self.max_histogram_5min = 0
         self.max_histogram_15min = 0
-        self.check = [0, 0, 0, 0]
-        self.check_detail = [0, 0, 0, 0]
+        self.start_macd_15min = 0
+        self.start_macd_5min = 0
+        self.start_signal_15min = 0
+        self.start_signal_5min = 0
 
         genome = kwargs['genome']
         coin = 0
@@ -114,8 +120,6 @@ class MACD_(FitnessFunction):
             'benefit',
             benefit
         )
-        print(self.check)
-        print(self.check_detail)
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
@@ -126,6 +130,10 @@ class MACD_(FitnessFunction):
         histogram_1min = float(self.__data.loc[data_i].histogram_5min)
         pre_trend_15min = self.trend_15min
         pre_trend_5min = self.trend_5min
+        macd_15min = float(self.__data.loc[data_i].macd_15min)
+        macd_5min = float(self.__data.loc[data_i].macd_5min)
+        signal_15min = float(self.__data.loc[data_i].signal_15min)
+        signal_5min = float(self.__data.loc[data_i].signal_5min)
         if histogram_15min >= 0:
             self.trend_15min = self.PLUS
         elif histogram_15min < 0:
@@ -143,6 +151,8 @@ class MACD_(FitnessFunction):
             self.area_15min = list()
             self.area_15min.append(histogram_15min)
             self.max_histogram_15min = histogram_15min
+            self.start_macd_15min = macd_15min
+            self.start_signal_15min = signal_15min
         if pre_trend_5min == self.trend_5min:
             self.area_5min.append(histogram_1min)
             if abs(self.max_histogram_5min) < abs(histogram_1min):
@@ -151,6 +161,8 @@ class MACD_(FitnessFunction):
             self.area_5min = list()
             self.area_5min.append(histogram_1min)
             self.max_histogram_5min = histogram_1min
+            self.start_macd_5min = macd_5min
+            self.start_signal_5min = signal_5min
 
         # 山が下がり始めたら
         if len(self.area_5min) > 1 and self.is_exceed(abs(self.area_5min[-1]), abs(self.area_5min[-2])):
@@ -167,67 +179,82 @@ class MACD_(FitnessFunction):
             start_decrease_15min = False
 
         if start_decrease_5min and start_decrease_15min:
+            buy_plus_15min = genome[4]
+            buy_plus_5min = genome[6]
+            buy = self.and_gate(
+                self.is_exceed(buy_plus_15min, self.start_macd_15min),
+                self.is_exceed(buy_plus_15min, self.start_signal_15min),
+                self.is_exceed(buy_plus_5min, self.start_macd_5min),
+                self.is_exceed(buy_plus_5min, self.start_signal_5min),
+            )
+            sell_minus_15min = genome[13]
+            sell_minus_5min = genome[15]
+            sell = self.and_gate(
+                self.is_exceed(sell_minus_15min, self.start_macd_15min),
+                self.is_exceed(sell_minus_15min, self.start_signal_15min),
+                self.is_exceed(sell_minus_5min, self.start_macd_5min),
+                self.is_exceed(sell_minus_5min, self.start_signal_5min),
+            )
 
             # 買い
-            if has_coin is False:
+            if has_coin is False and buy:
                 decrease_rate_15min = genome[0]
                 step_rate_15min = genome[1]
                 decrease_rate_5min = genome[2]
                 step_rate_5min = genome[3]
+                minus_15min = genome[5]
+                minus_5min = genome[7]
                 # MAX条件
                 max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
                 max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
                 # 降下条件
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
-                factor_1 = self.is_exceed(self.max_histogram_15min, max_threshold_15min)
-                factor_2 = self.is_exceed(decrease_threshold_15min, histogram_15min)
-                factor_3 = self.is_exceed(self.max_histogram_5min, max_threshold_5min)
-                factor_4 = self.is_exceed(decrease_threshold_5min, histogram_1min)
-
-                if factor_1:
-                    self.check[0] += 1
-                if factor_2:
-                    self.check[1] += 1
-                if factor_3:
-                    self.check[2] += 1
-                if factor_4:
-                    self.check[3] += 1
-
-                if factor_1 and factor_2 and factor_3 and factor_4:
+                buy = self.and_gate(
+                    self.is_exceed(self.max_histogram_15min, max_threshold_15min),
+                    self.is_exceed(decrease_threshold_15min, histogram_15min),
+                    self.is_exceed(self.max_histogram_5min, max_threshold_5min),
+                    self.is_exceed(decrease_threshold_5min, histogram_1min),
+                    self.is_exceed(macd_15min, minus_15min),
+                    self.is_exceed(signal_15min, minus_15min),
+                    self.is_exceed(macd_5min, minus_5min),
+                    self.is_exceed(signal_5min, minus_5min)
+                )
+                if buy:
                     operation = self.BUY
                 else:
                     operation = self.STAY
             # 売り
-            else:
-                decrease_rate_15min = genome[4]
-                step_rate_15min = genome[5]
-                decrease_rate_5min = genome[6]
-                step_rate_5min = genome[7]
+            elif has_coin is True and sell:
+                decrease_rate_15min = genome[8]
+                step_rate_15min = genome[9]
+                decrease_rate_5min = genome[10]
+                step_rate_5min = genome[11]
+                plus_15min = genome[12]
+                plus_5min = genome[14]
                 # MAX条件
                 max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
                 max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
                 # 降下条件
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
-                factor_1 = self.is_exceed(max_threshold_15min, self.max_histogram_15min)
-                factor_2 = self.is_exceed(histogram_15min, decrease_threshold_15min)
-                factor_3 = self.is_exceed(max_threshold_5min, self.max_histogram_5min)
-                factor_4 = self.is_exceed(histogram_1min, decrease_threshold_5min)
+                sell = self.and_gate(
+                    self.is_exceed(max_threshold_15min, self.max_histogram_15min),
+                    self.is_exceed(histogram_15min, decrease_threshold_15min),
+                    self.is_exceed(max_threshold_5min, self.max_histogram_5min),
+                    self.is_exceed(histogram_1min, decrease_threshold_5min),
+                    self.is_exceed(plus_15min, macd_15min),
+                    self.is_exceed(plus_15min, signal_15min),
+                    self.is_exceed(plus_5min, macd_5min),
+                    self.is_exceed(plus_5min, signal_5min)
+                )
 
-                if factor_1:
-                    self.check_detail[0] += 1
-                if factor_2:
-                    self.check_detail[1] += 1
-                if factor_3:
-                    self.check_detail[2] += 1
-                if factor_4:
-                    self.check_detail[3] += 1
-
-                if factor_1 and factor_2 and factor_3 and factor_4:
+                if sell:
                     operation = self.SELL
                 else:
                     operation = self.STAY
+            else:
+                operation = self.STAY
         else:
             operation = self.STAY
 
@@ -250,3 +277,7 @@ class MACD_(FitnessFunction):
             return True
         else:
             return False
+
+    @staticmethod
+    def and_gate(*args):
+        return all(args)
