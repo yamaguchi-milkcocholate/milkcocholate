@@ -82,7 +82,7 @@ class MACD_(FitnessFunction):
         self.start_signal_5min = 0
         self.check = [0, 0, 0, 0, 0, 0]
         self.check_detail = [0, 0, 0, 0, 0, 0, 0, 0]
-        self.check_ave = [0, 0]
+        self.check_ave = [0, 0, 0, 0, 0, 0, 0, 0]
 
         genome = kwargs['genome']
         coin = 0
@@ -191,9 +191,11 @@ class MACD_(FitnessFunction):
             buy = self.and_gate(
                 #self.is_exceed(buy_plus_15min, self.start_macd_15min),
                 #self.is_exceed(buy_plus_15min, self.start_signal_15min),
-                self.is_exceed(buy_plus_5min, self.start_macd_5min),
-                self.is_exceed(buy_plus_5min, self.start_signal_5min),
+                #self.is_exceed(buy_plus_5min, self.start_macd_5min),
+                #self.is_exceed(buy_plus_5min, self.start_signal_5min),
+                True
             )
+            """
             if buy:
                 self.check[0] += 1
                 if self.start_macd_15min > 0:
@@ -203,17 +205,17 @@ class MACD_(FitnessFunction):
                         self.check_ave[0] += 1
                         self.check_ave[1] += signal_15min
                         print(buy_plus_15min, self.start_macd_15min, signal_15min)
+            """
 
             sell_minus_15min = genome[13]
             sell_minus_5min = genome[15]
             sell = self.and_gate(
                 #self.is_exceed(self.start_macd_15min, sell_minus_15min),
                 #self.is_exceed(self.start_signal_15min, sell_minus_15min),
-                self.is_exceed(self.start_macd_5min, sell_minus_5min),
-                self.is_exceed(self.start_signal_5min, sell_minus_5min),
+                #self.is_exceed(self.start_macd_5min, sell_minus_5min),
+                #self.is_exceed(self.start_signal_5min, sell_minus_5min),
+                True
             )
-            if sell:
-                self.check[1] += 1
 
             # 買い
             if has_coin is False and buy:
@@ -260,14 +262,13 @@ class MACD_(FitnessFunction):
                     self.is_exceed(decrease_threshold_15min, histogram_15min),
                     self.is_exceed(self.max_histogram_5min, max_threshold_5min),
                     self.is_exceed(decrease_threshold_5min, histogram_1min),
-                    self.is_exceed(macd_15min, minus_15min),
-                    self.is_exceed(signal_15min, minus_15min),
-                    self.is_exceed(macd_5min, minus_5min),
-                    self.is_exceed(signal_5min, minus_5min)
+                    #self.is_exceed(macd_15min, minus_15min),
+                    #self.is_exceed(signal_15min, minus_15min),
+                    #self.is_exceed(macd_5min, minus_5min),
+                    #self.is_exceed(signal_5min, minus_5min)
                 )
                 if buy:
-                    self.check[2] += 1
-                if buy:
+                    self.check[0] += 1
                     operation = self.BUY
                 else:
                     operation = self.STAY
@@ -285,18 +286,45 @@ class MACD_(FitnessFunction):
                 # 降下条件
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
+                factor_1 = self.is_exceed(max_threshold_15min, self.max_histogram_15min)
+                factor_2 = self.is_exceed(histogram_15min, decrease_threshold_15min)
+                factor_3 = self.is_exceed(max_threshold_5min, self.max_histogram_5min)
+                factor_4 = self.is_exceed(histogram_1min, decrease_threshold_5min)
+                factor_5 = self.is_exceed(plus_15min, macd_15min)
+                factor_6 = self.is_exceed(plus_15min, signal_15min)
+                factor_7 = self.is_exceed(plus_5min, macd_5min)
+                factor_8 = self.is_exceed(plus_5min, signal_5min)
+
+                if factor_1:
+                    self.check_ave[0] += 1
+                if factor_2:
+                    self.check_ave[1] += 1
+                if factor_3:
+                    self.check_ave[2] += 1
+                if factor_4:
+                    self.check_ave[3] += 1
+                if factor_5:
+                    self.check_ave[4] += 1
+                if factor_6:
+                    self.check_ave[5] += 1
+                if factor_7:
+                    self.check_ave[6] += 1
+                if factor_8:
+                    self.check_ave[7] += 1
+
                 sell = self.and_gate(
                     self.is_exceed(max_threshold_15min, self.max_histogram_15min),
                     self.is_exceed(histogram_15min, decrease_threshold_15min),
                     self.is_exceed(max_threshold_5min, self.max_histogram_5min),
                     self.is_exceed(histogram_1min, decrease_threshold_5min),
-                    self.is_exceed(plus_15min, macd_15min),
-                    self.is_exceed(plus_15min, signal_15min),
-                    self.is_exceed(plus_5min, macd_5min),
-                    self.is_exceed(plus_5min, signal_5min)
+                    #self.is_exceed(plus_15min, macd_15min),
+                    #self.is_exceed(plus_15min, signal_15min),
+                    #self.is_exceed(plus_5min, macd_5min),
+                    #self.is_exceed(plus_5min, signal_5min)
                 )
 
                 if sell:
+                    self.check[1] += 1
                     operation = self.SELL
                 else:
                     operation = self.STAY
