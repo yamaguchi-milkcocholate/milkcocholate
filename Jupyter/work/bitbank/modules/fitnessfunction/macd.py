@@ -80,9 +80,6 @@ class MACD_(FitnessFunction):
         self.start_macd_5min = 0
         self.start_signal_15min = 0
         self.start_signal_5min = 0
-        self.check = [0, 0, 0, 0, 0, 0]
-        self.check_detail = [0, 0, 0, 0, 0, 0, 0, 0]
-        self.check_ave = [0, 0, 0, 0, 0, 0, 0, 0]
 
         genome = kwargs['genome']
         coin = 0
@@ -123,9 +120,6 @@ class MACD_(FitnessFunction):
             transaction,
             'benefit',
             benefit,
-            self.check,
-            self.check_detail,
-            self.check_ave
         )
         return fitness
 
@@ -215,19 +209,6 @@ class MACD_(FitnessFunction):
                 # 降下条件
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
-                factor_1 = self.is_exceed(self.max_histogram_15min, max_threshold_15min)
-                factor_2 = self.is_exceed(decrease_threshold_15min, histogram_15min)
-                factor_3 = self.is_exceed(self.max_histogram_5min, max_threshold_5min)
-                factor_4 = self.is_exceed(decrease_threshold_5min, histogram_1min)
-
-                if factor_1:
-                    self.check_detail[0] += 1
-                if factor_2:
-                    self.check_detail[1] += 1
-                if factor_3:
-                    self.check_detail[2] += 1
-                if factor_4:
-                    self.check_detail[3] += 1
 
                 buy = self.and_gate(
                     self.is_exceed(self.max_histogram_15min, max_threshold_15min),
@@ -236,7 +217,6 @@ class MACD_(FitnessFunction):
                     self.is_exceed(decrease_threshold_5min, histogram_1min),
                 )
                 if buy:
-                    self.check[0] += 1
                     operation = self.BUY
                 else:
                     operation = self.STAY
@@ -268,19 +248,6 @@ class MACD_(FitnessFunction):
                 # 降下条件
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
-                factor_1 = self.is_exceed(max_threshold_15min, self.max_histogram_15min)
-                factor_2 = self.is_exceed(histogram_15min, decrease_threshold_15min)
-                factor_3 = self.is_exceed(max_threshold_5min, self.max_histogram_5min)
-                factor_4 = self.is_exceed(histogram_1min, decrease_threshold_5min)
-
-                if factor_1:
-                    self.check_ave[0] += 1
-                if factor_2:
-                    self.check_ave[1] += 1
-                if factor_3:
-                    self.check_ave[2] += 1
-                if factor_4:
-                    self.check_ave[3] += 1
 
                 sell = self.and_gate(
                     self.is_exceed(max_threshold_15min, self.max_histogram_15min),
@@ -290,7 +257,6 @@ class MACD_(FitnessFunction):
                 )
 
                 if sell:
-                    self.check[1] += 1
                     operation = self.SELL
                 else:
                     operation = self.STAY
