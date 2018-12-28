@@ -9,7 +9,7 @@ from modules.datamanager.picker import Picker
 class MACD:
 
     def __init__(self):
-        picker = Picker(span='5min', use_of_data='training', coin='xrp', is_inclination=False)
+        picker = Picker(span='5min', use_of_data='training', coin='xrp', is_inclination=True)
         self.candlestick = picker.get_candlestick()
         self.short_term = None
         self.long_term = None
@@ -315,13 +315,13 @@ class MACD:
 
     @staticmethod
     def __write_signal(signal):
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
         with open(our, 'wb') as f:
             pickle.dump(signal, f)
 
     @staticmethod
     def __read_signal():
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
         with open(our, 'rb') as f:
             signal = pickle.load(f)
         return signal
