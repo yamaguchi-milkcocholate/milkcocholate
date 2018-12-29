@@ -14,6 +14,23 @@ class ApiGateway:
                 api_key=api_key, api_secret=api_secret
             )
 
+    def use_depth(self, pair):
+        """
+        BitBankの板情報
+        :param pair:
+        :return: dict
+        {
+            asks: [
+                [価格, 数量],
+            ],
+
+            bids: [
+                [価格, 数量],
+            ],
+        }
+        """
+        return self.__pub.get_depth(pair)
+
     def use_ticker(self, pair):
         """
         BitBankのティッカー

@@ -15,6 +15,11 @@ class TestApiGateway(unittest.TestCase):
         self.api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
         self.order_id = None
 
+    def test_use_depth(self):
+        result = self.api_gateway.use_depth(pair='xrp_jpy')
+        self.assertNotEqual(None, result['asks'])
+        self.assertNotEqual(None, result['bids'])
+
     def test_use_ticker(self):
         result = self.api_gateway.use_ticker(pair='xrp_jpy')
         self.assertNotEqual(None, result['sell'])
