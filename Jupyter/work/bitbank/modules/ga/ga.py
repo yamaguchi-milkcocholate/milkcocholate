@@ -57,9 +57,9 @@ class GeneticAlgorithm:
             range_tuple_list = self._situation.range_to_tuple_list()
             for situ_i in range(len(range_tuple_list)):
                 value = range_tuple_list[situ_i]
-                inter_list.append(random.randint(value[0], value[1]))
-            pop_list.append(np.asarray(inter_list, int))
-        return np.asarray(pop_list, int)
+                inter_list.append(random.uniform(value[0], value[1]))
+            pop_list.append(np.asarray(inter_list))
+        return np.asarray(pop_list)
 
     def generation(self, steps, experiment_id, log_span, population_dept):
         """
@@ -71,8 +71,9 @@ class GeneticAlgorithm:
         :return:                   numpy, numpy         遺伝子, 適応度
         """
         self._geno_type = self.init_population()
+        print('No. 0')
         self._fitness = self.calc_fitness(should_log=False)
-        for step_i in range(steps + 1):
+        for step_i in range(1, steps + 1):
             print('No. ', step_i)
             self._geno_type = self.determine_next_generation()
             if step_i % log_span is 0:
