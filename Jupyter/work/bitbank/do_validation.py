@@ -7,9 +7,9 @@ trader = BollingerBandSMATiValidationTrader(
     inclination_alpha=9
 )
 trader.set_genome(
-    host='192.168.99.100',
-    population_id=365,
-    individual_num=9
+    host='localhost',
+    population_id=384,
+    individual_num=0
 )
 
 validation = Validation(

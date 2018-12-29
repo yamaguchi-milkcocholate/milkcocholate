@@ -2,7 +2,11 @@ from modules.feature.genofeature import Situation
 from modules.fitnessfunction.bollingerband import BollingerBand
 from modules.fitnessfunction.bollingerband_period_goal import BollingerBandPeriodGoal
 from modules.fitnessfunction.bollingerband_period_goal_ti import BollingerBandPeriodGoalTi
+from modules.fitnessfunction.wavetpl import WaveTemplate
+from modules.fitnessfunction.macd import MACD_
 from collections import OrderedDict
+
+WAVE_TEMPLATE_NUM = 9
 
 
 def bollinger_band():
@@ -130,5 +134,84 @@ def bollinger_band_ti():
                 ] = coin_ranges
     situation = Situation()
     situation.set_fitness_function_id(f_id=BollingerBandPeriodGoalTi.FITNESS_FUNCTION_ID)
+    situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
+    return situation
+
+
+def wave_template(waves, pattern_num):
+    """
+    波形テンプレート
+    waves {
+        'name' : size
+    }
+    :param waves:      dict
+    :param pattern_num: int
+    :return: Situation
+    """
+
+    situation_dict = OrderedDict()
+    for pat_i in range(pattern_num):
+        # 売りパターン
+        for name in waves:
+            for el_i in range(waves[name]):
+                situation_dict[
+                    str(pat_i) + '-SELL-' + name + '-' + str(el_i)
+                ] = (0, WAVE_TEMPLATE_NUM)
+        situation_dict[
+            str(pat_i) + '-SELL-THRESHOLD'
+        ] = (-1, 1)
+
+        # 買うパターン
+        for name in waves:
+            for el_i in range(waves[name]):
+                situation_dict[
+                    str(pat_i) + '-BUY-' + name + '-' + str(el_i)
+                ] = (0, WAVE_TEMPLATE_NUM)
+        situation_dict[
+            str(pat_i) + '-BUY-THRESHOLD'
+        ] = (-1, 1)
+
+    situation = Situation()
+    situation.set_fitness_function_id(f_id=WaveTemplate.FITNESS_FUNCTION_ID)
+    situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
+    return situation
+
+
+def macd():
+    """
+    MACD
+    :return: Situation
+    """
+    # 下降トレンドで買うのでマイナス
+    situation_dict = OrderedDict()
+    situation_dict['BUY-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['BUY-15MIN-STEP-RATE'] = (0, 1)
+    situation_dict['BUY-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['BUY-5MIN-STEP-RATE'] = (0, 1)
+    situation_dict['BUY-15MIN-START-MACD'] = (-1, 1)
+    situation_dict['BUY-15MIN-START-SIGNAL'] = (-1, 1)
+    situation_dict['BUY-5MIN-START-MACD'] = (-1, 1)
+    situation_dict['BUY-5MIN-START-SIGNAL'] = (-1, 1)
+    situation_dict['BUY-15MIN-END-MACD'] = (-1, 1)
+    situation_dict['BUY-15MIN-END-SIGNAL'] = (-1, 1)
+    situation_dict['BUY-5MIN-END-MACD'] = (-1, 1)
+    situation_dict['BUY-5MIN-END-SIGNAL'] = (-1, 1)
+
+    # 上昇トレンドで売るのでプラス
+    situation_dict['SELL-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['SELL-15MIN-STEP-RATE'] = (0, 1)
+    situation_dict['SELL-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
+    situation_dict['SELL-5MIN-STEP-RATE'] = (0, 1)
+    situation_dict['SELL-15MIN-START-MACD'] = (-1, 1)
+    situation_dict['SELL-15MIN-START-SIGNAL'] = (-1, 1)
+    situation_dict['SELL-5MIN-START-MACD'] = (-1, 1)
+    situation_dict['SELL-5MIN-START-SIGNAL'] = (-1, 1)
+    situation_dict['SELL-15MIN-END-MACD'] = (-1, 1)
+    situation_dict['SELL-15MIN-END-SIGNAL'] = (-1, 1)
+    situation_dict['SELL-5MIN-END-MACD'] = (-1, 1)
+    situation_dict['SELL-5MIN-END-SIGNAL'] = (-1, 1)
+
+    situation = Situation()
+    situation.set_fitness_function_id(f_id=MACD_.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
     return situation
