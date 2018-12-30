@@ -8,14 +8,15 @@ from modules.datamanager.picker import Picker
 
 class MACD:
 
-    def __init__(self):
-        picker = Picker(span='5min', use_of_data='training', coin='xrp', is_inclination=False)
+    def __init__(self, use_of_data='training'):
+        picker = Picker(span='5min', use_of_data=use_of_data, coin='xrp', is_inclination=False)
         self.candlestick = picker.get_candlestick()
         self.short_term = None
         self.long_term = None
         self.signal = None
+        self.__is_validation = None
 
-    def __call__(self, short_term=12, long_term=26, signal=9, is_pickle=False):
+    def __call__(self, short_term=12, long_term=26, signal=9, is_pickle=False, is_validation=False):
         """
         :param short_term: float 短期間の平滑移動平均
         :param long_term:  float 長期間の平滑移動平均
@@ -25,6 +26,7 @@ class MACD:
         self.short_term = short_term
         self.long_term = long_term
         self.signal = signal
+        self.__is_validation = is_validation
         signal = self.calculate(is_pickle=is_pickle)
         return signal
 
@@ -313,15 +315,19 @@ class MACD:
         """
         return data_1min[self.long_term * 15:].reset_index(drop=True)
 
-    @staticmethod
-    def __write_signal(signal):
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+    def __write_signal(self, signal):
+        if self.__is_validation:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
+        else:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
         with open(our, 'wb') as f:
             pickle.dump(signal, f)
 
-    @staticmethod
-    def __read_signal():
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+    def __read_signal(self):
+        if self.__is_validation:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
+        else:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
         with open(our, 'rb') as f:
             signal = pickle.load(f)
         return signal
