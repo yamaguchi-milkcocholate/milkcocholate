@@ -1,6 +1,7 @@
 import pymysql.cursors
 import pickle
 import time
+import numpy as np
 from pytz import timezone
 from datetime import datetime
 from bitbank.exceptions.schedcancel import SchedulerCancelException
@@ -158,6 +159,36 @@ class Bot:
         with connection.cursor() as cursor:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
+
+    def find_maker(self, side):
+        """
+        Maker手数料の候補を返す
+        :return: list 取引値に近い順
+        """
+        result = self.__api_gateway.use_depth(pair=self.__pair)
+        result = np.asarray(result[side], dtype=float)
+        result = result[0:, 0]
+        if side == 'asks':
+            # 売り
+            # 小さい
+            head = result[0]
+            # 大きい
+            tail = result[-1]
+        elif side == 'bids':
+            # 買い
+            # 大きい
+            tail = result[0]
+            # 小さい
+            head = result[-1]
+        else:
+            raise TypeError('in find_maker')
+        mask = np.arange(start=head, stop=tail, step=0.001, dtype=np.float64)
+        mask = np.round(mask, decimals=3)
+        result = np.round(result, decimals=3)
+        inter_diff = np.setdiff1d(mask, result)
+        if side == 'bids':
+            inter_diff = inter_diff[::-1]
+        return inter_diff
 
     def fetch_asset(self):
         """

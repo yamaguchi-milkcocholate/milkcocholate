@@ -1,6 +1,8 @@
 import sys
 import os
 import unittest
+import numpy as np
+from pprint import pprint
 sys.path.append(os.pardir)
 from bitbank.apigateway import ApiGateway
 
