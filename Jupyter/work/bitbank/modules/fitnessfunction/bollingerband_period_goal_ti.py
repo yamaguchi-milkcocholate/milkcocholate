@@ -389,7 +389,7 @@ class BollingerBandPeriodGoalTi(FitnessFunction):
         :param fitness: integer 適応度
         :return: 損切を含めた適応度
         """
-        fitness = fitness - 0.5 * fitness * (math.log(x=self.__loss_cut, base=2))
+        fitness = fitness - 0.5 * fitness * (math.log(self.__loss_cut + 1, 10))
         if fitness <= 0:
             fitness = 1
         return fitness

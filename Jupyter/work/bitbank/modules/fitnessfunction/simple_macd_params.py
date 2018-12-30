@@ -22,7 +22,7 @@ class SimpleMacDParams(fitnessfunction.FitnessFunction):
             fitness_function_id=self.FITNESS_FUNCTION_ID,
             pair=pair
         )
-        self._approach = macd.MacD(self._candlestick)
+        self._approach = macd.MACD(self._candlestick)
 
     def calc_fitness(self, geno_type, should_log, population_id):
         """
