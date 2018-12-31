@@ -269,8 +269,11 @@ class MACD_(FitnessFunction):
 
     def loss_cut(self, fitness, loss_cut, transaction):
         fitness += self.DEFAULT_YEN_POSITION * (-math.log(loss_cut + 1, 10) + 2 * math.log(transaction + 1, 10))
+
         if fitness <= 0:
             fitness = 1
+        else:
+            fitness = fitness - 0.9 * fitness * math.sqrt((loss_cut + 1) / transaction)
         return fitness
 
     @staticmethod
