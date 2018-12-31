@@ -38,7 +38,7 @@ class MACD_(FitnessFunction):
             short_term=hyper_params['short_term'],
             long_term=hyper_params['long_term'],
             signal=hyper_params['signal'],
-            is_pickle=True
+            is_pickle=False
         )
         self.trend_15min = None
         self.trend_5min = None
@@ -269,8 +269,11 @@ class MACD_(FitnessFunction):
 
     def loss_cut(self, fitness, loss_cut, transaction):
         fitness += self.DEFAULT_YEN_POSITION * (-math.log(loss_cut + 1, 10) + 2 * math.log(transaction + 1, 10))
+
         if fitness <= 0:
             fitness = 1
+        else:
+            fitness = fitness - 0.9 * fitness * math.sqrt((loss_cut + 1) / transaction)
         return fitness
 
     @staticmethod

@@ -8,14 +8,15 @@ from modules.datamanager.picker import Picker
 
 class MACD:
 
-    def __init__(self):
-        picker = Picker(span='5min', use_of_data='training', coin='xrp', is_inclination=False)
+    def __init__(self, use_of_data='training'):
+        picker = Picker(span='5min', use_of_data=use_of_data, coin='xrp', is_inclination=False)
         self.candlestick = picker.get_candlestick()
         self.short_term = None
         self.long_term = None
         self.signal = None
+        self.__is_validation = None
 
-    def __call__(self, short_term=12, long_term=26, signal=9, is_pickle=False):
+    def __call__(self, short_term=12, long_term=26, signal=9, is_pickle=False, is_validation=False):
         """
         :param short_term: float 短期間の平滑移動平均
         :param long_term:  float 長期間の平滑移動平均
@@ -25,6 +26,7 @@ class MACD:
         self.short_term = short_term
         self.long_term = long_term
         self.signal = signal
+        self.__is_validation = is_validation
         signal = self.calculate(is_pickle=is_pickle)
         return signal
 
@@ -35,10 +37,9 @@ class MACD:
         1min + 5min EMA
         """
         if is_pickle is False:
-            data_15min, data_5min, data_1min = self.normalize_data()
-            data_1min = self.cut_for_ema_1min(data_1min)
+            data_15min, data_5min = self.normalize_data()
             macd, data_15min, data_5min = self.first_sma_data_frame(data_15min, data_5min)
-            macd = self.macd_data_frame(macd, data_15min, data_5min, data_1min)
+            macd = self.macd_data_frame(macd, data_5min)
             signal = self.macd_signal_data_frame(macd)
             self.__write_signal(signal=signal)
         else:
@@ -51,39 +52,31 @@ class MACD:
         :param macd: pandas.DataFrame
         :return:     pandas.DataFrame
         """
-        part = macd.loc[:self.signal - 1]
-        sma_15min = float(np.sum(part.macd_15min.values) / self.signal)
-        sma_5min = float(np.sum(part.macd_5min.values) / self.signal)
-        sma_1min = float(np.sum(part.macd_1min.values) / self.signal)
-        macd = macd.loc[self.signal:].reset_index(drop=True)
+        part = macd.loc[:self.signal * 3 - 1]
+        sma_15min = float(np.sum(np.unique(part.macd_15min.values)) / self.signal)
+        sma_5min = float(np.sum(part.loc[self.signal * 2:].macd_5min.values) / self.signal)
+        macd = macd.loc[self.signal * 3:].reset_index(drop=True)
         signal = pd.DataFrame([[
             part.tail(1).price,
             part.tail(1).macd_15min,
             part.tail(1).macd_5min,
-            part.tail(1).macd_1min,
             sma_15min,
             sma_5min,
-            sma_1min,
             part.tail(1).macd_15min - sma_15min,
             part.tail(1).macd_5min - sma_5min,
-            part.tail(1).macd_1min - sma_1min,
             part.tail(1).time
         ]], columns=[
             'price',
             'macd_15min',
             'macd_5min',
-            'macd_1min',
             'signal_15min',
             'signal_5min',
-            'signal_1min',
             'histogram_15min',
             'histogram_5min',
-            'histogram_1min',
             'time'
         ])
         signal_15min = sma_15min
         signal_5min = sma_5min
-        signal_1min = sma_1min
         print('signal')
         for macd_i in range(len(macd) - 1):
             sys.stdout.write("\r%d" % int(macd_i + 1))
@@ -98,95 +91,67 @@ class MACD:
                 pre_value=signal_5min,
                 term=self.signal
             )
-            signal_1min = self.__exponential_moving_average(
-                value=macd.loc[macd_i].macd_1min,
-                pre_value=signal_1min,
-                term=self.signal
-            )
             signal.loc[macd_i + 1] = [
                 macd.loc[macd_i].price,
                 macd.loc[macd_i].macd_15min,
                 macd.loc[macd_i].macd_5min,
-                macd.loc[macd_i].macd_1min,
                 signal_15min,
                 signal_5min,
-                signal_1min,
                 macd.loc[macd_i].macd_15min - signal_15min,
                 macd.loc[macd_i].macd_5min - signal_5min,
-                macd.loc[macd_i].macd_1min - signal_1min,
                 macd.loc[macd_i].time,
             ]
         print()
-        return signal
+        return signal.loc[1:].reset_index(drop=True)
 
-    def macd_data_frame(self, ema, data_15min, data_5min, data_1min):
+    def macd_data_frame(self, ema, data_5min):
         """
         平滑移動平均
         :param ema:        pandas.DataFrame
-        :param data_15min: pandas.DataFrame
         :param data_5min:  pandas.DataFrame
-        :param data_1min:  pandas.DataFrame
         :return:           pandas.DataFrame
         """
         ema_15min_short = ema.loc[0].short_15min
         ema_15min_long = ema.loc[0].long_15min
         ema_5min_short = ema.loc[0].short_5min
         ema_5min_long = ema.loc[0].long_5min
-        i_15min = 1
-        i_5min = 1
         print('macd')
-        for i_1min in range(len(data_1min) - 1):
-            sys.stdout.write("\r%d" % int(i_1min + 1))
+        for i_5min in range(len(data_5min) - 1):
+            sys.stdout.write("\r%d" % int(i_5min + 1))
             sys.stdout.flush()
-            if i_1min % 15 == 0 and i_1min != 0:
+            if i_5min % 15 == 0 and i_5min != 0:
                 ema_15min_short = self.__exponential_moving_average(
-                    value=data_15min.loc[i_15min].end,
+                    value=data_5min.loc[i_5min].end,
                     pre_value=ema_15min_short,
                     term=self.short_term
                 )
                 ema_15min_long = self.__exponential_moving_average(
-                    value=data_15min.loc[i_15min].end,
+                    value=data_5min.loc[i_5min].end,
                     pre_value=ema_15min_long,
                     term=self.long_term
                 )
-                i_15min += 1
-            if i_1min % 5 == 0 and i_1min != 0:
-                ema_5min_short = self.__exponential_moving_average(
-                    value=data_5min.loc[i_5min].end,
-                    pre_value=ema_5min_short,
-                    term=self.short_term
-                )
-                ema_5min_long = self.__exponential_moving_average(
-                    value=data_5min.loc[i_5min].end,
-                    pre_value=ema_5min_long,
-                    term=self.long_term
-                )
-                i_5min += 1
-            ema_1min_short = self.__exponential_moving_average(
-                    value=data_1min.loc[i_1min].end,
-                    pre_value=ema_5min_short,
-                    term=self.short_term
+            ema_5min_short = self.__exponential_moving_average(
+                value=data_5min.loc[i_5min].end,
+                pre_value=ema_5min_short,
+                term=self.short_term
             )
-            ema_1min_long = self.__exponential_moving_average(
-                value=data_1min.loc[i_1min].end,
+            ema_5min_long = self.__exponential_moving_average(
+                value=data_5min.loc[i_5min].end,
                 pre_value=ema_5min_long,
                 term=self.long_term
             )
-            ema.loc[i_1min + 1] = [
-                data_1min.loc[i_1min + 1].end,
+            ema.loc[i_5min + 1] = [
+                data_5min.loc[i_5min + 1].end,
                 ema_15min_short,
                 ema_15min_long,
                 ema_5min_short,
                 ema_5min_long,
-                ema_1min_short,
-                ema_1min_long,
                 ema_15min_short - ema_15min_long,
                 ema_5min_short - ema_5min_long,
-                ema_1min_short - ema_1min_long,
-                data_1min.loc[i_1min].time,
+                data_5min.loc[i_5min].time,
             ]
         print()
-        return ema
+        return ema.loc[1:].reset_index(drop=True)
 
     @staticmethod
     def __exponential_moving_average(value, pre_value, term):
@@ -212,10 +177,7 @@ class MACD:
             sma_15min_long,
             sma_5min_short,
             sma_5min_long,
-            sma_5min_short,
-            sma_5min_long,
             sma_15min_short - sma_15min_long,
-            sma_5min_short - sma_5min_long,
             sma_5min_short - sma_5min_long,
             data_5min.loc[0, 'time']
         ]], columns=[
@@ -224,11 +186,8 @@ class MACD:
             'long_15min',
             'short_5min',
             'long_5min',
-            'short_1min',
-            'long_1min',
             'macd_15min',
             'macd_5min',
-            'macd_1min',
             'time'
         ])
         return ema, data_15min, data_5min
@@ -285,9 +244,8 @@ class MACD:
         :return:
         """
         self.candlestick = self.candlestick.loc[0:len(self.candlestick) - len(self.candlestick) % 15 - 1]
-        data_15min = self.candlestick.loc[::15].reset_index(drop=True)
-        data_5min = self.candlestick.loc[::5].reset_index(drop=True)
-        return data_15min, data_5min, self.candlestick
+        data_15min = self.candlestick.loc[::3].reset_index(drop=True)
+        return data_15min, self.candlestick
 
     def cut_for_ema_15min(self, data_15min):
         """
@@ -305,23 +263,19 @@ class MACD:
         """
         return data_5min[self.long_term * 3:].reset_index(drop=True)
 
-    def cut_for_ema_1min(self, data_1min):
-        """
-        SMAで使った部分を切り捨てる
-        :param data_1min:
-        :return:
-        """
-        return data_1min[self.long_term * 15:].reset_index(drop=True)
-
-    @staticmethod
-    def __write_signal(signal):
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+    def __write_signal(self, signal):
+        if self.__is_validation:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
+        else:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
         with open(our, 'wb') as f:
             pickle.dump(signal, f)
 
-    @staticmethod
-    def __read_signal():
-        our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
+    def __read_signal(self):
+        if self.__is_validation:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal_short.pickle')
+        else:
+            our = os.path.abspath(os.path.dirname(os.path.abspath(__file__)) + '/../../5min/macd/signal.pickle')
         with open(our, 'rb') as f:
             signal = pickle.load(f)
         return signal
