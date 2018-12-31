@@ -79,7 +79,7 @@ class MACDAdviser:
                 df_macd.loc[macd_i].macd_15min - signal_15min,
                 df_macd.loc[macd_i].macd_5min - signal_5min,
             ]
-        return df_signal[1:].reset_index(drop=True)
+        return df_signal.loc[1:].reset_index(drop=True)
 
     def make_macd_data_frame(self, df_macd, df_5min):
         ema_15min_short = df_macd.loc[0].short_15min
@@ -157,7 +157,7 @@ class MACDAdviser:
     @staticmethod
     def normalize_data_frame(df):
         """
-        終値のデータフレームを15min, 5min(1min), に分けて正規化する
+        終値のデータフレームを15min, 5min, に分けて正規化する
         :param df: pandas.DataFrame
         :return: pandas.DataFrame, pandas.DataFrame
         """
