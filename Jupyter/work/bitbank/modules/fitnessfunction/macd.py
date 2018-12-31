@@ -38,7 +38,7 @@ class MACD_(FitnessFunction):
             short_term=hyper_params['short_term'],
             long_term=hyper_params['long_term'],
             signal=hyper_params['signal'],
-            is_pickle=False
+            is_pickle=True
         )
         self.trend_15min = None
         self.trend_5min = None
