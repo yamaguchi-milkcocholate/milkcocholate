@@ -73,6 +73,8 @@ class MACDTrader:
                 data_i=data_i,
                 has_coin=has_coin,
             )
+            if has_coin:
+                print(price)
 
             if self.BUY == operation:
                 coin = self.DEFAULT_YEN_POSITION / price
@@ -96,11 +98,12 @@ class MACDTrader:
                     total += benefit
                 else:
                     loss += benefit
+                print('損切り:', '開始価格:', buying_price, '現在価格:', price)
                 coin = 0
                 has_coin = False
                 buying_price = None
-                # print('損切り:', '開始価格:', buying_price, '現在価格:', price)
         print('終了:', '合計:', (total + loss), '損切り:', loss_cut)
+        print(self.__genome)
 
     def operation(self, data_i, has_coin):
         histogram_15min = float(self.data.loc[data_i].histogram_15min)
