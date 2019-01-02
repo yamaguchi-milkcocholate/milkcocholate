@@ -98,7 +98,7 @@ class MACD_(FitnessFunction):
         for data_i in range(len(self.__data)):
             price = self.__data.loc[data_i].price
 
-            operation = self.operation(
+            operation = self.operation_15min(
                 data_i=data_i,
                 has_coin=has_coin,
                 genome=genome,
