@@ -54,6 +54,8 @@ class MACD_(FitnessFunction):
         self.start_decrease_5min = None
         self.mount_15min = None
         self.mount_5min = None
+        self.buying_price = None
+        self.max_price = None
         self.check = None
         self.check_detail = None
         self.check_ave = None
@@ -88,6 +90,7 @@ class MACD_(FitnessFunction):
         self.start_decrease_5min = False
         self.mount_15min = 1
         self.mount_5min = 1
+        self.check = [0, 0]
 
         genome = kwargs['genome']
         coin = 0
@@ -107,12 +110,14 @@ class MACD_(FitnessFunction):
             if self.BUY == operation:
                 coin = self.DEFAULT_YEN_POSITION / price
                 has_coin = True
+                self.buying_price = price
             elif self.SELL == operation:
                 benefit = price * coin - self.DEFAULT_YEN_POSITION
                 coin = 0
                 has_coin = False
                 fitness += benefit
                 transaction += 1
+                self.buying_price = None
                 # 損切り
                 if benefit <= 0:
                     loss_cut += 1
@@ -128,6 +133,7 @@ class MACD_(FitnessFunction):
             transaction,
             'benefit',
             benefit,
+            self.check
         )
         return fitness
 
@@ -305,6 +311,7 @@ class MACD_(FitnessFunction):
         pre_trend_5min = self.trend_5min
         macd_5min = float(self.__data.loc[data_i].macd_5min)
         signal_5min = float(self.__data.loc[data_i].signal_5min)
+        price = float(self.__data.loc[data_i].price)
         if histogram_5min >= 0:
             self.trend_5min = self.PLUS
         elif histogram_5min < 0:
@@ -366,6 +373,7 @@ class MACD_(FitnessFunction):
             end_macd_5min = genome[22]
             end_signal_5min = genome[23]
             mount_5min = genome[27]
+            price_rate = genome[28]
             # MAX条件
             max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
             max_threshold_5min /= self.mount_5min / mount_5min
@@ -376,12 +384,27 @@ class MACD_(FitnessFunction):
             # 降下条件
             decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
 
+            if not self.max_price:
+                self.max_price = price
+            else:
+                if self.max_price < price:
+                    self.max_price = price
+
             sell = self.and_gate(
                 self.is_exceed(max_threshold_5min, self.max_histogram_5min),
                 self.is_exceed(histogram_5min, decrease_threshold_5min),
             )
 
+            if self.max_price * price_rate > price:
+                self.check[1] += 1
+                sell_price = True
+            else:
+                sell_price = False
+
             if sell:
+                self.check[0] += 1
+
+            if sell or sell_price:
                 operation = self.SELL
             else:
                 operation = self.STAY

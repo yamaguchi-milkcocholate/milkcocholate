@@ -217,6 +217,8 @@ def macd():
     situation_dict['BUY-5MIN-MOUNT'] = (0, 1)   # 26
     situation_dict['SELL-5MIN-MOUNT'] = (0, 1)   # 27
 
+    situation_dict['SELL-PRICE_RATE'] = (0, 1)
+
     situation = Situation()
     situation.set_fitness_function_id(f_id=MACD_.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
