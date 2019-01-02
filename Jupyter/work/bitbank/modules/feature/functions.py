@@ -184,35 +184,38 @@ def macd():
     """
     # 下降トレンドで買うのでマイナス
     situation_dict = OrderedDict()
-    situation_dict['BUY-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
-    situation_dict['BUY-15MIN-STEP-RATE'] = (0, 1)
-    situation_dict['BUY-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
-    situation_dict['BUY-5MIN-STEP-RATE'] = (0, 1)
-    situation_dict['BUY-15MIN-START-MACD'] = (-1, 1)
-    situation_dict['BUY-15MIN-START-SIGNAL'] = (-1, 1)
-    situation_dict['BUY-5MIN-START-MACD'] = (-1, 1)
-    situation_dict['BUY-5MIN-START-SIGNAL'] = (-1, 1)
-    situation_dict['BUY-15MIN-END-MACD'] = (-1, 1)
-    situation_dict['BUY-15MIN-END-SIGNAL'] = (-1, 1)
-    situation_dict['BUY-5MIN-END-MACD'] = (-1, 1)
-    situation_dict['BUY-5MIN-END-SIGNAL'] = (-1, 1)
+    situation_dict['BUY-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)   # 0
+    situation_dict['BUY-15MIN-STEP-RATE'] = (0, 1)   # 1
+    situation_dict['BUY-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)   # 2
+    situation_dict['BUY-5MIN-STEP-RATE'] = (0, 1)   # 3
+    situation_dict['BUY-15MIN-START-MACD'] = (-1, 1)   # 4
+    situation_dict['BUY-15MIN-START-SIGNAL'] = (-1, 1)   # 5
+    situation_dict['BUY-5MIN-START-MACD'] = (-1, 1)   # 6
+    situation_dict['BUY-5MIN-START-SIGNAL'] = (-1, 1)   # 7
+    situation_dict['BUY-15MIN-END-MACD'] = (-1, 1)   # 8
+    situation_dict['BUY-15MIN-END-SIGNAL'] = (-1, 1)   # 9
+    situation_dict['BUY-5MIN-END-MACD'] = (-1, 1)   # 10
+    situation_dict['BUY-5MIN-END-SIGNAL'] = (-1, 1)   # 11
 
     # 上昇トレンドで売るのでプラス
-    situation_dict['SELL-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
-    situation_dict['SELL-15MIN-STEP-RATE'] = (0, 1)
-    situation_dict['SELL-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)
-    situation_dict['SELL-5MIN-STEP-RATE'] = (0, 1)
-    situation_dict['SELL-15MIN-START-MACD'] = (-1, 1)
-    situation_dict['SELL-15MIN-START-SIGNAL'] = (-1, 1)
-    situation_dict['SELL-5MIN-START-MACD'] = (-1, 1)
-    situation_dict['SELL-5MIN-START-SIGNAL'] = (-1, 1)
-    situation_dict['SELL-15MIN-END-MACD'] = (-1, 1)
-    situation_dict['SELL-15MIN-END-SIGNAL'] = (-1, 1)
-    situation_dict['SELL-5MIN-END-MACD'] = (-1, 1)
-    situation_dict['SELL-5MIN-END-SIGNAL'] = (-1, 1)
+    situation_dict['SELL-15MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)   # 12
+    situation_dict['SELL-15MIN-STEP-RATE'] = (0, 1)   # 13
+    situation_dict['SELL-5MIN-HISTOGRAM-DECREASE-RATE'] = (0, 1)   # 14
+    situation_dict['SELL-5MIN-STEP-RATE'] = (0, 1)   # 15
+    situation_dict['SELL-15MIN-START-MACD'] = (-1, 1)   # 16
+    situation_dict['SELL-15MIN-START-SIGNAL'] = (-1, 1)   # 17
+    situation_dict['SELL-5MIN-START-MACD'] = (-1, 1)   # 18
+    situation_dict['SELL-5MIN-START-SIGNAL'] = (-1, 1)   # 19
+    situation_dict['SELL-15MIN-END-MACD'] = (-1, 1)   # 20
+    situation_dict['SELL-15MIN-END-SIGNAL'] = (-1, 1)   # 21
+    situation_dict['SELL-5MIN-END-MACD'] = (-1, 1)   # 22
+    situation_dict['SELL-5MIN-END-SIGNAL'] = (-1, 1)   # 23
 
-    situation_dict['BUY-15MIN-MOUNT'] = (0, 1)
-    situation_dict['SELL-15MIN-MOUNT'] = (0, 1)
+    situation_dict['BUY-15MIN-MOUNT'] = (0, 1)   # 24
+    situation_dict['SELL-15MIN-MOUNT'] = (0, 1)   # 25
+
+    situation_dict['BUY-5MIN-MOUNT'] = (0, 1)   # 26
+    situation_dict['SELL-5MIN-MOUNT'] = (0, 1)   # 27
 
     situation = Situation()
     situation.set_fitness_function_id(f_id=MACD_.FITNESS_FUNCTION_ID)

@@ -337,7 +337,7 @@ class MACD_(FitnessFunction):
             start_signal_15min = genome[5]
             end_macd_15min = genome[8]
             end_signal_15min = genome[9]
-            mount_15min = genome[20]
+            mount_15min = genome[24]
             # MAX条件
             max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
             max_threshold_15min /= self.mount_15min / mount_15min
@@ -360,11 +360,11 @@ class MACD_(FitnessFunction):
         elif has_coin is True:
             decrease_rate_15min = genome[12]
             step_rate_15min = genome[13]
-            start_macd_15min = genome[18]
-            start_signal_15min = genome[19]
-            end_macd_15min = genome[18]
-            end_signal_15min = genome[19]
-            mount_15min = genome[21]
+            start_macd_15min = genome[16]
+            start_signal_15min = genome[17]
+            end_macd_15min = genome[20]
+            end_signal_15min = genome[21]
+            mount_15min = genome[25]
             # MAX条件
             max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
             max_threshold_15min /= self.mount_15min / mount_15min
