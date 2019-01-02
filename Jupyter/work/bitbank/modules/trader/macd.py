@@ -45,7 +45,7 @@ class MACDTrader:
             long_term=self.__long_term,
             signal=self.__signal,
             is_pickle=self.__is_exist_pickle,
-            is_validation=False
+            is_validation=True
         )
 
     def __call__(self, *args, **kwargs):

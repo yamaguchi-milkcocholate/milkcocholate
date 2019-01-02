@@ -50,6 +50,10 @@ class MACD_(FitnessFunction):
         self.start_macd_5min = None
         self.start_signal_15min = None
         self.start_signal_5min = None
+        self.start_decrease_15min = None
+        self.start_decrease_5min = None
+        self.mount_15min = None
+        self.mount_5min = None
         self.check = None
         self.check_detail = None
         self.check_ave = None
@@ -80,6 +84,10 @@ class MACD_(FitnessFunction):
         self.start_macd_5min = 0
         self.start_signal_15min = 0
         self.start_signal_5min = 0
+        self.start_decrease_15min = False
+        self.start_decrease_5min = False
+        self.mount_15min = 1
+        self.mount_5min = 1
 
         genome = kwargs['genome']
         coin = 0
@@ -125,6 +133,31 @@ class MACD_(FitnessFunction):
 
     def calc_result_and_log(self, population_id, **kwargs):
         return None
+
+    def loss_cut(self, fitness, loss_cut, transaction):
+        fitness += self.DEFAULT_YEN_POSITION * (-math.log(loss_cut + 1, 10) + 2 * math.log(transaction + 1, 10))
+
+        if fitness <= 0:
+            fitness = 1
+        else:
+            fitness = fitness - 0.9 * fitness * math.sqrt((loss_cut + 1) / transaction)
+        return fitness
+
+    @staticmethod
+    def is_exceed(x, y):
+        """
+        :param x: 小さい
+        :param y: 大きい
+        :return: bool
+        """
+        if y > x:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def and_gate(*args):
+        return all(args)
 
     def operation(self, data_i, has_coin, genome):
         histogram_15min = float(self.__data.loc[data_i].histogram_15min)
@@ -196,12 +229,12 @@ class MACD_(FitnessFunction):
                 end_macd_5min = genome[10]
                 end_signal_5min = genome[11]
                 # MAX条件
-                max_threshold_5min = (step_rate_5min ** 2) * self.max_histogram_5min
+                max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
                 max_threshold_5min += start_macd_5min * self.start_macd_5min
                 max_threshold_5min += start_signal_5min * self.start_signal_5min
                 max_threshold_5min += end_macd_5min * macd_5min
                 max_threshold_5min += end_signal_5min * signal_5min
-                max_threshold_15min = (step_rate_15min ** 2) * self.max_histogram_15min
+                max_threshold_15min = step_rate_15min * step_size_5min * self.max_histogram_15min
                 max_threshold_15min += start_macd_15min * self.start_macd_15min
                 max_threshold_15min += start_signal_15min * self.start_signal_15min
                 max_threshold_15min += end_macd_15min * macd_15min
@@ -267,27 +300,91 @@ class MACD_(FitnessFunction):
 
         return operation
 
-    def loss_cut(self, fitness, loss_cut, transaction):
-        fitness += self.DEFAULT_YEN_POSITION * (-math.log(loss_cut + 1, 10) + 2 * math.log(transaction + 1, 10))
+    def operation_15min(self, data_i, has_coin, genome):
+        histogram_15min = float(self.__data.loc[data_i].histogram_15min)
+        pre_trend_15min = self.trend_15min
+        macd_15min = float(self.__data.loc[data_i].macd_15min)
+        signal_15min = float(self.__data.loc[data_i].signal_15min)
+        if histogram_15min >= 0:
+            self.trend_15min = self.PLUS
+        elif histogram_15min < 0:
+            self.trend_15min = self.MINUS
 
-        if fitness <= 0:
-            fitness = 1
+        if pre_trend_15min == self.trend_15min:
+            self.area_15min.append(histogram_15min)
+            if abs(self.max_histogram_15min) < abs(histogram_15min):
+                self.max_histogram_15min = histogram_15min
         else:
-            fitness = fitness - 0.9 * fitness * math.sqrt((loss_cut + 1) / transaction)
-        return fitness
+            self.area_15min = list()
+            self.area_15min.append(histogram_15min)
+            self.max_histogram_15min = histogram_15min
+            self.start_macd_15min = macd_15min
+            self.start_signal_15min = signal_15min
+            self.mount_15min = 1
 
-    @staticmethod
-    def is_exceed(x, y):
-        """
-        :param x: 小さい
-        :param y: 大きい
-        :return: bool
-        """
-        if y > x:
-            return True
+        if len(self.area_15min) > 1 and self.is_exceed(abs(self.area_15min[-1]), abs(self.area_15min[-2])) and not self.start_decrease_15min:
+            self.start_decrease_15min = True
+            self.mount_15min += 1
         else:
-            return False
+            self.start_decrease_15min = False
 
-    @staticmethod
-    def and_gate(*args):
-        return all(args)
+        # 買い
+        step_size_15min = len(self.area_15min)
+        if has_coin is False:
+            decrease_rate_15min = genome[0]
+            step_rate_15min = genome[1]
+            start_macd_15min = genome[4]
+            start_signal_15min = genome[5]
+            end_macd_15min = genome[8]
+            end_signal_15min = genome[9]
+            mount_15min = genome[20]
+            # MAX条件
+            max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
+            max_threshold_15min /= self.mount_15min / mount_15min
+            max_threshold_15min += start_macd_15min * self.start_macd_15min
+            max_threshold_15min += start_signal_15min * self.start_signal_15min
+            max_threshold_15min += end_macd_15min * macd_15min
+            max_threshold_15min += end_signal_15min * signal_15min
+            # 降下条件
+            decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
+
+            buy = self.and_gate(
+                self.is_exceed(self.max_histogram_15min, max_threshold_15min),
+                self.is_exceed(decrease_threshold_15min, histogram_15min),
+            )
+            if buy:
+                operation = self.BUY
+            else:
+                operation = self.STAY
+        # 売り
+        elif has_coin is True:
+            decrease_rate_15min = genome[12]
+            step_rate_15min = genome[13]
+            start_macd_15min = genome[18]
+            start_signal_15min = genome[19]
+            end_macd_15min = genome[18]
+            end_signal_15min = genome[19]
+            mount_15min = genome[21]
+            # MAX条件
+            max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
+            max_threshold_15min /= self.mount_15min / mount_15min
+            max_threshold_15min += start_macd_15min * self.start_macd_15min
+            max_threshold_15min += start_signal_15min * self.start_signal_15min
+            max_threshold_15min += end_macd_15min * macd_15min
+            max_threshold_15min += end_signal_15min * signal_15min
+            # 降下条件
+            decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
+
+            sell = self.and_gate(
+                self.is_exceed(max_threshold_15min, self.max_histogram_15min),
+                self.is_exceed(histogram_15min, decrease_threshold_15min),
+            )
+
+            if sell:
+                operation = self.SELL
+            else:
+                operation = self.STAY
+        else:
+            operation = self.STAY
+
+        return operation
