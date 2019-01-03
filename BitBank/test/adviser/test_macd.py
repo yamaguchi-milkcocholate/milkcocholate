@@ -42,8 +42,19 @@ class TestMACDAdviser(unittest.TestCase):
         df_macd = self.adviser.make_macd_data_frame(df_macd, df_5min)
         self.assertEqual(len(df_macd), len(df_5min) - 1)
         self.assertEqual(float(df_macd.tail(1).price), float(df_5min.tail(1).price))
-        df_signal = self.adviser.make_signal_data_frame(df_macd)
+        self.adviser.make_signal_data_frame(df_macd)
+        df_signal = self.adviser.df_signal
         self.assertEqual(float(df_signal.tail(1).price), float(df_macd.tail(2).reset_index(drop=True).loc[0].price))
+
+    def test_init(self):
+        df_signal = self.adviser.df_signal
+        print(df_signal)
+        self.adviser.fetch_recent_data()
+        self.adviser.fetch_recent_data()
+        self.adviser.fetch_recent_data()
+        self.adviser.fetch_recent_data()
+        df_signal = self.adviser.df_signal
+        print(df_signal)
 
 
 if __name__ == '__main__':

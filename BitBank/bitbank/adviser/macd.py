@@ -20,6 +20,182 @@ class MACDAdviser:
         self.__pair = pair
         self.__candle_type = candle_type
         self.__api_gateway = ApiGateway()
+        self.df_signal = None
+        self.make_data_frame()
+        self.trend_15min = None
+        self.trend_5min = None
+        self.area_15min = list()
+        self.area_5min = list()
+        self.max_histogram_5min = 0
+        self.max_histogram_15min = 0
+        self.start_macd_15min = None
+        self.start_macd_5min = None
+        self.start_signal_15min = None
+        self.start_signal_5min = None
+        self.mount_15min = None
+        self.mount_5min = None
+        self.count_15min = 1
+        self.count_5min = 1
+        self.recognize()
+
+    def fetch_recent_data(self):
+        """
+        現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
+        """
+        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
+        ticker = float(ticker['last'])
+        tail = self.df_signal.tail(1)
+
+        if self.count_15min == 15:
+            self.count_15min = 1
+            short_15min = self.__exponential_moving_average(ticker, float(tail.short_15min), self.__short_term)
+            long_15min = self.__exponential_moving_average(ticker, float(tail.long_15min), self.__long_term)
+            macd_15min = short_15min - long_15min
+            signal_15min = self.__exponential_moving_average(macd_15min, float(tail.signal_15min), self.__signal)
+            histogram_15min = macd_15min - signal_15min
+        else:
+            self.count_15min += 1
+            short_15min = float(tail.short_15min)
+            long_15min = float(tail.long_15min)
+            macd_15min = float(tail.macd_15min)
+            signal_15min = float(tail.signal_15min)
+            histogram_15min = float(tail.histogram_15min)
+
+        if self.count_5min == 5:
+            self.count_5min = 1
+            short_5min = self.__exponential_moving_average(ticker, float(tail.short_5min), self.__short_term)
+            long_5min = self.__exponential_moving_average(ticker, float(tail.long_5min), self.__long_term)
+            macd_5min = short_5min - long_5min
+            signal_5min = self.__exponential_moving_average(macd_5min, float(tail.signal_5min), self.__signal)
+            histogram_5min = macd_5min - signal_5min
+        else:
+            self.count_5min += 1
+            short_5min = float(tail.short_5min)
+            long_5min = float(tail.long_5min)
+            macd_5min = float(tail.macd_5min)
+            signal_5min = float(tail.signal_5min)
+            histogram_5min = float(tail.histogram_5min)
+
+        short_1min = self.__exponential_moving_average(ticker, short_5min, self.__short_term)
+        long_1min = self.__exponential_moving_average(ticker, long_5min, self.__long_term)
+        macd_1min = short_1min - long_1min
+        signal_1min = self.__exponential_moving_average(macd_1min, signal_5min, self.__signal)
+        histogram_1min = macd_1min - signal_1min
+
+        add = pd.Series([
+                ticker,
+                short_15min,
+                long_15min,
+                short_5min,
+                long_5min,
+                short_1min,
+                long_1min,
+                macd_15min,
+                macd_5min,
+                macd_1min,
+                signal_15min,
+                signal_5min,
+                signal_1min,
+                histogram_15min,
+                histogram_5min,
+                histogram_1min
+             ], index=[
+                'price',
+                'short_15min',
+                'long_15min',
+                'short_5min',
+                'long_5min',
+                'short_1min',
+                'long_1min',
+                'macd_15min',
+                'macd_5min',
+                'macd_1min',
+                'signal_15min',
+                'signal_5min',
+                'signal_1min',
+                'histogram_15min',
+                'histogram_5min',
+                'histogram_1min'
+            ],
+            name=len(self.df_signal) - 1
+        )
+
+        self.df_signal = self.df_signal.append(add)
+        self.df_signal = self.df_signal.loc[1:]
+
+    def recognize(self):
+        """
+        最近の状況を認識する
+        """
+        size = len(self.df_signal)
+        part = self.df_signal.loc[size - 1]
+        self.__check_trend(
+            histogram_15min=float(part.histogram_15min),
+            histogram_5min=float(part.histogram_5min)
+        )
+        check_macd_15min = False
+        pre_macd_15min = float(part.macd_15min)
+        iteration = 2
+        change_15min = False
+        change_5min = False
+        while True:
+            part = self.df_signal.loc[size - iteration]
+            histogram_15min = float(part.histogram_15min)
+            histogram_5min = float(part.histogram_5min)
+            macd_15min = float(part.macd_15min)
+            macd_5min = float(part.macd_5min)
+            signal_15min = float(part.signal_15min)
+            signal_5min = float(part.signal_5min)
+
+            if pre_macd_15min == macd_15min and check_macd_15min:
+                self.count_15min += 1
+            else:
+                check_macd_15min = True
+
+            pre_trend_15min = self.trend_15min
+            pre_trend_5min = self.trend_5min
+            self.__check_trend(
+                histogram_15min=histogram_15min,
+                histogram_5min=histogram_5min
+            )
+
+            # 山の終わり
+            if pre_trend_15min != self.trend_15min and not change_15min:
+                change_15min = True
+                self.start_macd_15min = macd_15min
+                self.start_signal_15min = signal_15min
+
+            # 山の終わり
+            if pre_trend_5min != self.trend_5min and not change_5min:
+                change_5min = True
+                self.start_macd_5min = macd_5min
+                self.start_signal_5min = signal_5min
+
+            if not change_15min:
+                self.area_15min.append(histogram_15min)
+                if abs(self.max_histogram_15min) < abs(histogram_15min):
+                    self.max_histogram_15min = histogram_15min
+
+            if not change_5min:
+                self.area_5min.append(histogram_5min)
+                if abs(self.max_histogram_5min) < abs(histogram_5min):
+                    self.max_histogram_5min = histogram_5min
+
+            if change_5min and change_15min:
+                break
+            iteration += 1
+
+        self.df_signal = self.df_signal.tail(10).reset_index(drop=True)
+
+    def __check_trend(self, histogram_15min, histogram_5min):
+        if histogram_15min >= 0:
+            self.trend_15min = self.PLUS
+        elif histogram_15min < 0:
+            self.trend_15min = self.MINUS
+        if histogram_5min >= 0:
+            self.trend_5min = self.PLUS
+        elif histogram_5min < 0:
+            self.trend_5min = self.MINUS
 
     def make_data_frame(self):
         """
@@ -29,8 +205,7 @@ class MACDAdviser:
         df_15min, df_5min = self.normalize_data_frame(df=df_price)
         df_macd, df_15min, df_5min = self.first_sma_data_frame(df_15min, df_5min)
         df_macd = self.make_macd_data_frame(df_macd, df_5min)
-        signal = self.make_signal_data_frame(df_macd)
-        return signal
+        self.df_signal = self.make_signal_data_frame(df_macd)
 
     def make_signal_data_frame(self, df_macd):
         part = df_macd.loc[:self.__signal * 3 - 1]
@@ -39,20 +214,38 @@ class MACDAdviser:
         df_macd = df_macd.loc[self.__signal * 3:].reset_index(drop=True)
         df_signal = pd.DataFrame([[
             part.tail(1).price,
+            part.tail(1).short_15min,
+            part.tail(1).long_15min,
+            part.tail(1).short_5min,
+            part.tail(1).long_5min,
+            part.tail(1).short_5min,
+            part.tail(1).long_5min,
             part.tail(1).macd_15min,
+            part.tail(1).macd_5min,
             part.tail(1).macd_5min,
             sma_15min,
             sma_5min,
+            sma_5min,
             part.tail(1).macd_15min - sma_15min,
+            part.tail(1).macd_5min - sma_5min,
             part.tail(1).macd_5min - sma_5min,
         ]], columns=[
             'price',
+            'short_15min',
+            'long_15min',
+            'short_5min',
+            'long_5min',
+            'short_1min',
+            'long_1min',
             'macd_15min',
             'macd_5min',
+            'macd_1min',
             'signal_15min',
             'signal_5min',
+            'signal_1min',
             'histogram_15min',
             'histogram_5min',
+            'histogram_1min',
         ])
 
         signal_15min = sma_15min
@@ -72,11 +265,20 @@ class MACDAdviser:
 
             df_signal.loc[macd_i + 1] = [
                 df_macd.loc[macd_i].price,
+                df_macd.loc[macd_i].short_15min,
+                df_macd.loc[macd_i].long_15min,
+                df_macd.loc[macd_i].short_5min,
+                df_macd.loc[macd_i].long_5min,
+                df_macd.loc[macd_i].short_5min,
+                df_macd.loc[macd_i].long_5min,
                 df_macd.loc[macd_i].macd_15min,
+                df_macd.loc[macd_i].macd_5min,
                 df_macd.loc[macd_i].macd_5min,
                 signal_15min,
                 signal_5min,
+                signal_5min,
                 df_macd.loc[macd_i].macd_15min - signal_15min,
+                df_macd.loc[macd_i].macd_5min - signal_5min,
                 df_macd.loc[macd_i].macd_5min - signal_5min,
             ]
         return df_signal.loc[1:].reset_index(drop=True)
