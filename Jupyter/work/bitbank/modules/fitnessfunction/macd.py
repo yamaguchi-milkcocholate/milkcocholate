@@ -56,6 +56,8 @@ class MACD_(FitnessFunction):
         self.mount_5min = None
         self.buying_price = None
         self.max_price = None
+        self.is_plus_start_15min = None
+        self.is_plus_start_5min = None
         self.check = None
         self.check_detail = None
         self.check_ave = None
@@ -90,7 +92,10 @@ class MACD_(FitnessFunction):
         self.start_decrease_5min = False
         self.mount_15min = 1
         self.mount_5min = 1
+        self.is_plus_start_15min = False
+        self.is_plus_start_5min = False
         self.check = [0, 0]
+        self.check_detail = [0, 0]
 
         genome = kwargs['genome']
         coin = 0
@@ -121,9 +126,16 @@ class MACD_(FitnessFunction):
                 # 損切り
                 if benefit <= 0:
                     loss_cut += 1
+                    self.check_detail[1] += benefit
+                else:
+                    self.check_detail[0] += benefit
 
         benefit = fitness
         fitness = self.loss_cut(fitness=fitness, loss_cut=loss_cut, transaction=transaction)
+        if transaction > 0:
+            success = round(100 * (transaction - loss_cut) / transaction)
+        else:
+            success = 0
         print(
             'fitness',
             fitness,
@@ -133,20 +145,21 @@ class MACD_(FitnessFunction):
             transaction,
             'benefit',
             benefit,
-            self.check
+            self.check,
+            self.check_detail,
+            success
         )
         return fitness
 
     def calc_result_and_log(self, population_id, **kwargs):
         return None
 
-    def loss_cut(self, fitness, loss_cut, transaction):
-        fitness += self.DEFAULT_YEN_POSITION * (-math.log(loss_cut + 1, 10) + 2 * math.log(transaction + 1, 10))
-
+    @staticmethod
+    def loss_cut(fitness, loss_cut, transaction):
         if fitness <= 0:
             fitness = 1
         else:
-            fitness = fitness - 0.9 * fitness * math.sqrt((loss_cut + 1) / transaction)
+            fitness = fitness - 1 * fitness * math.sqrt((loss_cut + 1) / transaction)
         return fitness
 
     @staticmethod
@@ -194,6 +207,10 @@ class MACD_(FitnessFunction):
             self.max_histogram_15min = histogram_15min
             self.start_macd_15min = macd_15min
             self.start_signal_15min = signal_15min
+            if has_coin is False and signal_15min > 0:
+                self.is_plus_start_15min = True
+            else:
+                self.is_plus_start_15min = False
         if pre_trend_5min == self.trend_5min:
             self.area_5min.append(histogram_1min)
             if abs(self.max_histogram_5min) < abs(histogram_1min):
@@ -204,6 +221,10 @@ class MACD_(FitnessFunction):
             self.max_histogram_5min = histogram_1min
             self.start_macd_5min = macd_5min
             self.start_signal_5min = signal_5min
+            if has_coin is False and signal_5min > 0:
+                self.is_plus_start_5min = True
+            else:
+                self.is_plus_start_5min = False
 
         # 山が下がり始めたら
         if len(self.area_5min) > 1 and self.is_exceed(abs(self.area_5min[-1]), abs(self.area_5min[-2])):
@@ -222,7 +243,7 @@ class MACD_(FitnessFunction):
         if start_decrease_5min and start_decrease_15min:
 
             # 買い
-            if has_coin is False:
+            if has_coin is False and self.is_plus_start_15min and self.is_plus_start_5min:
                 decrease_rate_15min = genome[0]
                 step_rate_15min = genome[1]
                 decrease_rate_5min = genome[2]
