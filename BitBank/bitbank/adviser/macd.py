@@ -46,6 +46,7 @@ class MACDAdviser:
         :return: const integer, float
         """
         # price_rate = genome[28]
+        price_rate = 0.9
         histogram_15min = float(self.df_signal.tail(1).histogram_15min)
         histogram_5min = float(self.df_signal.tail(1).histogram_5min)
         histogram_1min = float(self.df_signal.tail(1).histogram_1min)
