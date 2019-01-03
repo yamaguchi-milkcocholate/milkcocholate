@@ -1,5 +1,5 @@
 from bitbank.bot import Bot
-from bitbank.adviser.bollingerband_ti import BollingerBandTiAdviser
+from bitbank.adviser.macd import MACDAdviser
 from bitbank.scheduler import Scheduler
 
 
@@ -20,11 +20,7 @@ print('genome id: ', end='')
 genome_id = input()
 genome_id = int(genome_id)
 
-adviser = BollingerBandTiAdviser(
-    stock_term=20,
-    inclination_alpha=9,
-    pair='xrp_jpy'
-)
+adviser = MACDAdviser()
 
 bot = Bot(
     host=host,
