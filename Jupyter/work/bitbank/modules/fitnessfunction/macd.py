@@ -101,7 +101,7 @@ class MACD_(FitnessFunction):
         for data_i in range(len(self.__data)):
             price = self.__data.loc[data_i].price
 
-            operation = self.operation_5min(
+            operation = self.operation(
                 data_i=data_i,
                 has_coin=has_coin,
                 genome=genome,
@@ -174,6 +174,7 @@ class MACD_(FitnessFunction):
         macd_5min = float(self.__data.loc[data_i].macd_5min)
         signal_15min = float(self.__data.loc[data_i].signal_15min)
         signal_5min = float(self.__data.loc[data_i].signal_5min)
+        price = float(self.__data.loc[data_i].price)
         if histogram_15min >= 0:
             self.trend_15min = self.PLUS
         elif histogram_15min < 0:
@@ -273,6 +274,7 @@ class MACD_(FitnessFunction):
                 end_signal_5min = genome[17]
                 end_macd_15min = genome[18]
                 end_signal_15min = genome[19]
+                price_rate = genome[28]
                 # MAX条件
                 max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
                 max_threshold_5min += start_macd_5min * self.start_macd_5min
@@ -288,6 +290,12 @@ class MACD_(FitnessFunction):
                 decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
                 decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
 
+                if not self.max_price:
+                    self.max_price = price
+                else:
+                    if self.max_price < price:
+                        self.max_price = price
+
                 sell = self.and_gate(
                     self.is_exceed(max_threshold_15min, self.max_histogram_15min),
                     self.is_exceed(histogram_15min, decrease_threshold_15min),
@@ -295,7 +303,16 @@ class MACD_(FitnessFunction):
                     self.is_exceed(histogram_1min, decrease_threshold_5min),
                 )
 
+                if self.max_price * price_rate > price:
+                    self.check[1] += 1
+                    sell_price = True
+                else:
+                    sell_price = False
+
                 if sell:
+                    self.check[0] += 1
+
+                if sell or sell_price:
                     operation = self.SELL
                 else:
                     operation = self.STAY
