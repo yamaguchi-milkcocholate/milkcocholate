@@ -376,7 +376,7 @@ class MACD_(FitnessFunction):
 
         # 買い
         # step_size_5min = len(self.area_5min)
-        if has_coin is False and self.start_macd_5min > 0 and self.start_signal_5min > 0:
+        if not has_coin and self.start_macd_5min > 0 and self.start_signal_5min > 0 and self.trend_5min < 0:
             decrease_rate_5min = genome[2]
             step_rate_5min = genome[3]
             # start_macd_5min = genome[6]
@@ -406,7 +406,7 @@ class MACD_(FitnessFunction):
             else:
                 operation = self.STAY
         # 売り
-        elif has_coin is True:
+        elif has_coin is True and self.trend_5min > 0:
             decrease_rate_5min = genome[14]
             step_rate_5min = genome[15]
             # start_macd_5min = genome[18]
