@@ -36,7 +36,193 @@ class MACDAdviser:
         self.mount_5min = None
         self.count_15min = 1
         self.count_5min = 1
+        self.is_plus_start_15min = None
+        self.is_plus_start_5min = None
+        self.max_price = None
         self.recognize()
+
+    def operation(self, genome, has_coin):
+        """
+        :return: const integer, float
+        """
+        # price_rate = genome[28]
+        price_rate = 0.9
+        histogram_15min = float(self.df_signal.tail(1).histogram_15min)
+        histogram_5min = float(self.df_signal.tail(1).histogram_5min)
+        histogram_1min = float(self.df_signal.tail(1).histogram_1min)
+        pre_trend_15min = self.trend_15min
+        pre_trend_5min = self.trend_5min
+        macd_15min = float(self.df_signal.tail(1).macd_15min)
+        macd_5min = float(self.df_signal.tail(1).macd_5min)
+        macd_1min = float(self.df_signal.tail(1).macd_1min)
+        signal_15min = float(self.df_signal.tail(1).signal_15min)
+        signal_5min = float(self.df_signal.tail(1).signal_5min)
+        signal_1min = float(self.df_signal.tail(1).signal_1min)
+        price = float(self.df_signal.tail(1).price)
+
+        self.__check_trend(histogram_15min=histogram_15min, histogram_5min=histogram_1min)
+        check_5min = self.__check_5min()
+
+        if check_5min:
+            if pre_trend_15min == self.trend_15min:
+                self.area_15min.append(histogram_15min)
+                if abs(self.max_histogram_15min) < abs(histogram_15min):
+                    self.max_histogram_15min = histogram_15min
+            else:
+                self.area_15min = list()
+                self.area_15min.append(histogram_15min)
+                self.max_histogram_15min = histogram_15min
+                self.start_macd_15min = macd_15min
+                self.start_signal_15min = signal_15min
+                if has_coin is False and signal_15min > 0:
+                    self.is_plus_start_15min = True
+                else:
+                    self.is_plus_start_15min = False
+
+            if pre_trend_5min == self.trend_5min:
+                self.area_5min.append(histogram_1min)
+                if abs(self.max_histogram_5min) < abs(histogram_1min):
+                    self.max_histogram_5min = histogram_1min
+            else:
+                self.area_5min = list()
+                self.area_5min.append(histogram_1min)
+                self.max_histogram_5min = histogram_1min
+                self.start_macd_5min = macd_1min
+                self.start_signal_5min = signal_1min
+                if has_coin is False and signal_1min > 0:
+                    self.is_plus_start_5min = True
+                else:
+                    self.is_plus_start_5min = False
+        else:
+            if pre_trend_5min == self.trend_5min:
+                self.area_5min[-1] = histogram_1min
+                if abs(self.max_histogram_5min) < abs(histogram_1min):
+                    self.max_histogram_5min = histogram_1min
+            else:
+                self.area_5min = list()
+                self.area_5min.append(histogram_1min)
+                self.max_histogram_5min = histogram_1min
+                self.start_macd_5min = macd_1min
+                self.start_signal_5min = signal_1min
+                if has_coin is False and signal_1min > 0:
+                    self.is_plus_start_5min = True
+                else:
+                    self.is_plus_start_5min = False
+
+        # 山が下がり始めたら
+        if len(self.area_5min) > 1 and abs(self.area_5min[-1]) > abs(histogram_1min):
+            step_size_5min = len(self.area_5min)
+            start_decrease_5min = True
+        else:
+            step_size_5min = None
+            start_decrease_5min = False
+        if len(self.area_15min) > 1 and abs(self.area_15min[-1]) < abs(self.area_15min[-2]):
+            step_size_15min = len(self.area_15min)
+            start_decrease_15min = True
+        else:
+            step_size_15min = None
+            start_decrease_15min = False
+
+        if start_decrease_5min and start_decrease_15min:
+
+            if not has_coin and self.is_plus_start_15min and self.is_plus_start_5min:
+                decrease_rate_15min = genome[0]
+                step_rate_15min = genome[1]
+                decrease_rate_5min = genome[2]
+                step_rate_5min = genome[3]
+                start_macd_15min = genome[4]
+                start_signal_15min = genome[5]
+                start_macd_5min = genome[6]
+                start_signal_5min = genome[7]
+                end_macd_15min = genome[8]
+                end_signal_15min = genome[9]
+                end_macd_5min = genome[10]
+                end_signal_5min = genome[11]
+
+                # MAX条件
+                max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
+                max_threshold_5min += start_macd_5min * self.start_macd_5min
+                max_threshold_5min += start_signal_5min * self.start_signal_5min
+                max_threshold_5min += end_macd_5min * macd_5min
+                max_threshold_5min += end_signal_5min * signal_5min
+                max_threshold_15min = step_rate_15min * step_size_5min * self.max_histogram_15min
+                max_threshold_15min += start_macd_15min * self.start_macd_15min
+                max_threshold_15min += start_signal_15min * self.start_signal_15min
+                max_threshold_15min += end_macd_15min * macd_15min
+                max_threshold_15min += end_signal_15min * signal_15min
+                # 降下条件
+                decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
+                decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
+
+                buy = self.and_gate(
+                    self.max_histogram_15min < max_threshold_15min,
+                    decrease_threshold_15min < histogram_15min,
+                    self.max_histogram_5min < max_threshold_5min,
+                    decrease_threshold_5min < histogram_1min,
+                )
+                if buy:
+                    operation = self.BUY
+                else:
+                    operation = self.STAY
+
+            elif has_coin:
+                decrease_rate_15min = genome[12]
+                step_rate_15min = genome[13]
+                decrease_rate_5min = genome[14]
+                step_rate_5min = genome[15]
+                start_macd_5min = genome[16]
+                start_signal_5min = genome[17]
+                start_macd_15min = genome[18]
+                start_signal_15min = genome[19]
+                end_macd_5min = genome[16]
+                end_signal_5min = genome[17]
+                end_macd_15min = genome[18]
+                end_signal_15min = genome[19]
+
+                # MAX条件
+                max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
+                max_threshold_5min += start_macd_5min * self.start_macd_5min
+                max_threshold_5min += start_signal_5min * self.start_signal_5min
+                max_threshold_5min += end_macd_5min * macd_5min
+                max_threshold_5min += end_signal_5min * signal_5min
+                max_threshold_15min = step_rate_15min * step_size_15min * self.max_histogram_15min
+                max_threshold_15min += start_macd_15min * self.start_macd_15min
+                max_threshold_15min += start_signal_15min * self.start_signal_15min
+                max_threshold_15min += end_macd_15min * macd_15min
+                max_threshold_15min += end_signal_15min * signal_15min
+                # 降下条件
+                decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
+                decrease_threshold_15min = self.max_histogram_15min * decrease_rate_15min
+
+                if not self.max_price:
+                    self.max_price = price
+                else:
+                    if self.max_price < price:
+                        self.max_price = price
+
+                sell = self.and_gate(
+                    max_threshold_15min < self.max_histogram_15min,
+                    histogram_15min < decrease_threshold_15min,
+                    max_threshold_5min < self.max_histogram_5min,
+                    histogram_1min < decrease_threshold_5min,
+                )
+
+                if self.max_price * price_rate > price:
+                    sell_price = True
+                else:
+                    sell_price = False
+
+                if sell or sell_price:
+                    operation = self.SELL
+                    self.max_price = None
+                else:
+                    operation = self.STAY
+            else:
+                operation = self.STAY
+        else:
+            operation = self.STAY
+
+        return operation, float(self.df_signal.tail(1).price)
 
     def fetch_recent_data(self):
         """
@@ -61,15 +247,15 @@ class MACDAdviser:
             signal_15min = float(tail.signal_15min)
             histogram_15min = float(tail.histogram_15min)
 
-        if self.count_5min == 5:
-            self.count_5min = 1
+        check_5min = self.__check_5min()
+
+        if check_5min:
             short_5min = self.__exponential_moving_average(ticker, float(tail.short_5min), self.__short_term)
             long_5min = self.__exponential_moving_average(ticker, float(tail.long_5min), self.__long_term)
             macd_5min = short_5min - long_5min
             signal_5min = self.__exponential_moving_average(macd_5min, float(tail.signal_5min), self.__signal)
             histogram_5min = macd_5min - signal_5min
         else:
-            self.count_5min += 1
             short_5min = float(tail.short_5min)
             long_5min = float(tail.long_5min)
             macd_5min = float(tail.macd_5min)
@@ -196,6 +382,14 @@ class MACDAdviser:
             self.trend_5min = self.PLUS
         elif histogram_5min < 0:
             self.trend_5min = self.MINUS
+
+    def __check_5min(self):
+        if self.count_5min == 5:
+            self.count_5min = 1
+            return True
+        else:
+            self.count_5min += 1
+            return False
 
     def make_data_frame(self):
         """
@@ -463,3 +657,7 @@ class MACDAdviser:
         :return:
         """
         return df[self.__long_term * 3:].reset_index(drop=True)
+
+    @staticmethod
+    def and_gate(*args):
+        return all(args)

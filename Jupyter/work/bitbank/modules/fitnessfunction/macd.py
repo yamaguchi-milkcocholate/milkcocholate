@@ -106,7 +106,7 @@ class MACD_(FitnessFunction):
         for data_i in range(len(self.__data)):
             price = self.__data.loc[data_i].price
 
-            operation = self.operation(
+            operation = self.operation_5min(
                 data_i=data_i,
                 has_coin=has_coin,
                 genome=genome,
@@ -365,60 +365,64 @@ class MACD_(FitnessFunction):
             self.max_histogram_5min = histogram_5min
             self.start_macd_5min = macd_5min
             self.start_signal_5min = signal_5min
-            self.mount_5min = 1
+            # self.mount_5min = 1
 
         if len(self.area_5min) > 1 and self.is_exceed(abs(self.area_5min[-1]),
                                                        abs(self.area_5min[-2])) and not self.start_decrease_5min:
             self.start_decrease_5min = True
-            self.mount_5min += 1
+            # self.mount_5min += 1
         else:
             self.start_decrease_5min = False
 
         # 買い
-        step_size_5min = len(self.area_5min)
-        if has_coin is False:
+        # step_size_5min = len(self.area_5min)
+        if not has_coin and self.start_macd_5min > 0 and self.start_signal_5min > 0 and self.trend_5min < 0:
             decrease_rate_5min = genome[2]
             step_rate_5min = genome[3]
-            start_macd_5min = genome[6]
-            start_signal_5min = genome[7]
-            end_macd_5min = genome[10]
-            end_signal_5min = genome[11]
-            mount_5min = genome[26]
+            # start_macd_5min = genome[6]
+            # start_signal_5min = genome[7]
+            # end_macd_5min = genome[10]
+            # end_signal_5min = genome[11]
+            # mount_5min = genome[26]
             # MAX条件
-            max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
-            max_threshold_5min /= self.mount_5min / mount_5min
-            max_threshold_5min += start_macd_5min * self.start_macd_5min
-            max_threshold_5min += start_signal_5min * self.start_signal_5min
-            max_threshold_5min += end_macd_5min * macd_5min
-            max_threshold_5min += end_signal_5min * signal_5min
+            # max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
+            max_threshold_5min = step_rate_5min * self.max_histogram_5min
+            # max_threshold_5min /= self.mount_5min / mount_5min
+            # max_threshold_5min += start_macd_5min * self.start_macd_5min
+            # max_threshold_5min += start_signal_5min * self.start_signal_5min
+            # max_threshold_5min += end_macd_5min * macd_5min
+            # max_threshold_5min += end_signal_5min * signal_5min
             # 降下条件
             decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
 
             buy = self.and_gate(
                 self.is_exceed(self.max_histogram_5min, max_threshold_5min),
                 self.is_exceed(decrease_threshold_5min, histogram_5min),
+                self.is_exceed(0, macd_5min),
+                self.is_exceed(0, signal_5min),
             )
             if buy:
                 operation = self.BUY
             else:
                 operation = self.STAY
         # 売り
-        elif has_coin is True:
+        elif has_coin is True and self.trend_5min > 0:
             decrease_rate_5min = genome[14]
             step_rate_5min = genome[15]
-            start_macd_5min = genome[18]
-            start_signal_5min = genome[19]
-            end_macd_5min = genome[22]
-            end_signal_5min = genome[23]
-            mount_5min = genome[27]
+            # start_macd_5min = genome[18]
+            # start_signal_5min = genome[19]
+            # end_macd_5min = genome[22]
+            # end_signal_5min = genome[23]
+            # mount_5min = genome[27]
             price_rate = genome[28]
             # MAX条件
-            max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
-            max_threshold_5min /= self.mount_5min / mount_5min
-            max_threshold_5min += start_macd_5min * self.start_macd_5min
-            max_threshold_5min += start_signal_5min * self.start_signal_5min
-            max_threshold_5min += end_macd_5min * macd_5min
-            max_threshold_5min += end_signal_5min * signal_5min
+            # max_threshold_5min = step_rate_5min * step_size_5min * self.max_histogram_5min
+            max_threshold_5min = step_rate_5min * self.max_histogram_5min
+            # max_threshold_5min /= self.mount_5min / mount_5min
+            # max_threshold_5min += start_macd_5min * self.start_macd_5min
+            # max_threshold_5min += start_signal_5min * self.start_signal_5min
+            # max_threshold_5min += end_macd_5min * macd_5min
+            # max_threshold_5min += end_signal_5min * signal_5min
             # 降下条件
             decrease_threshold_5min = self.max_histogram_5min * decrease_rate_5min
 
