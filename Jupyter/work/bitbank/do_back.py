@@ -10,12 +10,9 @@ mutation = 2
 cross = 50
 elite_num = 1
 host = 'localhost'
-fitness_function_name = 'macd'
+fitness_function_name = 'zigzag'
 crossover_name = 'uniform'
 hyper_params = dict()
-hyper_params['short_term'] = 12
-hyper_params['long_term'] = 26
-hyper_params['signal'] = 9
 
 back_test = backtest.BackTest(situation=situation,
                               candle_type=candle_type,
