@@ -25,6 +25,10 @@ class ZigZagFunction(FitnessFunction):
         )
         zigzag = ZigZag()
         self.__data = zigzag.get_candlestick()
+        self.depth = hyper_params['depth']
+        self.deviation = hyper_params['deviation']
+        self.max_high = None
+        self.min_low = None
 
     def calc_fitness(self, geno_type, should_log, population_id):
         pass
