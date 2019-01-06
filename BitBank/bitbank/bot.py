@@ -87,7 +87,6 @@ class Bot:
         # 日本円があるとき、新規注文する
         if float(assets_free_amount[self.__yen]) > 0:
             operation, price = self.__adviser.operation(
-                genome=self.genome,
                 has_coin=False
             )
             # STAYではないとき
@@ -111,7 +110,6 @@ class Bot:
         # コインがあるとき、新規注文する
         if float(assets_free_amount[self.__coin]) > 0:
             operation, price = self.__adviser.operation(
-                genome=self.genome,
                 has_coin=True
             )
             # STAYではないとき
@@ -162,6 +160,7 @@ class Bot:
         with connection.cursor() as cursor:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
+        self.__adviser.set_genome(self.genome)
 
     def find_maker(self, side):
         """

@@ -91,6 +91,7 @@ class ZigZagFunction(FitnessFunction):
 
             # 右肩上がりの線を引く (売りのエントリー)
             if top:
+                last_depth = data_i - bottom_i
                 top_i = data_i
                 min_low = low
                 min_low_i = data_i
@@ -113,7 +114,8 @@ class ZigZagFunction(FitnessFunction):
                     buy_fail += 1
 
             # 右肩下がりの線を引く (買いのエントリー)
-            if bottom:
+            elif bottom:
+                last_depth = data_i - top_i
                 bottom_i = data_i
                 max_high = high
                 max_high_i = data_i
