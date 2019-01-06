@@ -21,7 +21,6 @@ genome_id = input()
 genome_id = int(genome_id)
 
 adviser = ZigZagAdviser()
-adviser()
 
 bot = Bot(
     host=host,

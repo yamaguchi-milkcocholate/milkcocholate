@@ -51,7 +51,7 @@ class ZigZagAdviser:
         else:
             operation = None
 
-        return operation
+        return operation, self.price
 
     def fetch_recent_data(self):
         """
@@ -168,5 +168,6 @@ class ZigZagAdviser:
 
     def set_genome(self, genome):
         self.genome = genome
+        print(genome)
         self.depth = genome[0]
         self.deviation = genome[1]

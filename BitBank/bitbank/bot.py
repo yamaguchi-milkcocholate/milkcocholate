@@ -23,7 +23,7 @@ class Bot:
     DEFAULT_TYPE = 'market'
     TYPE_LIMIT = 'limit'
     TYPE_MARKET = 'market'
-    DIVIDE_ORDER = 5
+    DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
@@ -94,7 +94,7 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side=side)
+                    candidate = self.find_maker(side='bids')
                     for i in range(self.DIVIDE_ORDER):
                         self.new_orders(
                             price=candidate[i],
@@ -117,7 +117,7 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side=side)
+                    candidate = self.find_maker(side='asks')
                     for i in range(self.DIVIDE_ORDER):
                         self.new_orders(
                             price=price,
@@ -161,6 +161,8 @@ class Bot:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
         self.__adviser.set_genome(self.genome)
+        print(self.genome)
+        self.__adviser()
 
     def find_maker(self, side):
         """
@@ -279,7 +281,7 @@ class Bot:
             elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
                 # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
-                print('10秒の遅らせて再度注文します。')
+                print('5秒の遅らせて再度注文します。')
                 self.__line(message='5秒の遅らせて再度注文します。')
                 time.sleep(5)
                 self.new_orders(price, amount, side, order_type, retry=retry + 1)
