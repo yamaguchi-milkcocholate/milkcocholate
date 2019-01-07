@@ -40,18 +40,16 @@ class ZigZagAdviser:
         # 売りのエントリー
         if self.trend == self.TOP and has_coin:
             operation = self.SELL
+            return operation, self.price
 
         # 買いのエントリー
         elif self.trend == self.BOTTOM and not has_coin:
             operation = self.BUY
+            return operation, self.price
 
         elif self.trend == self.OTHER:
             operation = self.STAY
-
-        else:
-            operation = None
-
-        return operation, self.price
+            return operation, self.price
 
     def fetch_recent_data(self):
         """
