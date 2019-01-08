@@ -1,5 +1,5 @@
 from bitbank.bot import Bot
-from bitbank.adviser.bollingerband_ti import BollingerBandTiAdviser
+from bitbank.adviser.zigzag import ZigZagAdviser
 from bitbank.scheduler import Scheduler
 
 
@@ -20,11 +20,7 @@ print('genome id: ', end='')
 genome_id = input()
 genome_id = int(genome_id)
 
-adviser = BollingerBandTiAdviser(
-    stock_term=12,
-    inclination_alpha=2,
-    pair='xrp_jpy'
-)
+adviser = ZigZagAdviser()
 
 bot = Bot(
     host=host,

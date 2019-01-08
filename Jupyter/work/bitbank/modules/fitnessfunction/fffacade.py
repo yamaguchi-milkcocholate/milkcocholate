@@ -3,6 +3,9 @@ from modules.fitnessfunction import bollingerband
 from modules.fitnessfunction import bollingerband_period_goal
 from modules.fitnessfunction import bollingerband_period_goal_ti
 from modules.fitnessfunction import bollingerband_sma_ti
+from modules.fitnessfunction import wavetpl
+from modules.fitnessfunction import macd
+from modules.fitnessfunction import zigzag
 
 
 class Facade:
@@ -11,6 +14,9 @@ class Facade:
     BOLLINGER_BAND_LINEAR_BAND_PERIOD_GOAL = 3
     BOLLINGER_BAND_LINEAR_BAND_PERIOD_GOAL_TI = 4
     BOLLINGER_BAND_SMA_TI = 4
+    WAVE_TEMPLATE = 5
+    MACD = 6
+    ZIGZAG = 7
 
     def __init__(self, candle_type, coin):
         self._functions = [
@@ -19,6 +25,9 @@ class Facade:
             'bollinger_band_period_goal',
             'bollinger_band_period_goal_ti',
             'bollinger_band_sma_ti',
+            'wave_template',
+            'macd',
+            'zigzag',
         ]
         self._candle_type = candle_type
         self._coin = coin
@@ -63,6 +72,27 @@ class Facade:
                 candle_type=self._candle_type,
                 db_dept=db_dept,
                 hyper_paras=hyper_params,
+                coin=self._coin
+            )
+        elif function_name is self._functions[5]:
+            return wavetpl.WaveTemplate(
+                candle_type=self._candle_type,
+                db_dept=db_dept,
+                hyper_params=hyper_params,
+                coin=self._coin
+            )
+        elif function_name is self._functions[6]:
+            return macd.MACD_(
+                candle_type=self._candle_type,
+                db_dept=db_dept,
+                hyper_params=hyper_params,
+                coin=self._coin
+            )
+        elif function_name is self._functions[7]:
+            return zigzag.ZigZagFunction(
+                candle_type=self._candle_type,
+                db_dept=db_dept,
+                hyper_params=hyper_params,
                 coin=self._coin
             )
         else:

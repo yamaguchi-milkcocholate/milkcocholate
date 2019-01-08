@@ -1,6 +1,7 @@
 import pymysql.cursors
 import pickle
 import time
+import numpy as np
 from pytz import timezone
 from datetime import datetime
 from bitbank.exceptions.schedcancel import SchedulerCancelException
@@ -20,6 +21,13 @@ class Bot:
     CHARSET = 'utf8'
 
     DEFAULT_TYPE = 'market'
+    TYPE_LIMIT = 'limit'
+    TYPE_MARKET = 'market'
+    DIVIDE_ORDER = 1
+    PRICE_LIMIT = 3.0
+
+    MANAGE_AMOUNT = 110000
+    COMMISSION = 0.0015
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -41,6 +49,7 @@ class Bot:
         self.genome = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
         self.__line = Line()
+        self.__start_price = self.fetch_price()
 
     def __call__(self):
         # 注文の情報を確認
@@ -63,15 +72,20 @@ class Bot:
                 # 注文中
                 else:
                     # DBへ書き込む
-                    self.__insert_canceled_order(
-                        order_id=orders[order_id].order_id,
-                        average_price=orders[order_id].average_price,
-                        remaining_amount=orders[order_id].remaining_amount,
-                        executed_amount=orders[order_id].executed_amount,
-                        status=orders[order_id].status,
-                        canceled_at=self.__now()
-                    )
-                    self.order_ids.remove(orders[order_id].order_id)
+                    # オーダーをキャンセルしない
+                    # 売り注文は成行売り
+                    if orders[order_id].side == 'sell':
+                        self.cancel_orders(order_id=order_id)
+                        time.sleep(1)
+                        self.new_orders(
+                            price=orders[order_id].price,
+                            amount=orders[order_id].remaining_amount,
+                            side='sell',
+                            order_type=self.TYPE_MARKET
+                        )
+                    pass
+                    # self.cancel_orders(order_id=order_id)
+                    # self.order_ids.remove(order_id)
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
         print()
@@ -85,39 +99,51 @@ class Bot:
         self.__adviser.fetch_recent_data()
 
         # 日本円があるとき、新規注文する
-        if float(assets_free_amount[self.__yen]) > 0:
+        if float(assets_free_amount[self.__yen]) > self.MANAGE_AMOUNT:
             operation, price = self.__adviser.operation(
-                genome=self.genome,
                 has_coin=False
             )
             # STAYではないとき
-            if operation != int(self.STAY):
+            if operation == int(self.BUY):
                 # 新規注文
-                self.new_orders(
-                    price=price,
-                    amount=(float(assets_free_amount[self.__yen]) / price),
-                    side=self.__operation_to_side(operation=operation),
-                    order_type=self.DEFAULT_TYPE
-                )
-
+                if self.can_order():
+                    side = self.__operation_to_side(operation=operation)
+                    candidate = self.find_maker(side='asks')
+                    for i in range(self.DIVIDE_ORDER):
+                        amount = float(self.MANAGE_AMOUNT / price / self.DIVIDE_ORDER)
+                        print(amount * price,
+                              float(assets_free_amount[self.__yen]), side)
+                        self.new_orders(
+                            price=candidate[i],
+                            amount=amount,
+                            side=side,
+                            order_type=self.TYPE_LIMIT
+                        )
+                else:
+                    raise SchedulerCancelException('price belows the limit. ')
             else:
                 print(self.__now() + '   ' + 'stay')
 
         # コインがあるとき、新規注文する
         if float(assets_free_amount[self.__coin]) > 0:
             operation, price = self.__adviser.operation(
-                genome=self.genome,
                 has_coin=True
             )
             # STAYではないとき
-            if operation != int(self.STAY):
+            if operation == int(self.SELL):
                 # 新規注文
-                self.new_orders(
-                    price=price,
-                    amount=assets_free_amount[self.__coin],
-                    side=self.__operation_to_side(operation=operation),
-                    order_type=self.DEFAULT_TYPE
-                )
+                if self.can_order():
+                    side = self.__operation_to_side(operation=operation)
+                    candidate = self.find_maker(side='bids')
+                    for i in range(self.DIVIDE_ORDER):
+                        self.new_orders(
+                            price=candidate[i],
+                            amount=(float(assets_free_amount[self.__coin]) / self.DIVIDE_ORDER),
+                            side=side,
+                            order_type=self.TYPE_LIMIT
+                        )
+                else:
+                    raise SchedulerCancelException('price belows the limit. ')
 
             else:
                 print(self.__now() + '   ' + 'stay')
@@ -128,6 +154,8 @@ class Bot:
             return 'buy'
         elif operation == int(self.SELL):
             return 'sell'
+        else:
+            raise SchedulerCancelException()
 
     def __load_genome(self, population_id, genome_id):
         """
@@ -151,6 +179,39 @@ class Bot:
         with connection.cursor() as cursor:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
+        self.__adviser.set_genome(self.genome)
+        print(self.genome)
+        self.__adviser()
+
+    def find_maker(self, side):
+        """
+        Maker手数料の候補を返す
+        :return: list 取引値に近い順
+        """
+        result = self.__api_gateway.use_depth(pair=self.__pair)
+        result = np.asarray(result[side], dtype=float)
+        result = result[0:, 0]
+        if side == 'asks':
+            # 売り側
+            # 小さい
+            head = result[0]
+            # 大きい
+            tail = result[-1]
+        elif side == 'bids':
+            # 買い側
+            # 大きい
+            tail = result[0]
+            # 小さい
+            head = result[-1]
+        else:
+            raise TypeError('in find_maker')
+        mask = np.arange(start=head, stop=tail, step=0.001, dtype=np.float64)
+        mask = np.round(mask, decimals=3)
+        result = np.round(result, decimals=3)
+        inter_diff = np.setdiff1d(mask, result)
+        if side == 'bids':
+            inter_diff = inter_diff[::-1]
+        return inter_diff
 
     def fetch_asset(self):
         """
@@ -232,17 +293,20 @@ class Bot:
                 if amount > 10.0:
                     self.new_orders(price, amount, side, order_type, retry=retry + 1)
                     # 連続して成り行き注文すると怒られる
-                    time.sleep(20)
+                    time.sleep(5)
                     self.new_orders(price, amount, side, order_type, retry=retry + 1)
                 else:
                     pass
             elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
                 # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
-                print('60秒の遅らせて再度注文します。')
-                self.__line(message='60秒の遅らせて再度注文します。')
-                time.sleep(60)
+                print('5秒の遅らせて再度注文します。')
+                self.__line(message='5秒の遅らせて再度注文します。')
+                time.sleep(5)
                 self.new_orders(price, amount, side, order_type, retry=retry + 1)
+            elif '60004' in e.args[0]:
+                #  60004 内容: 指定した数量がしきい値を下回っています
+                pass
             else:
                 self.error_message(message=e.args[0])
                 raise SchedulerCancelException('Fail to order')
@@ -272,6 +336,15 @@ class Bot:
             status=result['status'],
             canceled_at=self.__now()
         )
+        # 売り注文だったら成り行きで売り払う
+        if result['side'] == 'sell':
+            self.market_selling_message()
+            self.new_orders(
+                price=result['price'],
+                amount=result['remaining_amount'],
+                side='sell',
+                order_type=self.TYPE_MARKET,
+            )
 
     def fetch_orders(self):
         """
@@ -532,6 +605,10 @@ class Bot:
         message.replace('n', '%0D%0A')
         self.__line(message=message)
 
+    def market_selling_message(self):
+        message = "指値売り注文をキャンセルしましたので、成行注文を行います。"
+        self.__line(message=message)
+
     def error_message(self, message):
         message = "エラー発生!!\n" \
                   "===================\n" \
@@ -562,3 +639,39 @@ class Bot:
         else:
             japanese = None
         return japanese
+
+    def fetch_price(self):
+        """
+        開始時の価格を返す
+        :return: string
+        """
+        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
+        return float(ticker['last'])
+
+    def can_order(self):
+        """
+        開始時よりも価格が大幅に下がった時に強制終了させるためのメソッド
+        :return: bool:
+        """
+        price = self.fetch_price()
+        if price >= (self.__start_price - self.PRICE_LIMIT):
+            return True
+        else:
+            # 全てのコインを売る
+            assets_free_amount = self.fetch_asset()
+            self.new_orders(
+                price=price,
+                amount=assets_free_amount[self.__coin],
+                side='sell',
+                order_type=self.TYPE_MARKET
+            )
+            message = "開始時の価格を大きく下回りました。\n" \
+                      "取引を中止します。 \n" \
+                      "===================\n" \
+                      "時刻: {}\n" \
+                      "===================".format(
+                       self.__now()
+                       )
+            message.replace('n', '%0D%0A')
+            self.__line(message=message)
+            return False

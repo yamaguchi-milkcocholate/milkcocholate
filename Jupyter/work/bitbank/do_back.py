@@ -2,21 +2,17 @@ from modules.feature import functions
 from modules.backtest import backtest
 
 
-situation = functions.bollinger_band_ti()
+situation = functions.zigzag()
 
-candle_type = '5min'
-population = 5
+candle_type = '15min'
+population = 3
 mutation = 2
 cross = 50
-elite_num = 2
-host = 'localhost'
-fitness_function_name = 'bollinger_band_sma_ti'
+elite_num = 1
+host = '192.168.99.100'
+fitness_function_name = 'zigzag'
 crossover_name = 'uniform'
 hyper_params = dict()
-hyper_params['sma_term'] = 20
-hyper_params['std_term'] = 20
-hyper_params['last_data_num'] = 20
-hyper_params['inclination_alpha'] = 9
 
 back_test = backtest.BackTest(situation=situation,
                               candle_type=candle_type,
@@ -31,4 +27,4 @@ back_test = backtest.BackTest(situation=situation,
                               hyper_params=hyper_params
                               )
 
-back_test(steps=1, log_span=10)
+back_test(steps=1, log_span=20)
