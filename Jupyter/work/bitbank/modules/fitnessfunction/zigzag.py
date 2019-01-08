@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from modules.fitnessfunction.fitnessfunction import FitnessFunction
 from modules.datamanager.zigzag import ZigZag
 
@@ -68,6 +69,7 @@ class ZigZagFunction(FitnessFunction):
         for data_i in range(1, len(self.__data)):
             high = float(self.__data.loc[data_i].high)
             low = float(self.__data.loc[data_i].low)
+            price = float(self.__data.loc[data_i].end)
 
             if max_high < high:
                 max_high = high
@@ -95,7 +97,7 @@ class ZigZagFunction(FitnessFunction):
                 min_low_i = data_i
 
                 if has_coin:
-                    result = float(coin * max_high * (1 - self.COMMISSION)) - self.DEFAULT_YEN_POSITION
+                    result = float(coin * price * (1 - self.COMMISSION)) - self.DEFAULT_YEN_POSITION
                     coin = 0
 
                     # プラスかマイナスか
@@ -119,12 +121,11 @@ class ZigZagFunction(FitnessFunction):
                 max_high_i = data_i
 
                 if not has_coin:
-                    coin = float(self.DEFAULT_YEN_POSITION * (1 - self.COMMISSION) / min_low)
+                    coin = float(self.DEFAULT_YEN_POSITION * (1 - self.COMMISSION) / price)
                     has_coin = True
 
-        fitness = benefit + loss
-        tmp = fitness
-        fitness = self.__fitness(fitness=fitness, transaction=benefit_count + loss_count, goal_match=goal_match)
+        tmp = benefit + loss
+        fitness = self.__fitness(benefit=benefit, loss=loss, transaction=benefit_count + loss_count, goal_match=goal_match)
         print(
             'fitness',
             fitness,
@@ -152,11 +153,12 @@ class ZigZagFunction(FitnessFunction):
         return fitness
 
     @staticmethod
-    def __fitness(fitness, goal_match, transaction):
-        if fitness < 0:
+    def __fitness(benefit, loss, goal_match, transaction):
+        if benefit + loss < 0:
             return 0
         else:
-            fitness = fitness * (goal_match / transaction)
+            fitness = 100 * (benefit / -loss) + 50 * (goal_match / transaction)
+            fitness *= math.log((benefit + loss + 1), 10)
         return fitness
 
     @staticmethod
