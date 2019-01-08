@@ -9,9 +9,11 @@ class ZigZagAdviser:
     STAY = 2
     SELL = 3
 
-    TOP = 10
-    BOTTOM = 11
+    TOP = 10   # 値幅率を超えて上がっているときの状態
+    BOTTOM = 11   # 値幅率を超えて下がっているときの状態
     OTHER = 12
+
+    DECISION_TERM = 3
 
     def __init__(self, pair='xrp_jpy', candle_type='15min'):
         self.__pair = pair
@@ -19,7 +21,8 @@ class ZigZagAdviser:
         self.__api_gateway = ApiGateway()
         self.genome = None
         self.depth = None
-        self.deviation = None
+        self.buy_deviation = None
+        self.sell_deviation = None
         self.max_high = None
         self.min_low = None
         self.max_high_i = None
@@ -30,6 +33,7 @@ class ZigZagAdviser:
         self.data_i = None
         self.price = None
         self.trend = None
+        self.decision_term = 0
         self.candlestick = self.make_price_data_frame()
 
     def __call__(self, *args, **kwargs):
@@ -55,15 +59,17 @@ class ZigZagAdviser:
             operation = self.STAY
             return operation, self.price
 
-    def fetch_recent_data(self):
+    def fetch_recent_data(self, price=None):
         """
         現在のtickerのapiを叩いて、最新の取引値を追加してデータを更新する
         """
         self.data_i += 1
-        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
-        ticker = float(ticker['last'])
-        self.__update_min_max(high=ticker, low=ticker, i=self.data_i)
-        self.price = ticker
+        if price is None:
+            price = self.__api_gateway.use_ticker(pair=self.__pair)
+            price = float(price['last'])
+
+        self.__update_min_max(high=price, low=price, i=self.data_i)
+        self.price = price
 
         self.__trend()
 
@@ -94,40 +100,66 @@ class ZigZagAdviser:
             self.min_low_i = i
 
     def __top(self):
+        """
+        値幅率を超えて上がったときにTrue
+        :return:
+        """
         return self.__and_gate(
-            self.min_low * (1 + self.deviation) < self.max_high,
+            self.min_low * (1 + self.sell_deviation) < self.max_high,
             self.min_low_i < self.max_high_i,
             self.last_depth + (self.max_high_i - self.bottom_i) > self.depth
         )
 
     def __bottom(self):
+        """
+        値幅率を超えて下がったときにTrue
+        :return:
+        """
         return self.__and_gate(
-            self.max_high * (1 - self.deviation) > self.min_low,
+            self.max_high * (1 - self.buy_deviation) > self.min_low,
             self.max_high_i < self.min_low_i,
             self.last_depth + (self.min_low_i - self.top_i) > self.depth
         )
 
     def __trend(self, high=None, low=None):
-        if not high:
+        if high is None:
             high = self.price
-        if not low:
+        if low is None:
             low = self.price
+
+        self.trend = self.OTHER
+
         if self.__top():
-            self.last_depth = self.data_i - self.bottom_i
-            self.top_i = self.data_i
-            self.min_low = low
-            self.min_low_i = self.data_i
-            self.trend = self.TOP
+            # 最大値更新
+            if high >= self.max_high:
+                self.decision_term = 0
+            else:
+                self.decision_term += 1
+                # 山を決定
+                if self.decision_term >= self.DECISION_TERM:
+                    self.decision_term = 0
+                    self.trend = self.TOP
+                    self.top_i = self.max_high_i
+                    self.last_depth = self.max_high_i - self.bottom_i
+                    self.min_low = low
+                    self.min_low_i = self.data_i
 
         elif self.__bottom():
-            self.last_depth = self.data_i - self.top_i
-            self.bottom_i = self.data_i
-            self.max_high = high
-            self.max_high_i = self.data_i
-            self.trend = self.BOTTOM
-
+            # 最小値更新
+            if low <= self.min_low:
+                self.decision_term = 0
+            else:
+                self.decision_term += 1
+                # 谷を決定
+                if self.decision_term >= self.DECISION_TERM:
+                    self.decision_term = 0
+                    self.trend = self.BOTTOM
+                    self.bottom_i = self.min_low_i
+                    self.last_depth = self.min_low_i - self.top_i
+                    self.max_high = high
+                    self.max_high_i = self.data_i
         else:
-            self.trend = self.OTHER
+            self.decision_term = 0
 
     def __depth_bias(self):
         """
@@ -170,6 +202,6 @@ class ZigZagAdviser:
 
     def set_genome(self, genome):
         self.genome = genome
-        print(genome)
         self.depth = genome[0]
-        self.deviation = genome[1]
+        self.buy_deviation = genome[1]
+        self.sell_deviation = genome[2]

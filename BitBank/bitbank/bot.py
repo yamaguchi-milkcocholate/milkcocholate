@@ -26,7 +26,7 @@ class Bot:
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
-    MANAGE_AMOUNT = 110000
+    MANAGE_AMOUNT = 100000
     COMMISSION = 0.0015
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
