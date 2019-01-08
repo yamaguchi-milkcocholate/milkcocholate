@@ -25,25 +25,6 @@ spec:
     name: phpmyadmin
   type: LoadBalancer
 ---
-# flask-web-app
-apiVersion: v1
-kind: Service
-metadata:
-  name: flask-web-app-http
-  labels:
-    run: flask-web-app
-  namespace: default
-spec:
-  ports:
-    - name: http
-      port: 5000
-      protocol: TCP
-      targetPort: 5000
-  selector:
-    run: flask-web-app
-  sessionAffinity: None
-  type: LoadBalancer
----
 # jupyter
 apiVersion: v1
 kind: Service
