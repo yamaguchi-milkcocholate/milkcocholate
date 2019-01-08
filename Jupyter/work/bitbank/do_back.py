@@ -2,14 +2,14 @@ from modules.feature import functions
 from modules.backtest import backtest
 
 
-situation = functions.macd()
+situation = functions.zigzag()
 
-candle_type = '5min'
+candle_type = '15min'
 population = 3
 mutation = 2
 cross = 50
 elite_num = 1
-host = 'localhost'
+host = '192.168.99.100'
 fitness_function_name = 'zigzag'
 crossover_name = 'uniform'
 hyper_params = dict()

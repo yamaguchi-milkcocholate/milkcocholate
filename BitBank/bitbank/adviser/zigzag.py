@@ -50,6 +50,10 @@ class ZigZagAdviser:
         elif self.trend == self.OTHER:
             operation = self.STAY
             return operation, self.price
+        else:
+            print(self.trend)
+            operation = self.STAY
+            return operation, self.price
 
     def fetch_recent_data(self):
         """
