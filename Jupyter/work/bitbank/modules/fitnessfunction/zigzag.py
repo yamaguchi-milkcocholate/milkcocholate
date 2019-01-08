@@ -7,6 +7,7 @@ class ZigZagFunction(FitnessFunction):
     FITNESS_FUNCTION_ID = 7
     DEFAULT_YEN_POSITION = 1000
     COMMISSION = 0.0015
+    BENEFIT_RATE = 0.01
 
     BUY = 1
     STAY = 2
@@ -46,14 +47,14 @@ class ZigZagFunction(FitnessFunction):
     def calc_result(self, **kwargs):
         genome = kwargs['genome']
         depth = genome[0]
-        deviation = genome[1]
+        buy_deviation = genome[1]
+        sell_deviation = genome[2]
         coin = 0
         has_coin = False
         loss = 0
         loss_count = 0
         benefit = 0
         benefit_count = 0
-        fitness = 0
         max_high = float(self.__data.loc[0].high)
         min_low = float(self.__data.loc[0].low)
         max_high_i = 0
@@ -62,10 +63,7 @@ class ZigZagFunction(FitnessFunction):
         top_i = 0
         bottom_i = 0
 
-        buy_fail = 0
-        sell_fail = 0
-        buy_transaction = 0
-        sell_trasaction = 0
+        goal_match = 0
 
         for data_i in range(1, len(self.__data)):
             high = float(self.__data.loc[data_i].high)
@@ -79,26 +77,25 @@ class ZigZagFunction(FitnessFunction):
                 min_low_i = data_i
 
             top = self.and_gate(
-                min_low * (1 + deviation) < max_high,
+                min_low * (1 + sell_deviation) < max_high,
                 min_low_i < max_high_i,
                 last_depth + (max_high_i - bottom_i) > depth,
             )
             bottom = self.and_gate(
-                max_high * (1 - deviation) > min_low,
+                max_high * (1 - buy_deviation) > min_low,
                 max_high_i < min_low_i,
                 last_depth + (min_low_i - top_i) > depth,
             )
 
             # 右肩上がりの線を引く (売りのエントリー)
             if top:
+                last_depth = data_i - bottom_i
                 top_i = data_i
                 min_low = low
                 min_low_i = data_i
 
-                buy_transaction += 1
-
                 if has_coin:
-                    result = float(coin * max_high * (1 - self.COMMISSION))
+                    result = float(coin * max_high * (1 - self.COMMISSION)) - self.DEFAULT_YEN_POSITION
                     coin = 0
 
                     # プラスかマイナスか
@@ -108,32 +105,35 @@ class ZigZagFunction(FitnessFunction):
                     else:
                         benefit += result
                         benefit_count += 1
+                        if result > self.DEFAULT_YEN_POSITION * self.BENEFIT_RATE:
+                            goal_match += 1
+                        else:
+                            pass
                     has_coin = False
-                else:
-                    buy_fail += 1
 
             # 右肩下がりの線を引く (買いのエントリー)
-            if bottom:
+            elif bottom:
+                last_depth = data_i - top_i
                 bottom_i = data_i
                 max_high = high
                 max_high_i = data_i
 
-                sell_trasaction += 1
-
                 if not has_coin:
                     coin = float(self.DEFAULT_YEN_POSITION * (1 - self.COMMISSION) / min_low)
                     has_coin = True
-                else:
-                    sell_fail += 1
 
         fitness = benefit + loss
+        tmp = fitness
+        fitness = self.__fitness(fitness=fitness, transaction=benefit_count + loss_count, goal_match=goal_match)
         print(
             'fitness',
             fitness,
-            'buy fail',
-            buy_fail,
-            'sell fail',
-            sell_fail,
+            'total',
+            tmp,
+            'count',
+            goal_match,
+            '/',
+            benefit_count + loss_count,
             'benefit',
             benefit,
             'count',
@@ -142,15 +142,21 @@ class ZigZagFunction(FitnessFunction):
             loss,
             'count',
             loss_count,
-            'total',
-            fitness,
-            'count',
-            benefit_count + loss_count,
-            'buy transaction',
-            buy_transaction,
-            'sell transaction',
-            sell_trasaction
+            'depth',
+            depth,
+            'buy deviation',
+            buy_deviation,
+            'sell deviation',
+            sell_deviation
         )
+        return fitness
+
+    @staticmethod
+    def __fitness(fitness, goal_match, transaction):
+        if fitness < 0:
+            return 0
+        else:
+            fitness = fitness * (goal_match / transaction)
         return fitness
 
     @staticmethod

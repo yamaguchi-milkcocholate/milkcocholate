@@ -1,5 +1,5 @@
 from bitbank.bot import Bot
-from bitbank.adviser.macd import MACDAdviser
+from bitbank.adviser.zigzag import ZigZagAdviser
 from bitbank.scheduler import Scheduler
 
 
@@ -20,7 +20,7 @@ print('genome id: ', end='')
 genome_id = input()
 genome_id = int(genome_id)
 
-adviser = MACDAdviser()
+adviser = ZigZagAdviser()
 
 bot = Bot(
     host=host,
