@@ -102,7 +102,7 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='asks')
+                    candidate = self.find_maker(side='bids')
                     for i in range(self.DIVIDE_ORDER):
                         amount = float(self.MANAGE_AMOUNT / price / self.DIVIDE_ORDER)
                         self.new_orders(
@@ -126,7 +126,7 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='bids')
+                    candidate = self.find_maker(side='asks')
                     for i in range(self.DIVIDE_ORDER):
                         self.new_orders(
                             price=candidate[i],
