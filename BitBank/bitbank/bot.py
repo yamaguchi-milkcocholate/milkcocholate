@@ -88,12 +88,6 @@ class Bot:
                     # self.order_ids.remove(order_id)
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
-        print()
-        print("When show this at " + self.__now() + ' ==================')
-        for key in assets_free_amount:
-            print(key + ': ' + assets_free_amount[key] + '    ', end='')
-        print()
-        print("--------------------------------------------------------")
 
         # データを更新
         self.__adviser.fetch_recent_data()
@@ -111,8 +105,6 @@ class Bot:
                     candidate = self.find_maker(side='asks')
                     for i in range(self.DIVIDE_ORDER):
                         amount = float(self.MANAGE_AMOUNT / price / self.DIVIDE_ORDER)
-                        print(amount * price,
-                              float(assets_free_amount[self.__yen]), side)
                         self.new_orders(
                             price=candidate[i],
                             amount=amount,
@@ -122,7 +114,7 @@ class Bot:
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
             else:
-                print(self.__now() + '   ' + 'stay')
+                print('.', end='')
 
         # コインがあるとき、新規注文する
         if float(assets_free_amount[self.__coin]) > 0:
@@ -146,8 +138,7 @@ class Bot:
                     raise SchedulerCancelException('price belows the limit. ')
 
             else:
-                print(self.__now() + '   ' + 'stay')
-        print("========================================================")
+                print('.', end='')
 
     def __operation_to_side(self, operation):
         if operation == int(self.BUY):
@@ -180,7 +171,6 @@ class Bot:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
         self.__adviser.set_genome(self.genome)
-        print(self.genome)
         self.__adviser()
 
     def find_maker(self, side):
@@ -283,6 +273,7 @@ class Bot:
             )
             self.new_order_message(order=order, retry=retry)
             self.order_ids.append(result['order_id'])
+            print()
             print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
         except Exception as e:
             print(e)
@@ -300,6 +291,7 @@ class Bot:
             elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
                 # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
+                print()
                 print('5秒の遅らせて再度注文します。')
                 self.__line(message='5秒の遅らせて再度注文します。')
                 time.sleep(5)

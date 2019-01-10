@@ -13,7 +13,7 @@ class ZigZagAdviser:
     BOTTOM = 11   # 値幅率を超えて下がっているときの状態
     OTHER = 12
 
-    DECISION_TERM = 3
+    DECISION_TERM = 45
 
     def __init__(self, pair='xrp_jpy', candle_type='15min'):
         self.__pair = pair
@@ -202,6 +202,11 @@ class ZigZagAdviser:
 
     def set_genome(self, genome):
         self.genome = genome
+        self.depth = genome[0]
+        self.buy_deviation = genome[1]
+        self.sell_deviation = genome[2]
+        # 設定
+        self.genome = [10, 0.015, 0.015]
         self.depth = genome[0]
         self.buy_deviation = genome[1]
         self.sell_deviation = genome[2]
