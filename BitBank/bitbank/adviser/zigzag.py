@@ -15,7 +15,7 @@ class ZigZagAdviser:
 
     DECISION_TERM = 45
 
-    def __init__(self, pair='xrp_jpy', candle_type='15min'):
+    def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
         self.__pair = pair
         self.__candle_type = candle_type
         self.__api_gateway = ApiGateway()
@@ -33,6 +33,7 @@ class ZigZagAdviser:
         self.data_i = None
         self.price = None
         self.trend = None
+        self.buying_price = buying_price
         self.decision_term = 0
         self.candlestick = self.make_price_data_frame()
 
@@ -49,6 +50,7 @@ class ZigZagAdviser:
         # 買いのエントリー
         elif self.trend == self.BOTTOM and not has_coin:
             operation = self.BUY
+            self.buying_price = self.price
             return operation, self.price
 
         elif self.trend == self.OTHER:
@@ -107,7 +109,8 @@ class ZigZagAdviser:
         return self.__and_gate(
             self.min_low * (1 + self.sell_deviation) < self.max_high,
             self.min_low_i < self.max_high_i,
-            self.last_depth + (self.max_high_i - self.bottom_i) > self.depth
+            self.last_depth + (self.max_high_i - self.bottom_i) > self.depth,
+            self.buying_price <= self.max_high
         )
 
     def __bottom(self):

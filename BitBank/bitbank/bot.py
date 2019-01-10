@@ -114,7 +114,7 @@ class Bot:
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
             else:
-                print('.', end='')
+                pass
 
         # コインがあるとき、新規注文する
         if float(assets_free_amount[self.__coin]) > 0:
@@ -138,7 +138,7 @@ class Bot:
                     raise SchedulerCancelException('price belows the limit. ')
 
             else:
-                print('.', end='')
+                pass
 
     def __operation_to_side(self, operation):
         if operation == int(self.BUY):
