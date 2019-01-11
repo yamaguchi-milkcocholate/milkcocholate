@@ -28,6 +28,7 @@ class Bot:
 
     MANAGE_AMOUNT = 100000
     COMMISSION = 0.0015
+    LOSS_CUT = 0.95
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -47,6 +48,7 @@ class Bot:
         self.__api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
         self.order_ids = list()
         self.genome = None
+        self.buying_price = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
         self.__line = Line()
         self.__start_price = self.fetch_price()
@@ -86,8 +88,12 @@ class Bot:
                     pass
                     # self.cancel_orders(order_id=order_id)
                     # self.order_ids.remove(order_id)
+
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
+
+        # 損切り
+        self.loss_cut(float(assets_free_amount[self.__coin]))
 
         # データを更新
         self.__adviser.fetch_recent_data()
@@ -111,6 +117,7 @@ class Bot:
                             side=side,
                             order_type=self.TYPE_LIMIT
                         )
+                    self.buying_price = price
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
             else:
@@ -134,11 +141,27 @@ class Bot:
                             side=side,
                             order_type=self.TYPE_LIMIT
                         )
+                    self.buying_price = None
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
 
             else:
                 pass
+
+    def loss_cut(self, coin):
+        price = float(self.__api_gateway.use_ticker(pair=self.__pair))
+        if self.buying_price is None:
+            pass
+        else:
+            if price <= self.buying_price * self.LOSS_CUT:
+                self.loss_cut_message()
+                self.new_orders(
+                    price=price,
+                    amount=coin,
+                    side='sell',
+                    order_type=self.TYPE_MARKET
+                )
+                raise SchedulerCancelException("loss cut")
 
     def __operation_to_side(self, operation):
         if operation == int(self.BUY):
@@ -599,6 +622,10 @@ class Bot:
 
     def market_selling_message(self):
         message = "指値売り注文をキャンセルしましたので、成行注文を行います。"
+        self.__line(message=message)
+
+    def loss_cut_message(self):
+        message = "損切りを行いました。"
         self.__line(message=message)
 
     def error_message(self, message):
