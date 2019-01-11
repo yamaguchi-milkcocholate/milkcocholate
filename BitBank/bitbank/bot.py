@@ -28,7 +28,7 @@ class Bot:
 
     MANAGE_AMOUNT = 100000
     COMMISSION = 0.0015
-    LOSS_CUT = 0.95
+    LOSS_CUT = 0.5
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -153,7 +153,7 @@ class Bot:
         if self.buying_price is None:
             pass
         else:
-            if price <= self.buying_price * self.LOSS_CUT:
+            if price <= self.buying_price - self.LOSS_CUT:
                 self.loss_cut_message()
                 self.new_orders(
                     price=price,
