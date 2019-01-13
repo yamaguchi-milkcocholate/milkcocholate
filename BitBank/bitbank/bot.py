@@ -30,6 +30,9 @@ class Bot:
     COMMISSION = 0.0015
     LOSS_CUT = 0.5
 
+    BUY_FAIL = 0.8
+    SELL_FAIL = 0.2
+
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
         :param host:          string          データベースのホスト
@@ -75,19 +78,12 @@ class Bot:
                 else:
                     # DBへ書き込む
                     # オーダーをキャンセルしない
-                    # 売り注文は成行売り
-                    if orders[order_id].side == 'sell':
+                    price = self.fetch_price()
+                    # 買い損ねたとき
+                    if float(orders[order_id].price) + self.BUY_FAIL <= price and orders[order_id].side == 'buy':
                         self.cancel_orders(order_id=order_id)
-                        time.sleep(1)
-                        self.new_orders(
-                            price=orders[order_id].price,
-                            amount=orders[order_id].remaining_amount,
-                            side='sell',
-                            order_type=self.TYPE_MARKET
-                        )
-                    pass
-                    # self.cancel_orders(order_id=order_id)
-                    # self.order_ids.remove(order_id)
+                    elif float(orders[order_id].price) - self.SELL_FAIL >= price and orders[order_id].side == 'sell':
+                        self.cancel_orders(order_id=order_id)
 
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
@@ -149,7 +145,7 @@ class Bot:
                 pass
 
     def loss_cut(self, coin):
-        price = float(self.__api_gateway.use_ticker(pair=self.__pair))
+        price = self.fetch_price()
         if self.buying_price is None:
             pass
         else:
@@ -245,9 +241,9 @@ class Bot:
             elif result['asset'] == self.__yen:
                 assets[self.__yen] = result['free_amount']
                 insert_list[self.__yen].append(result['onhand_amount'])
-        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
-        insert_list[self.__coin].append(ticker['last'])
-        insert_list[self.__yen].append(ticker['last'])
+        ticker = self.fetch_price()
+        insert_list[self.__coin].append(ticker)
+        insert_list[self.__yen].append(ticker)
         insert_list[self.__coin].append(self.__now())
         insert_list[self.__yen].append(self.__now())
         self.__insert_assets(insert_list=insert_list)
@@ -340,7 +336,10 @@ class Bot:
             self.order_ids.append(result.order_id)
         except Exception as e:
             print(e)
-            raise SchedulerCancelException('Fail to cancel order')
+            if '50010'in e.args[0]:
+                self.__line(message='キャンセルできませんでした。')
+            else:
+                raise SchedulerCancelException('Fail to cancel order')
 
         # DBへ書き込む
         self.__insert_canceled_order(

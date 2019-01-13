@@ -57,7 +57,6 @@ class ZigZagAdviser:
             operation = self.STAY
             return operation, self.price
         else:
-            print(self.trend)
             operation = self.STAY
             return operation, self.price
 
@@ -106,12 +105,19 @@ class ZigZagAdviser:
         値幅率を超えて上がったときにTrue
         :return:
         """
-        return self.__and_gate(
-            self.min_low * (1 + self.sell_deviation) < self.max_high,
-            self.min_low_i < self.max_high_i,
-            self.last_depth + (self.max_high_i - self.bottom_i) > self.depth,
-            self.buying_price <= self.max_high
-        )
+        if self.buying_price is None:
+            return self.__and_gate(
+                self.min_low * (1 + self.sell_deviation) < self.max_high,
+                self.min_low_i < self.max_high_i,
+                self.last_depth + (self.max_high_i - self.bottom_i) > self.depth,
+            )
+        else:
+            return self.__and_gate(
+                self.min_low * (1 + self.sell_deviation) < self.max_high,
+                self.min_low_i < self.max_high_i,
+                self.last_depth + (self.max_high_i - self.bottom_i) > self.depth,
+                self.buying_price <= self.max_high
+            )
 
     def __bottom(self):
         """
