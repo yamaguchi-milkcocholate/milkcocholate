@@ -13,7 +13,8 @@ class ZigZagAdviser:
     BOTTOM = 11   # 値幅率を超えて下がっているときの状態
     OTHER = 12
 
-    DECISION_TERM = 45
+    TOP_DECISION_TERM = 45
+    BOTTOM_DECISION_TERM = 60
 
     def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
         self.__pair = pair
@@ -145,7 +146,7 @@ class ZigZagAdviser:
             else:
                 self.decision_term += 1
                 # 山を決定
-                if self.decision_term >= self.DECISION_TERM:
+                if self.decision_term >= self.TOP_DECISION_TERM:
                     self.decision_term = 0
                     self.trend = self.TOP
                     self.top_i = self.max_high_i
@@ -160,7 +161,7 @@ class ZigZagAdviser:
             else:
                 self.decision_term += 1
                 # 谷を決定
-                if self.decision_term >= self.DECISION_TERM:
+                if self.decision_term >= self.BOTTOM_DECISION_TERM:
                     self.decision_term = 0
                     self.trend = self.BOTTOM
                     self.bottom_i = self.min_low_i
