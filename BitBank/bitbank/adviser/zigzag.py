@@ -13,8 +13,8 @@ class ZigZagAdviser:
     BOTTOM = 11   # 値幅率を超えて下がっているときの状態
     OTHER = 12
 
-    TOP_DECISION_TERM = 45
-    BOTTOM_DECISION_TERM = 60
+    TOP_DECISION_TERM = 120   # 30min
+    BOTTOM_DECISION_TERM = 200   # 50min
 
     def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
         self.__pair = pair
@@ -175,8 +175,8 @@ class ZigZagAdviser:
         """
         15分足と30秒足に変換
         """
-        self.last_depth *= 30
-        self.depth *= 30
+        self.last_depth *= 60
+        self.depth *= 60
 
     @staticmethod
     def __and_gate(*args):
@@ -216,7 +216,7 @@ class ZigZagAdviser:
         self.buy_deviation = genome[1]
         self.sell_deviation = genome[2]
         # 設定
-        self.genome = [10, 0.015, 0.015]
+        self.genome = [10, 0.02, 0.02]
         self.depth = genome[0]
         self.buy_deviation = genome[1]
         self.sell_deviation = genome[2]

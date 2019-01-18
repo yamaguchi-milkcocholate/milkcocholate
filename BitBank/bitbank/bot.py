@@ -149,7 +149,7 @@ class Bot:
         if self.buying_price is None:
             pass
         else:
-            if price <= self.buying_price - self.LOSS_CUT:
+            if price <= self.buying_price - self.LOSS_CUT and False:
                 self.loss_cut_message()
                 self.new_orders(
                     price=price,

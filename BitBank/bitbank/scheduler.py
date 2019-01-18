@@ -4,6 +4,7 @@ import time
 import sys
 from pytz import timezone
 from bitbank.exceptions.schedcancel import SchedulerCancelException
+from bitbank.line import Line
 
 
 class Scheduler:
@@ -11,13 +12,14 @@ class Scheduler:
     def __init__(self, runner):
         self.__runner = runner
         self.__scheduler = sched.scheduler(time.time, time.sleep)
+        self.__line = Line()
 
     def __call__(self):
         self.__schedule()
 
     def __schedule(self):
         now = datetime.datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo'))
-        now_5min = now + datetime.timedelta(seconds=30)
+        now_5min = now + datetime.timedelta(seconds=15)
         now_a_week = now + datetime.timedelta(days=1)
         print('Start at ' + now.strftime('%Y-%m-%d %H:%M:%S'))
 
@@ -43,4 +45,5 @@ class Scheduler:
         except SchedulerCancelException as e:
             # スケジューラをキャンセル
             print(e.get_message())
+            self.__line(message="スケジューラーを停止しました。")
             sys.exit()
