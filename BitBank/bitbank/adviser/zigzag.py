@@ -13,10 +13,13 @@ class ZigZagAdviser:
     BOTTOM = 11   # 値幅率を超えて下がっているときの状態
     OTHER = 12
 
-    TOP_DECISION_TERM = 120   # 30min
+    TOP_DECISION_TERM = 60   # 15min
     BOTTOM_DECISION_TERM = 200   # 50min
 
-    def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
+    FETCH_TERM = 4  # 4 /min
+    CANDLESTICK = 15  # 15min
+
+    def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None, limit=None):
         self.__pair = pair
         self.__candle_type = candle_type
         self.__api_gateway = ApiGateway()
@@ -24,6 +27,10 @@ class ZigZagAdviser:
         self.depth = None
         self.buy_deviation = None
         self.sell_deviation = None
+        self.rsi_term = None
+        self.rsi_data = None
+        self.rsi_step = None
+        self.rsi_bottom = None
         self.max_high = None
         self.min_low = None
         self.max_high_i = None
@@ -35,11 +42,14 @@ class ZigZagAdviser:
         self.price = None
         self.trend = None
         self.buying_price = buying_price
+        self.limit = limit
         self.decision_term = 0
         self.candlestick = self.make_price_data_frame()
 
     def __call__(self, *args, **kwargs):
+        self.is_candlestick = True
         self.zigzag_candlestick()
+        self.is_candlestick = False
         self.candlestick = None
 
     def operation(self, has_coin):
@@ -72,8 +82,24 @@ class ZigZagAdviser:
 
         self.__update_min_max(high=price, low=price, i=self.data_i)
         self.price = price
+        # RSI
+        self.__fetch_rsi()
 
         self.__trend()
+
+    def __fetch_rsi(self):
+        self.rsi_step += 1
+        # 新たな区間を追加
+        if self.rsi_step == self.FETCH_TERM * self.CANDLESTICK:
+            self.rsi_step = 0
+            del self.rsi_data[0]
+            self.rsi_data.append({
+                'start': self.price,
+                'end': self.price,
+            })
+        # 最後の区間を更新
+        else:
+            self.rsi_data[-1]['end'] = self.price
 
     def zigzag_candlestick(self):
         self.max_high = float(self.candlestick.loc[0].high)
@@ -93,6 +119,36 @@ class ZigZagAdviser:
 
             self.__trend(high=high, low=low)
 
+        # RSI
+        self.rsi_data = list()
+        for data_i in range(len(self.candlestick) - self.rsi_term, len(self.candlestick)):
+            self.rsi_data.append({
+                'start': float(self.candlestick[data_i].start),
+                'end': float(self.candlestick[data_i].end)
+            })
+        self.rsi_step = 0
+
+    def rsi(self):
+        plus = list()
+        minus = list()
+        for data in self.rsi_data:
+            diff = data['end'] - data['start']
+            if diff >= 0:
+                plus.append(diff)
+            else:
+                minus.append(-1 * diff)
+        if len(plus) > 0:
+            plus = sum(plus)
+        else:
+            plus = 0
+        if len(minus) > 0:
+            minus = sum(minus)
+        else:
+            minus = 0
+        plus = plus / self.rsi_term
+        minus = minus / self.rsi_term
+        return plus / (plus + minus) * 100
+
     def __update_min_max(self, high, low, i):
         if self.max_high < high:
             self.max_high = high
@@ -106,7 +162,7 @@ class ZigZagAdviser:
         値幅率を超えて上がったときにTrue
         :return:
         """
-        if self.buying_price is None:
+        if self.buying_price is None or self.is_candlestick:
             return self.__and_gate(
                 self.min_low * (1 + self.sell_deviation) < self.max_high,
                 self.min_low_i < self.max_high_i,
@@ -117,7 +173,7 @@ class ZigZagAdviser:
                 self.min_low * (1 + self.sell_deviation) < self.max_high,
                 self.min_low_i < self.max_high_i,
                 self.last_depth + (self.max_high_i - self.bottom_i) > self.depth,
-                self.buying_price <= self.max_high
+                self.buying_price <= self.price
             )
 
     def __bottom(self):
@@ -125,11 +181,22 @@ class ZigZagAdviser:
         値幅率を超えて下がったときにTrue
         :return:
         """
-        return self.__and_gate(
-            self.max_high * (1 - self.buy_deviation) > self.min_low,
-            self.max_high_i < self.min_low_i,
-            self.last_depth + (self.min_low_i - self.top_i) > self.depth
-        )
+        rsi = self.rsi()
+        if self.limit is None or self.is_candlestick:
+            return self.__and_gate(
+                self.max_high * (1 - self.buy_deviation) > self.min_low,
+                self.max_high_i < self.min_low_i,
+                self.last_depth + (self.min_low_i - self.top_i) > self.depth,
+                self.rsi_bottom >= rsi
+            )
+        else:
+            return self.__and_gate(
+                self.max_high * (1 - self.buy_deviation) > self.min_low,
+                self.max_high_i < self.min_low_i,
+                self.last_depth + (self.min_low_i - self.top_i) > self.depth,
+                self.limit >= self.price,
+                self.rsi_bottom >= rsi
+            )
 
     def __trend(self, high=None, low=None):
         if high is None:
@@ -173,10 +240,10 @@ class ZigZagAdviser:
 
     def __depth_bias(self):
         """
-        15分足と30秒足に変換
+        15分足と15秒足に変換
         """
-        self.last_depth *= 60
-        self.depth *= 60
+        self.last_depth *= self.FETCH_TERM * self.CANDLESTICK
+        self.depth *= self.FETCH_TERM * self.CANDLESTICK
 
     @staticmethod
     def __and_gate(*args):
@@ -220,3 +287,5 @@ class ZigZagAdviser:
         self.depth = genome[0]
         self.buy_deviation = genome[1]
         self.sell_deviation = genome[2]
+        self.rsi_term = 14
+        self.rsi_bottom = 35.0
