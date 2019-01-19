@@ -28,7 +28,7 @@ class Bot:
 
     MANAGE_AMOUNT = 100000
     COMMISSION = 0.0015
-    LOSS_CUT = 0.5
+    LOSS_CUT = 0.3
 
     BUY_FAIL = 0.8
     SELL_FAIL = 0.2
@@ -149,7 +149,7 @@ class Bot:
         if self.buying_price is None:
             pass
         else:
-            if price <= self.buying_price - self.LOSS_CUT and False:
+            if price <= self.buying_price - self.LOSS_CUT:
                 self.loss_cut_message()
                 self.new_orders(
                     price=price,
