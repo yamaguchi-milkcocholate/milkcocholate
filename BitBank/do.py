@@ -20,7 +20,7 @@ print('genome id: ', end='')
 genome_id = input()
 genome_id = int(genome_id)
 
-adviser = ZigZagAdviser(limit=35.500)
+adviser = ZigZagAdviser(buying_price=34.834)
 
 bot = Bot(
     host=host,

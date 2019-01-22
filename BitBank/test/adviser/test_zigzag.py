@@ -45,6 +45,7 @@ class TestZigZag(unittest.TestCase):
         bottom_i = self.adviser.bottom_i
         last_depth = self.adviser.last_depth
         trend = self.adviser.trend
+        """
         # 値幅率を上に超える
         self.adviser.fetch_recent_data(price=10 ** 5)
         self.adviser.fetch_recent_data(price=10 ** 4)
@@ -72,6 +73,32 @@ class TestZigZag(unittest.TestCase):
         self.assertEqual(self.adviser.max_high_i, data_i + 4 + 4)
         self.assertEqual(self.adviser.min_low, 1)
         self.assertEqual(self.adviser.min_low_i, data_i + 1 + 4)
+        """
+
+    def test_rsi(self):
+        self.adviser.set_genome([1, 0.01, 0.01])
+        self.adviser()
+        test = list(self.adviser.rsi_data)
+        self.assertEqual(len(test), self.adviser.rsi_term)
+        self.adviser.fetch_recent_data(price=100)
+        self.assertEqual(len(test), self.adviser.rsi_term)
+        value = self.adviser.rsi_data
+        for i in range(len(test) - 1):
+            self.assertEqual(value[i]['start'], test[i]['start'])
+            self.assertEqual(value[i]['end'], test[i]['end'])
+        self.assertEqual(value[-1]['start'], test[-1]['start'])
+        self.assertEqual(value[-1]['end'], 100)
+
+        self.assertEqual(self.adviser.rsi_step, 1)
+        for i in range(self.adviser.FETCH_TERM * self.adviser.CANDLESTICK - 1):
+            self.adviser.fetch_recent_data(price=100)
+        self.assertEqual(0, self.adviser.rsi_step)
+        for i in range(1, len(test) - 1):
+            self.assertEqual(value[i - 1]['start'], test[i]['start'])
+            self.assertEqual(value[i - 1]['end'], test[i]['end'])
+        self.assertEqual(value[-1]['start'], 100)
+        self.assertEqual(value[-1]['end'], 100)
+        self.assertEqual(len(test), self.adviser.rsi_term)
 
 
 if __name__ == '__main__':
