@@ -26,12 +26,12 @@ class Bot:
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
-    MANAGE_AMOUNT = 100000
+    MANAGE_AMOUNT = 200000
     COMMISSION = 0.0015
     LOSS_CUT = 0.3
 
-    BUY_FAIL = 0.8
-    SELL_FAIL = 0.2
+    BUY_FAIL = 0.08
+    SELL_FAIL = 0.05
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -334,31 +334,30 @@ class Bot:
             )
             self.cancel_order_message(result=result)
             self.order_ids.append(result.order_id)
+            # DBへ書き込む
+            self.__insert_canceled_order(
+                order_id=result['order_id'],
+                average_price=result['average_price'],
+                remaining_amount=result['remaining_amount'],
+                executed_amount=result['executed_amount'],
+                status=result['status'],
+                canceled_at=self.__now()
+            )
+            # 売り注文だったら成り行きで売り払う
+            if result['side'] == 'sell':
+                self.market_selling_message()
+                self.new_orders(
+                    price=result['price'],
+                    amount=result['remaining_amount'],
+                    side='sell',
+                    order_type=self.TYPE_MARKET,
+                )
         except Exception as e:
             print(e)
             if '50010'in e.args[0]:
                 self.__line(message='キャンセルできませんでした。')
             else:
                 raise SchedulerCancelException('Fail to cancel order')
-
-        # DBへ書き込む
-        self.__insert_canceled_order(
-            order_id=result['order_id'],
-            average_price=result['average_price'],
-            remaining_amount=result['remaining_amount'],
-            executed_amount=result['executed_amount'],
-            status=result['status'],
-            canceled_at=self.__now()
-        )
-        # 売り注文だったら成り行きで売り払う
-        if result['side'] == 'sell':
-            self.market_selling_message()
-            self.new_orders(
-                price=result['price'],
-                amount=result['remaining_amount'],
-                side='sell',
-                order_type=self.TYPE_MARKET,
-            )
 
     def fetch_orders(self):
         """

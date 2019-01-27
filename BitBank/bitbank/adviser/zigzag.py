@@ -295,7 +295,7 @@ class ZigZagAdviser:
     def set_genome(self, genome):
         self.genome = genome
         # 設定
-        self.genome = [10, 0.018, 0.015]
+        self.genome = [10, 0.018, 0.012]
         self.buy_deviation = self.genome[1]
         self.sell_deviation = self.genome[2]
         self.rsi_term = 14
