@@ -26,8 +26,12 @@ class Bot:
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
-    MANAGE_AMOUNT = 110000
+    MANAGE_AMOUNT = 200000
     COMMISSION = 0.0015
+    LOSS_CUT = 0.3
+
+    BUY_FAIL = 0.08
+    SELL_FAIL = 0.05
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -47,6 +51,7 @@ class Bot:
         self.__api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
         self.order_ids = list()
         self.genome = None
+        self.buying_price = None
         self.__load_genome(population_id=population_id, genome_id=genome_id)
         self.__line = Line()
         self.__start_price = self.fetch_price()
@@ -73,27 +78,18 @@ class Bot:
                 else:
                     # DBへ書き込む
                     # オーダーをキャンセルしない
-                    # 売り注文は成行売り
-                    if orders[order_id].side == 'sell':
+                    price = self.fetch_price()
+                    # 買い損ねたとき
+                    if float(orders[order_id].price) + self.BUY_FAIL <= price and orders[order_id].side == 'buy':
                         self.cancel_orders(order_id=order_id)
-                        time.sleep(1)
-                        self.new_orders(
-                            price=orders[order_id].price,
-                            amount=orders[order_id].remaining_amount,
-                            side='sell',
-                            order_type=self.TYPE_MARKET
-                        )
-                    pass
-                    # self.cancel_orders(order_id=order_id)
-                    # self.order_ids.remove(order_id)
+                    elif float(orders[order_id].price) - self.SELL_FAIL >= price and orders[order_id].side == 'sell':
+                        self.cancel_orders(order_id=order_id)
+
         # アセットを読み込む
         assets_free_amount = self.fetch_asset()
-        print()
-        print("When show this at " + self.__now() + ' ==================')
-        for key in assets_free_amount:
-            print(key + ': ' + assets_free_amount[key] + '    ', end='')
-        print()
-        print("--------------------------------------------------------")
+
+        # 損切り
+        self.loss_cut(float(assets_free_amount[self.__coin]))
 
         # データを更新
         self.__adviser.fetch_recent_data()
@@ -108,21 +104,20 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='asks')
+                    candidate = self.find_maker(side='bids')
                     for i in range(self.DIVIDE_ORDER):
                         amount = float(self.MANAGE_AMOUNT / price / self.DIVIDE_ORDER)
-                        print(amount * price,
-                              float(assets_free_amount[self.__yen]), side)
                         self.new_orders(
                             price=candidate[i],
                             amount=amount,
                             side=side,
                             order_type=self.TYPE_LIMIT
                         )
+                    self.buying_price = price
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
             else:
-                print(self.__now() + '   ' + 'stay')
+                pass
 
         # コインがあるとき、新規注文する
         if float(assets_free_amount[self.__coin]) > 0:
@@ -134,7 +129,7 @@ class Bot:
                 # 新規注文
                 if self.can_order():
                     side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='bids')
+                    candidate = self.find_maker(side='asks')
                     for i in range(self.DIVIDE_ORDER):
                         self.new_orders(
                             price=candidate[i],
@@ -142,12 +137,27 @@ class Bot:
                             side=side,
                             order_type=self.TYPE_LIMIT
                         )
+                    self.buying_price = None
                 else:
                     raise SchedulerCancelException('price belows the limit. ')
 
             else:
-                print(self.__now() + '   ' + 'stay')
-        print("========================================================")
+                pass
+
+    def loss_cut(self, coin):
+        price = self.fetch_price()
+        if self.buying_price is None:
+            pass
+        else:
+            if price <= self.buying_price - self.LOSS_CUT:
+                self.loss_cut_message()
+                self.new_orders(
+                    price=price,
+                    amount=coin,
+                    side='sell',
+                    order_type=self.TYPE_MARKET
+                )
+                raise SchedulerCancelException("loss cut")
 
     def __operation_to_side(self, operation):
         if operation == int(self.BUY):
@@ -180,7 +190,6 @@ class Bot:
             cursor.execute(sql, placeholder)
             self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
         self.__adviser.set_genome(self.genome)
-        print(self.genome)
         self.__adviser()
 
     def find_maker(self, side):
@@ -232,9 +241,9 @@ class Bot:
             elif result['asset'] == self.__yen:
                 assets[self.__yen] = result['free_amount']
                 insert_list[self.__yen].append(result['onhand_amount'])
-        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
-        insert_list[self.__coin].append(ticker['last'])
-        insert_list[self.__yen].append(ticker['last'])
+        ticker = self.fetch_price()
+        insert_list[self.__coin].append(ticker)
+        insert_list[self.__yen].append(ticker)
         insert_list[self.__coin].append(self.__now())
         insert_list[self.__yen].append(self.__now())
         self.__insert_assets(insert_list=insert_list)
@@ -283,6 +292,7 @@ class Bot:
             )
             self.new_order_message(order=order, retry=retry)
             self.order_ids.append(result['order_id'])
+            print()
             print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
         except Exception as e:
             print(e)
@@ -300,6 +310,7 @@ class Bot:
             elif '70009' in e.args[0] or '70011' in e.args[0]:
                 # 70009 ただいま成行注文を一時的に制限しています。指値注文をご利用ください
                 # 70011 ただいまリクエストが混雑してます。しばらく時間を空けてから再度リクエストをお願いします
+                print()
                 print('5秒の遅らせて再度注文します。')
                 self.__line(message='5秒の遅らせて再度注文します。')
                 time.sleep(5)
@@ -323,28 +334,30 @@ class Bot:
             )
             self.cancel_order_message(result=result)
             self.order_ids.append(result.order_id)
+            # DBへ書き込む
+            self.__insert_canceled_order(
+                order_id=result['order_id'],
+                average_price=result['average_price'],
+                remaining_amount=result['remaining_amount'],
+                executed_amount=result['executed_amount'],
+                status=result['status'],
+                canceled_at=self.__now()
+            )
+            # 売り注文だったら成り行きで売り払う
+            if result['side'] == 'sell':
+                self.market_selling_message()
+                self.new_orders(
+                    price=result['price'],
+                    amount=result['remaining_amount'],
+                    side='sell',
+                    order_type=self.TYPE_MARKET,
+                )
         except Exception as e:
             print(e)
-            raise SchedulerCancelException('Fail to cancel order')
-
-        # DBへ書き込む
-        self.__insert_canceled_order(
-            order_id=result['order_id'],
-            average_price=result['average_price'],
-            remaining_amount=result['remaining_amount'],
-            executed_amount=result['executed_amount'],
-            status=result['status'],
-            canceled_at=self.__now()
-        )
-        # 売り注文だったら成り行きで売り払う
-        if result['side'] == 'sell':
-            self.market_selling_message()
-            self.new_orders(
-                price=result['price'],
-                amount=result['remaining_amount'],
-                side='sell',
-                order_type=self.TYPE_MARKET,
-            )
+            if '50010'in e.args[0]:
+                self.__line(message='キャンセルできませんでした。')
+            else:
+                raise SchedulerCancelException('Fail to cancel order')
 
     def fetch_orders(self):
         """
@@ -607,6 +620,10 @@ class Bot:
 
     def market_selling_message(self):
         message = "指値売り注文をキャンセルしましたので、成行注文を行います。"
+        self.__line(message=message)
+
+    def loss_cut_message(self):
+        message = "損切りを行いました。"
         self.__line(message=message)
 
     def error_message(self, message):
