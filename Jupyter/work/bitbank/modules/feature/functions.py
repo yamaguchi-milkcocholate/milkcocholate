@@ -233,8 +233,8 @@ def zigzag():
     """
     situation_dict = OrderedDict()
     situation_dict['DEPTH'] = (1, 50)
-    situation_dict['BUY-DEVIATION'] = (0, 0.15)
-    situation_dict['SELL-DEVIATION'] = (0, 0.15)
+    situation_dict['BUY-DEVIATION'] = (0, 0.2)
+    situation_dict['SELL-DEVIATION'] = (0, 0.2)
     situation = Situation()
     situation.set_fitness_function_id(f_id=ZigZagFunction.FITNESS_FUNCTION_ID)
     situation.set_genome_ranges_with_order_dict(genome_ranges=situation_dict)
