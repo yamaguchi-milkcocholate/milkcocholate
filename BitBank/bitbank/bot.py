@@ -30,8 +30,8 @@ class Bot:
     COMMISSION = 0.0015
     LOSS_CUT = 0.3
 
-    BUY_FAIL = 0.08
-    SELL_FAIL = 0.05
+    BUY_FAIL = 0.02
+    SELL_FAIL = 0.02
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
