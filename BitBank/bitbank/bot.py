@@ -26,12 +26,12 @@ class Bot:
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
-    MANAGE_AMOUNT = 200000
+    MANAGE_AMOUNT = 180000
     COMMISSION = 0.0015
     LOSS_CUT = 0.3
 
-    BUY_FAIL = 0.08
-    SELL_FAIL = 0.05
+    BUY_FAIL = 0.02
+    SELL_FAIL = 0.02
 
     def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
         """
@@ -333,7 +333,7 @@ class Bot:
                 order_id=order_id
             )
             self.cancel_order_message(result=result)
-            self.order_ids.append(result.order_id)
+            self.order_ids.append(result['order_id'])
             # DBへ書き込む
             self.__insert_canceled_order(
                 order_id=result['order_id'],
