@@ -10,7 +10,7 @@ class Prototype(Auto):
     PRICE_LIMIT = 3.0
 
     COMMISSION = 0.0015
-    LOSS_CUT = 0.5
+    LOSS_CUT_PRICE = 0.5
 
     BUY_FAIL = 0.02
     SELL_FAIL = 0.02
@@ -25,55 +25,54 @@ class Prototype(Auto):
         self.has_coin = False
 
     def __call__(self):
-        # 損切り
-        self.loss_cut(coin='hoge')
-
         # データを更新
         self.adviser.fetch_recent_data()
 
-        # 日本円があるとき、新規注文する
-        if self.has_coin is False:
-            operation, price = self.adviser.operation(
-                has_coin=False
-            )
-            # STAYではないとき
-            if operation == int(self.BUY):
-                # 新規注文
-                side = self.__operation_to_side(operation=operation)
-                candidate = self.find_maker(side='bids')
-                for i in range(self.DIVIDE_ORDER):
-                    self.new_orders(
-                        price=candidate[i],
-                        amount='hoge',
-                        side=side,
-                        order_type=self.TYPE_LIMIT
-                    )
-                self.buying_price = price
-                self.has_coin = True
-            else:
-                pass
+        # 指示を受ける
+        operation, price, order_type = self.adviser.operation(
+            has_coin=self.has_coin
+        )
 
-        # コインがあるとき、新規注文する
-        if self.has_coin:
-            operation, price = self.adviser.operation(
-                has_coin=True
+        if operation == int(self.BUY):
+            self.buy(price=price, amount='hoge', order_type=order_type)
+
+        elif operation == int(self.SELL):
+            self.sell(price=price, amount='hoge', order_type=order_type)
+
+        elif operation == int(self.RETRY):
+            # キャンセル
+            result = self.cancel_orders(
+                order_id=self.order_ids
             )
-            # STAYではないとき
-            if operation == int(self.SELL):
-                # 新規注文
-                side = self.__operation_to_side(operation=operation)
-                candidate = self.find_maker(side='asks')
-                for i in range(self.DIVIDE_ORDER):
-                    self.new_orders(
-                        price=candidate[i],
-                        amount='hoge',
-                        side=side,
-                        order_type=self.TYPE_LIMIT
-                    )
-                self.buying_price = None
-                self.has_coin = False
-            else:
-                pass
+            # 再要求
+            if result.side == 'buy':
+                self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
+            elif result.side == 'sell':
+                self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
+        elif operation == int(self.STAY):
+            pass
+        else:
+            raise SchedulerCancelException('operation fail')
+
+    def buy(self, price, amount, order_type):
+        self.new_orders(
+            price=price,
+            amount=amount,
+            side='buy',
+            order_type=order_type
+        )
+        self.buying_price = price
+        self.has_coin = True
+
+    def sell(self, price, amount, order_type):
+        self.new_orders(
+            price=price,
+            amount=amount,
+            side='sell',
+            order_type=order_type
+        )
+        self.buying_price = None
+        self.has_coin = False
 
     def new_orders(self, price, amount, side, order_type, retry=0):
         """
@@ -115,46 +114,26 @@ class Prototype(Auto):
         :param order_id:  number
         """
         try:
+            # 強制的にsideを決める
             result = {
-                'side': 'hoge',
+                'order_id': order_id,
+                'side': self.__side(),
                 'status': 'hoge',
                 'pair': 'hoge',
                 'price': 'hoge',
                 'average_price': 'hoge',
                 'start_amount': 'hoge',
                 'executed_amount': 'hoge',
-                'remaining_amount': 'hoge'
+                'remaining_amount': 'hoge',
+                'ordered_at': 'hoge'
             }
             self.cancel_order_message(result=result)
             self.order_ids = None
-
-            # 売り注文だったら成り行きで売り払う
-            if result['side'] == 'sell':
-                self.market_selling_message()
-                self.new_orders(
-                    price=result['price'],
-                    amount=result['remaining_amount'],
-                    side='sell',
-                    order_type=self.TYPE_MARKET,
-                )
+            order = Order.order(r=result)
+            return order
         except Exception as e:
             print(e)
             raise SchedulerCancelException('Fail to cancel order')
-
-    def loss_cut(self, coin):
-        price = self.fetch_price()
-        if self.buying_price is None:
-            pass
-        else:
-            if price <= self.buying_price - self.LOSS_CUT:
-                self.loss_cut_message()
-                self.new_orders(
-                    price=price,
-                    amount=coin,
-                    side='sell',
-                    order_type=self.TYPE_MARKET
-                )
-                raise SchedulerCancelException("loss cut")
 
     def find_maker(self, side):
         """
@@ -185,3 +164,9 @@ class Prototype(Auto):
         if side == 'bids':
             inter_diff = inter_diff[::-1]
         return inter_diff
+
+    def __side(self):
+        if self.has_coin:
+            return 'sell'
+        elif self.has_coin:
+            return 'buy'

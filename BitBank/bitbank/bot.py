@@ -11,7 +11,7 @@ class Bot(Auto):
 
     MANAGE_AMOUNT = 180000
     COMMISSION = 0.0015
-    LOSS_CUT = 0.5
+    LOSS_CUT_PRICE = 0.5
 
     BUY_FAIL = 0.02
     SELL_FAIL = 0.02
@@ -111,7 +111,7 @@ class Bot(Auto):
         if self.buying_price is None:
             pass
         else:
-            if price <= self.buying_price - self.LOSS_CUT:
+            if price <= self.buying_price - self.LOSS_CUT_PRICE:
                 self.loss_cut_message()
                 self.new_orders(
                     price=price,
@@ -195,19 +195,7 @@ class Bot(Auto):
                 order_type=order_type
             )
             # Orderインスタンス化
-            order = Order(
-                order_id=result['order_id'],
-                pair=result['pair'],
-                side=result['side'],
-                type=result['type'],
-                price=result['price'],
-                start_amount=result['start_amount'],
-                remaining_amount=result['remaining_amount'],
-                executed_amount=result['executed_amount'],
-                average_price=result['average_price'],
-                ordered_at=result['ordered_at'],
-                status=result['status']
-            )
+            order = Order.order(r=result)
 
             self.new_order_message(order=order, retry=retry)
             self.order_ids = result['order_id']

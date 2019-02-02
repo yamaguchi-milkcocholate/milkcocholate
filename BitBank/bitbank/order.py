@@ -35,3 +35,20 @@ class Order:
             "ordered_at": self.ordered_at,
             "status": self.status
         }
+
+    @staticmethod
+    def order(r):
+        order = Order(
+            order_id=r['order_id'],
+            pair=r['pair'],
+            side=r['side'],
+            type=r['type'],
+            price=r['price'],
+            start_amount=r['start_amount'],
+            remaining_amount=r['remaining_amount'],
+            executed_amount=r['executed_amount'],
+            average_price=r['average_price'],
+            ordered_at=r['ordered_at'],
+            status=r['status']
+        )
+        return order

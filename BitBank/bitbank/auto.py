@@ -8,6 +8,7 @@ class Auto:
     BUY = 1
     STAY = 2
     SELL = 3
+    RETRY = 4
 
     DEFAULT_TYPE = 'market'
     TYPE_LIMIT = 'limit'
