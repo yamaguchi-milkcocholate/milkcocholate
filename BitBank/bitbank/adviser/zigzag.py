@@ -45,6 +45,7 @@ class ZigZagAdviser:
         self.candlestick = self.make_price_data_frame()
         self.init_max_high = init_max_high
         self.init_min_low = init_min_low
+        self()
 
     def __call__(self):
         self.is_candlestick = True

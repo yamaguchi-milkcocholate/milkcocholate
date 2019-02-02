@@ -1,19 +1,11 @@
 import time
 from bitbank.functions import *
 from bitbank.exceptions.schedcancel import SchedulerCancelException
-from bitbank.apigateway import ApiGateway
 from bitbank.order import Order
-from bitbank.line import Line
+from bitbank.auto import Auto
 
 
-class Bot:
-    BUY = 1
-    STAY = 2
-    SELL = 3
-
-    DEFAULT_TYPE = 'market'
-    TYPE_LIMIT = 'limit'
-    TYPE_MARKET = 'market'
+class Bot(Auto):
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
@@ -31,15 +23,7 @@ class Bot:
         :param api_key:       string          APIキー
         :param api_secret     string          APIシークレットキー
         """
-        self.__adviser = adviser
-        self.__pair = pair
-        self.__coin = pair.split('_')[0]
-        self.__yen = pair.split('_')[1]
-        self.__api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
-        self.order_ids = None
-        self.buying_price = None
-        self.__line = Line()
-        self.__start_price = self.fetch_price()
+        super().__init__(adviser=adviser, pair=pair, api_key=api_key, api_secret=api_secret)
 
     def __call__(self):
         # 注文の情報を確認
@@ -55,7 +39,6 @@ class Bot:
                     self.order_ids = None
                 # 注文中
                 else:
-                    # DBへ書き込む
                     # オーダーをキャンセルしない
                     price = self.fetch_price()
                     # 買い損ねたとき
@@ -68,14 +51,14 @@ class Bot:
         assets_free_amount = self.fetch_asset()
 
         # 損切り
-        self.loss_cut(float(assets_free_amount[self.__coin]))
+        self.loss_cut(float(assets_free_amount[self.coin]))
 
         # データを更新
-        self.__adviser.fetch_recent_data()
+        self.adviser.fetch_recent_data()
 
         # 日本円があるとき、新規注文する
-        if float(assets_free_amount[self.__yen]) > self.MANAGE_AMOUNT:
-            operation, price = self.__adviser.operation(
+        if float(assets_free_amount[self.yen]) > self.MANAGE_AMOUNT:
+            operation, price = self.adviser.operation(
                 has_coin=False
             )
             # STAYではないとき
@@ -99,8 +82,8 @@ class Bot:
                 pass
 
         # コインがあるとき、新規注文する
-        if float(assets_free_amount[self.__coin]) > 0:
-            operation, price = self.__adviser.operation(
+        if float(assets_free_amount[self.coin]) > 0:
+            operation, price = self.adviser.operation(
                 has_coin=True
             )
             # STAYではないとき
@@ -112,7 +95,7 @@ class Bot:
                     for i in range(self.DIVIDE_ORDER):
                         self.new_orders(
                             price=candidate[i],
-                            amount=(float(assets_free_amount[self.__coin]) / self.DIVIDE_ORDER),
+                            amount=(float(assets_free_amount[self.coin]) / self.DIVIDE_ORDER),
                             side=side,
                             order_type=self.TYPE_LIMIT
                         )
@@ -138,20 +121,12 @@ class Bot:
                 )
                 raise SchedulerCancelException("loss cut")
 
-    def __operation_to_side(self, operation):
-        if operation == int(self.BUY):
-            return 'buy'
-        elif operation == int(self.SELL):
-            return 'sell'
-        else:
-            raise SchedulerCancelException()
-
     def find_maker(self, side):
         """
         Maker手数料の候補を返す
         :return: list 取引値に近い順
         """
-        result = self.__api_gateway.use_depth(pair=self.__pair)
+        result = self.api_gateway.use_depth(pair=self.pair)
         result = np.asarray(result[side], dtype=float)
         result = result[0:, 0]
         if side == 'asks':
@@ -185,21 +160,21 @@ class Bot:
         ]
         :return: dict 利用可能な量
         """
-        results = self.__api_gateway.use_asset()
+        results = self.api_gateway.use_asset()
         assets = dict()
-        insert_list = {self.__coin: [self.__coin], self.__yen: [self.__yen]}
+        insert_list = {self.coin: [self.coin], self.yen: [self.yen]}
         for result in results['assets']:
-            if result['asset'] == self.__coin:
-                assets[self.__coin] = result['free_amount']
-                insert_list[self.__coin].append(result['onhand_amount'])
-            elif result['asset'] == self.__yen:
-                assets[self.__yen] = result['free_amount']
-                insert_list[self.__yen].append(result['onhand_amount'])
+            if result['asset'] == self.coin:
+                assets[self.coin] = result['free_amount']
+                insert_list[self.coin].append(result['onhand_amount'])
+            elif result['asset'] == self.yen:
+                assets[self.yen] = result['free_amount']
+                insert_list[self.yen].append(result['onhand_amount'])
         ticker = self.fetch_price()
-        insert_list[self.__coin].append(ticker)
-        insert_list[self.__yen].append(ticker)
-        insert_list[self.__coin].append(now())
-        insert_list[self.__yen].append(now())
+        insert_list[self.coin].append(ticker)
+        insert_list[self.yen].append(ticker)
+        insert_list[self.coin].append(now())
+        insert_list[self.yen].append(now())
         return assets
 
     def new_orders(self, price, amount, side, order_type, retry=0):
@@ -212,8 +187,8 @@ class Bot:
         :param retry:      integer
         """
         try:
-            result = self.__api_gateway.new_order(
-                pair=self.__pair,
+            result = self.api_gateway.new_order(
+                pair=self.pair,
                 price=price,
                 amount=amount,
                 side=side,
@@ -272,8 +247,8 @@ class Bot:
         :param order_id:  number
         """
         try:
-            result = self.__api_gateway.cancel_order(
-                pair=self.__pair,
+            result = self.api_gateway.cancel_order(
+                pair=self.pair,
                 order_id=order_id
             )
             self.cancel_order_message(result=result)
@@ -306,8 +281,8 @@ class Bot:
         """
         if self.order_ids is None:
             return False
-        results = self.__api_gateway.use_orders_info(
-            pair=self.__pair,
+        results = self.api_gateway.use_orders_info(
+            pair=self.pair,
             order_ids=[self.order_ids]
         )
         if results['orders'] is None:
@@ -331,97 +306,6 @@ class Bot:
             orders[result['order_id']] = order
         return orders
 
-    def new_order_message(self, order, retry):
-        side = self.__side_to_japanese(side=order.side)
-        status = self.__status_to_japanese(status=order.status)
-        message = "新規注文を行いました。\n" \
-                  "===================\n" \
-                  "" + order.pair + " " + side + "注文 " + status + "\n" \
-                  "注文ID: {}\n" \
-                  "時刻: {}\n" \
-                  "価格: {}\n" \
-                  "数量: {}\n" \
-                  "再要求回数: {}\n" \
-                  "===================".format(
-                        order.order_id,
-                        order.ordered_at,
-                        order.price,
-                        order.start_amount,
-                        retry
-                  )
-        message.replace('n', '%0D%0A')
-        self.__line(message=message)
-
-    def cancel_order_message(self, result):
-        side = self.__side_to_japanese(side=result['side'])
-        status = self.__status_to_japanese(status=result['status'])
-        message = "注文を取り消しました。\n" \
-                  "===================\n" \
-                  "" + result['pair'] + " " + side + "注文 " + status + "\n" \
-                  "注文ID: {}\n" \
-                  "時刻: {}\n" \
-                  "価格: {}\n" \
-                  "平均価格: {}\n" \
-                  "数量: {}\n" \
-                  "約定数量: {}\n" \
-                  "===================".format(
-                        result['order_id'],
-                        now(),
-                        result['price'],
-                        result['average_price'],
-                        result['start_amount'],
-                        result['executed_amount'],
-                  )
-        message.replace('n', '%0D%0A')
-        self.__line(message=message)
-
-    def market_selling_message(self):
-        message = "指値売り注文をキャンセルしましたので、成行注文を行います。"
-        self.__line(message=message)
-
-    def loss_cut_message(self):
-        message = "損切りを行いました。"
-        self.__line(message=message)
-
-    def error_message(self, message):
-        message = "エラー発生!!\n" \
-                  "===================\n" \
-                  "" + message + "\n" \
-                  "==================="
-        self.__line(message=message)
-
-    @staticmethod
-    def __side_to_japanese(side):
-        if side == 'buy':
-            japanese = '買い'
-        else:
-            japanese = '売り'
-        return japanese
-
-    @staticmethod
-    def __status_to_japanese(status):
-        if status == 'UNFILLED':
-            japanese = '注文中'
-        elif status == 'PARTIALLY_FILLED':
-            japanese = '注文中(一部約定)'
-        elif status == 'FULLY_FILLED':
-            japanese = '約定済み'
-        elif status == 'CANCELED_UNFILLED':
-            japanese = '取消済'
-        elif status == 'CANCELED_PARTIALLY_FILLED':
-            japanese = '取消済(一部約定)'
-        else:
-            japanese = None
-        return japanese
-
-    def fetch_price(self):
-        """
-        開始時の価格を返す
-        :return: string
-        """
-        ticker = self.__api_gateway.use_ticker(pair=self.__pair)
-        return float(ticker['last'])
-
     def can_order(self):
         """
         開始時よりも価格が大幅に下がった時に強制終了させるためのメソッド
@@ -435,7 +319,7 @@ class Bot:
             assets_free_amount = self.fetch_asset()
             self.new_orders(
                 price=price,
-                amount=assets_free_amount[self.__coin],
+                amount=assets_free_amount[self.coin],
                 side='sell',
                 order_type=self.TYPE_MARKET
             )
