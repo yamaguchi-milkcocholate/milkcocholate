@@ -15,7 +15,7 @@ class ZigZagAdviser:
     OTHER = 12
 
     TOP_DECISION_TERM = 60   #
-    BOTTOM_DECISION_TERM = 150   #
+    BOTTOM_DECISION_TERM = 400   #
 
     FETCH_TERM = 4  # 4 /min
     CANDLESTICK = 15  # 15min
@@ -295,7 +295,7 @@ class ZigZagAdviser:
     def set_genome(self, genome):
         self.genome = genome
         # 設定
-        self.genome = [10, 0.03, 0.03]
+        self.genome = [10, 0.03, 0.02]
         self.buy_deviation = self.genome[1]
         self.sell_deviation = self.genome[2]
         self.rsi_term = 14
