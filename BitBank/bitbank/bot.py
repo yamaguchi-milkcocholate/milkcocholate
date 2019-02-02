@@ -1,9 +1,5 @@
-import pymysql.cursors
-import pickle
 import time
-import numpy as np
-from pytz import timezone
-from datetime import datetime
+from bitbank.functions import *
 from bitbank.exceptions.schedcancel import SchedulerCancelException
 from bitbank.apigateway import ApiGateway
 from bitbank.order import Order
@@ -14,11 +10,6 @@ class Bot:
     BUY = 1
     STAY = 2
     SELL = 3
-
-    USER = 'milkcocholate'
-    PASSWORD = 'milkchocolate22'
-    DB = 'milkcocholate'
-    CHARSET = 'utf8'
 
     DEFAULT_TYPE = 'market'
     TYPE_LIMIT = 'limit'
@@ -33,26 +24,20 @@ class Bot:
     BUY_FAIL = 0.02
     SELL_FAIL = 0.02
 
-    def __init__(self, host, population_id, genome_id, adviser, pair, api_key, api_secret):
+    def __init__(self, adviser, pair, api_key, api_secret):
         """
-        :param host:          string          データベースのホスト
-        :param population_id: integer         テーブル populationsのid. 遺伝子群を特定
-        :param genome_id:     integer         遺伝子群のNo.を特定
         :param adviser:       bitbank.adviser テクニカル分析結果から売却の指示をするクラスのインスタンス
         :param pair:          string          通貨のペア
         :param api_key:       string          APIキー
         :param api_secret     string          APIシークレットキー
         """
-        self.__host = host
         self.__adviser = adviser
         self.__pair = pair
         self.__coin = pair.split('_')[0]
         self.__yen = pair.split('_')[1]
         self.__api_gateway = ApiGateway(api_key=api_key, api_secret=api_secret)
-        self.order_ids = list()
-        self.genome = None
+        self.order_ids = None
         self.buying_price = None
-        self.__load_genome(population_id=population_id, genome_id=genome_id)
         self.__line = Line()
         self.__start_price = self.fetch_price()
 
@@ -66,14 +51,8 @@ class Bot:
             for order_id in orders:
                 # 約定注文
                 if orders[order_id].status == 'FULLY_FILLED':
-                    # DBへ書き込む
-                    self.__insert_filled_order(
-                        order_id=orders[order_id].order_id,
-                        average_price=orders[order_id].average_price,
-                        filled_at=self.__now()
-                    )
                     # リストから削除
-                    self.order_ids.remove(orders[order_id].order_id)
+                    self.order_ids = None
                 # 注文中
                 else:
                     # DBへ書き込む
@@ -167,31 +146,6 @@ class Bot:
         else:
             raise SchedulerCancelException()
 
-    def __load_genome(self, population_id, genome_id):
-        """
-        データベースのレコードから遺伝子をセットする
-        :param population_id:
-        :param genome_id:
-        """
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to load genome')
-        sql = "SELECT `genome` FROM `populations` WHERE `id` = %s;"
-        placeholder = [population_id]
-        with connection.cursor() as cursor:
-            cursor.execute(sql, placeholder)
-            self.genome = pickle.loads(cursor.fetchall()[0]['genome'])[genome_id]
-        self.__adviser.set_genome(self.genome)
-        self.__adviser()
-
     def find_maker(self, side):
         """
         Maker手数料の候補を返す
@@ -244,9 +198,8 @@ class Bot:
         ticker = self.fetch_price()
         insert_list[self.__coin].append(ticker)
         insert_list[self.__yen].append(ticker)
-        insert_list[self.__coin].append(self.__now())
-        insert_list[self.__yen].append(self.__now())
-        self.__insert_assets(insert_list=insert_list)
+        insert_list[self.__coin].append(now())
+        insert_list[self.__yen].append(now())
         return assets
 
     def new_orders(self, price, amount, side, order_type, retry=0):
@@ -280,18 +233,9 @@ class Bot:
                 ordered_at=result['ordered_at'],
                 status=result['status']
             )
-            # DBへ書き込む
-            self.__insert_order(
-                order_id=order.order_id,
-                pair=order.pair,
-                side=order.side,
-                type=order.type,
-                price=order.price,
-                amount=order.start_amount,
-                ordered_at=order.ordered_at
-            )
+
             self.new_order_message(order=order, retry=retry)
-            self.order_ids.append(result['order_id'])
+            self.order_ids = result['order_id']
             print()
             print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
         except Exception as e:
@@ -333,16 +277,8 @@ class Bot:
                 order_id=order_id
             )
             self.cancel_order_message(result=result)
-            self.order_ids.clear()
-            # DBへ書き込む
-            self.__insert_canceled_order(
-                order_id=result['order_id'],
-                average_price=result['average_price'],
-                remaining_amount=result['remaining_amount'],
-                executed_amount=result['executed_amount'],
-                status=result['status'],
-                canceled_at=self.__now()
-            )
+            self.order_ids = None
+
             # 売り注文だったら成り行きで売り払う
             if result['side'] == 'sell':
                 self.market_selling_message()
@@ -368,11 +304,11 @@ class Bot:
             'order_id_2': bitbank.order.Order,
         }
         """
-        if len(self.order_ids) is 0:
+        if self.order_ids is None:
             return False
         results = self.__api_gateway.use_orders_info(
             pair=self.__pair,
-            order_ids=self.order_ids
+            order_ids=[self.order_ids]
         )
         if results['orders'] is None:
             raise SchedulerCancelException('Fail to get orders information')
@@ -394,185 +330,6 @@ class Bot:
             )
             orders[result['order_id']] = order
         return orders
-
-    def __insert_assets(self, insert_list):
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to insert assets in connecting DB')
-        sql = "INSERT INTO `assets` " \
-              "(`coin`, `amount`, `price`, `time`) " \
-              "VALUES (%s, %s, %s, %s);"
-        placeholder = insert_list[self.__coin]
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, placeholder)
-        except Exception:
-            connection.rollback()
-            connection.close()
-            raise SchedulerCancelException('Fail to insert assets in inserting DB')
-        finally:
-            connection.commit()
-            connection.close()
-
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError:
-            raise SchedulerCancelException('Fail to insert assets in connecting DB')
-        placeholder = insert_list[self.__yen]
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, placeholder)
-        except Exception:
-            connection.rollback()
-            connection.close()
-            raise SchedulerCancelException('Fail to insert assets in inserting DB')
-        finally:
-            connection.commit()
-            connection.close()
-
-    def __insert_order(self, order_id, pair, side, type, price, amount, ordered_at):
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError as e:
-            print(e)
-            print('Fail to insert order in connecting DB')
-            exception = SchedulerCancelException('Fail to insert order in connecting DB')
-            exception.args = ('Fail to insert order in connecting DB', )
-            raise exception
-        sql = "INSERT INTO `orders` " \
-              "(`order_id`, `pair`, `side`, `type`, `price`, `amount`, `ordered_at`) " \
-              "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        placeholder = [
-            order_id,
-            pair,
-            side,
-            type,
-            price,
-            amount,
-            ordered_at
-        ]
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, placeholder)
-        except Exception as e:
-            print(e)
-            connection.rollback()
-            connection.close()
-            print('Fail to insert order in inserting DB')
-            exception = SchedulerCancelException('Fail to insert order in inserting DB')
-            exception.args = ('Fail to insert order in inserting DB',)
-            raise exception
-        finally:
-            connection.commit()
-            connection.close()
-
-    def __insert_filled_order(self, order_id, average_price, filled_at):
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError as e:
-            print(e)
-            print('Fail to insert filled order in connecting DB')
-            exception = SchedulerCancelException('Fail to insert filled order in connecting DB')
-            exception.args = ('Fail to insert filled order in connecting DB',)
-            raise exception
-        sql = "INSERT INTO `filled_orders` " \
-              "(`order_id`, `average_price`,  `filled_at`) " \
-              "VALUES (%s, %s, %s);"
-        placeholder = [
-            int(order_id),
-            float(average_price),
-            filled_at
-        ]
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, placeholder)
-        except Exception as e:
-            print(e)
-            connection.rollback()
-            connection.close()
-            print('Fail to insert filled order in inserting DB')
-            exception = SchedulerCancelException('Fail to insert filled order in inserting DB')
-            exception.args = ('Fail to insert filled order in inserting DB',)
-            raise SchedulerCancelException('Fail to insert filled order in inserting DB')
-        finally:
-            connection.commit()
-            connection.close()
-
-    def __insert_canceled_order(self, order_id, average_price,
-                                remaining_amount, executed_amount, status, canceled_at):
-        try:
-            connection = pymysql.connect(
-                host=self.__host,
-                user=self.USER,
-                db=self.DB,
-                password=self.PASSWORD,
-                charset=self.CHARSET,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except pymysql.err.OperationalError as e:
-            print(e)
-            print('Fail to insert canceled order in connecting DB')
-            exception = SchedulerCancelException('Fail to insert canceled order in connecting DB')
-            exception.args = ('Fail to insert canceled order in connecting DB',)
-            raise exception
-        sql = "INSERT INTO `canceled_orders` " \
-              "(`order_id`      , `average_price`,  `remaining_amount`, `executed_amount`, `status`, `canceled_at`) " \
-              "VALUES (%s, %s, %s, %s, %s, %s);"
-        placeholder = [
-            int(order_id),
-            float(average_price),
-            float(remaining_amount),
-            float(executed_amount),
-            status,
-            canceled_at
-        ]
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, placeholder)
-        except Exception as e:
-            print(e)
-            connection.rollback()
-            connection.close()
-            print('Fail to insert canceled order in inserting DB')
-            exception = SchedulerCancelException('Fail to insert canceled order in inserting DB')
-            exception.args = ('Fail to insert canceled order in inserting DB',)
-            raise SchedulerCancelException('Fail to insert canceled order in inserting DB')
-        finally:
-            connection.commit()
-            connection.close()
-
-    @staticmethod
-    def __now():
-        return datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
 
     def new_order_message(self, order, retry):
         side = self.__side_to_japanese(side=order.side)
@@ -609,7 +366,7 @@ class Bot:
                   "約定数量: {}\n" \
                   "===================".format(
                         result['order_id'],
-                        self.__now(),
+                        now(),
                         result['price'],
                         result['average_price'],
                         result['start_amount'],
@@ -687,7 +444,7 @@ class Bot:
                       "===================\n" \
                       "時刻: {}\n" \
                       "===================".format(
-                       self.__now()
+                       now()
                        )
             message.replace('n', '%0D%0A')
             self.__line(message=message)

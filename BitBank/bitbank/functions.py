@@ -1,4 +1,6 @@
 import numpy as np
+from pytz import timezone
+from datetime import datetime
 
 
 def cosine_similarity(x, y):
@@ -37,3 +39,8 @@ def line(length, inclination, bias):
     :return: numpy
     """
     return np.arange(0, length) * inclination + bias
+
+
+def now():
+    return datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
+
