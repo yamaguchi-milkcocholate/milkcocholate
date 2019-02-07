@@ -25,9 +25,6 @@ class Prototype(Auto):
         self.has_coin = False
 
     def __call__(self):
-        # データを更新
-        self.adviser.fetch_recent_data()
-
         # 指示を受ける
         operation, price, order_type = self.adviser.operation(
             has_coin=self.has_coin
@@ -134,36 +131,6 @@ class Prototype(Auto):
         except Exception as e:
             print(e)
             raise SchedulerCancelException('Fail to cancel order')
-
-    def find_maker(self, side):
-        """
-        Maker手数料の候補を返す
-        :return: list 取引値に近い順
-        """
-        result = self.api_gateway.use_depth(pair=self.pair)
-        result = np.asarray(result[side], dtype=float)
-        result = result[0:, 0]
-        if side == 'asks':
-            # 売り側
-            # 小さい
-            head = result[0]
-            # 大きい
-            tail = result[-1]
-        elif side == 'bids':
-            # 買い側
-            # 大きい
-            tail = result[0]
-            # 小さい
-            head = result[-1]
-        else:
-            raise TypeError('in find_maker')
-        mask = np.arange(start=head, stop=tail, step=0.001, dtype=np.float64)
-        mask = np.round(mask, decimals=3)
-        result = np.round(result, decimals=3)
-        inter_diff = np.setdiff1d(mask, result)
-        if side == 'bids':
-            inter_diff = inter_diff[::-1]
-        return inter_diff
 
     def __side(self):
         if self.has_coin:

@@ -11,24 +11,24 @@ class Adviser(ABC):
     SELL = 3
     RETRY = 4
 
-    def __init__(self, pair='xrp_jpy'):
+    BUY_TYPE = 'buy'
+    SELL_TYPE = 'sell'
+
+    def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
         self.api_gateway = ApiGateway()
         self.pair = pair
-
-    def __call__(self, *args, **kwargs):
-        pass
+        self.candle_type = candle_type
+        self.buying_price = buying_price
+        self.candlestick = self.make_price_data_frame()
 
     @abstractmethod
-    def operation(self, has_coin):
+    def operation(self, has_coin, price=None):
         """
         指示と取引価格を渡す。
         :param has_coin: bool
+        :param price: None|float
         :return: const int, float
         """
-        pass
-
-    @abstractmethod
-    def fetch_recent_data(self):
         pass
 
     def make_price_data_frame(self):
@@ -40,22 +40,19 @@ class Adviser(ABC):
         yesterday = today - datetime.timedelta(days=1)
         today = today.astimezone(timezone('Asia/Tokyo'))
         yesterday = yesterday.astimezone(timezone('Asia/Tokyo'))
-        print('Initializing Candlestick Data From',
-              today.strftime('%Y-%m-%d'),
-              'and',
-              yesterday.strftime('%Y-%m-%d')
-              )
         candlestick_today = self.api_gateway.use_candlestick(
             time=today.strftime("%Y%m%d"),
-            candle_type=self.api_gateway,
+            candle_type=self.candle_type,
             pair=self.pair
         )['candlestick'][0]['ohlcv']
         candlestick_yesterday = self.api_gateway.use_candlestick(
             time=yesterday.strftime('%Y%m%d'),
-            candle_type=self.api_gateway,
+            candle_type=self.candle_type,
             pair=self.pair
         )['candlestick'][0]['ohlcv']
         for item in candlestick_today:
             candlestick_yesterday.append(item)
+        loc = datetime.datetime.fromtimestamp(int(candlestick_yesterday[-1][5]) / 1000)
+        print('last: ', loc)
         return pd.DataFrame(candlestick_yesterday, columns=['open', 'high', 'low', 'end', 'yield', 'time'])
 
