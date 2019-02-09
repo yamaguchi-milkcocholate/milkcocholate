@@ -2,8 +2,8 @@ from modules.datamanager import savecandlestick
 
 
 save_candle_data = savecandlestick.SaveCandlestick()
-start_day = '20190101'
-finish_day = '20190105'
+start_day = '20190111'
+finish_day = '20190205'
 pair = 'xrp_jpy'
 timespace = '15min'
 folder = 'data_xrp'
