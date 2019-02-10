@@ -30,6 +30,10 @@ class TestFunctions(unittest.TestCase):
         print(np.round(y, 2))
         self.assertEqual(21, len(y))
 
+    def test_candlestick(self):
+        candlestick = load_data('15min', 'data_xrp')
+        print(candlestick)
+
 
 if __name__ == '__main__':
     unittest.main()

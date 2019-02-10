@@ -1,6 +1,9 @@
 import numpy as np
 from pytz import timezone
 from datetime import datetime
+import pickle
+import pandas as pd
+import os
 
 
 def cosine_similarity(x, y):
@@ -44,3 +47,39 @@ def line(length, inclination, bias):
 def now():
     return datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
 
+
+def load_file(directory, obj):
+    with open(directory, mode='wb') as f:
+        pickle.dump(obj, f)
+
+
+def read_file(directory):
+    with open(directory, mode='rb') as f:
+        pickle.load(f)
+
+
+def load_data(span, folder):
+    """
+    取り出したデータをプロパティに持たせる
+    :param span:   string ロウソク足データの時間間隔(=candle_type)  ['5min' or '15min' or '1hour']
+    :param folder: string ロウソク足データがあるフォルダー名 ['data' or 'validation']
+    :return: candlestick: pandas.DataFrame
+    """
+    if not (span is '5min' or span is '15min' or span is '1hour'):
+        raise FileNotFoundError("'5min' or '15min' or '1hour'")
+    cur = os.path.dirname(os.path.abspath(__file__))
+    files_path = os.path.abspath(cur + '/../') + '/' + span + '/' + folder
+
+    # 文字列なので順番はバラバラ
+    files = os.listdir(files_path)
+
+    # ファイル名前半の20180101のようなものをintに変換してソート
+    files = sorted(files, key=lambda x: int(x.split('.')[0]))
+    candlestick = []
+    for i in range(len(files)):
+        file = files_path + '/' + files[i]
+        with open(file, 'rb') as f:
+            result = pickle.load(f)
+        candlestick.append(result)
+    candlestick = pd.concat(candlestick, ignore_index=True)
+    return candlestick[['open', 'end', 'low', 'high']].astype(float)

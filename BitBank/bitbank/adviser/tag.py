@@ -79,7 +79,7 @@ class Tag(Adviser):
         :return: const int, float, const string
         """
         if inc > 0 and error < 0.01 and price_diff > 0 and ma_diff > 0:
-            
+
         else:
             pass
         return operation, price, order_type
