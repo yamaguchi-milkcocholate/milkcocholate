@@ -48,7 +48,7 @@ def now():
     return datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def load_file(directory, obj):
+def write_file(directory, obj):
     with open(directory, mode='wb') as f:
         pickle.dump(obj, f)
 
