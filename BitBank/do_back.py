@@ -4,10 +4,10 @@ import sys
 from bitbank.functions import write_file
 sys.setrecursionlimit(100000)
 
-fitness_function = TagFitnessFunction(ema_term=4, ma_term=8, goal=0.1)
+fitness_function = TagFitnessFunction(ema_term=4, ma_term=8, goal=0.15)
 
-gp = GeneticNetwork(mutation=5, cross=50, elite_num=1, population=3, fitness_function=fitness_function)
+gp = GeneticNetwork(mutation=5, cross=50, elite_num=2, population=100, fitness_function=fitness_function)
 gp.init_population()
-gp.generation(steps=10)
+gp.generation(steps=200)
 
-write_file(directory='15min/training/gp_.pkl', obj=gp)
+write_file(directory='15min/training/gp_01.pkl', obj=gp)

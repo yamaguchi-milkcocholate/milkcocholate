@@ -97,7 +97,7 @@ class TagFitnessFunction(FitnessFunction):
         :param fail:
         :return:
         """
-        price = float(self.data.loc[data_i, 'end'])
+        price = float(self.data.loc[data_i, 'high'])
         ma = float(self.data.loc[data_i, 'ma'])
         ema = float(self.data.loc[data_i, 'ema'])
 
