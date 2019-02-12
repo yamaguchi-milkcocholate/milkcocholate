@@ -167,3 +167,6 @@ class GeneticNetwork:
         for i in range(len(self.genomes)):
             self.genomes[i].show_tree()
             print()
+
+    def get_elite_genome(self):
+        return self.genomes[0]
