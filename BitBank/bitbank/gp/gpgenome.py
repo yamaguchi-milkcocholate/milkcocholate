@@ -2,6 +2,7 @@ import random
 from bitbank.gp.node import Node
 from bitbank.exceptions.gpexception import NodeException
 import copy
+from graphviz import Digraph
 
 
 class GPGenome:
@@ -83,3 +84,84 @@ class GPGenome:
         node_id = random.randint(1, self.__total_node)
         if not self.tree.mutate(node_id=node_id, condition=self.condition):
             raise NodeException('mutate: not found\nnode_id: ' + str(node_id))
+
+    def normalization(self):
+        """
+        正規化。拡張した枝刈り
+        :return:
+        """
+        self.pruning_tree()
+        r, rr, sr, er = self.true_route()
+        self.pruning_tree_fill(success_route=sr)
+
+    def show_tree_map(self, name):
+        g = Digraph(format='png')
+        g.attr('node', shape='circle')
+        g = self.tree.show_node_map(g)
+        print(g)
+        g.render(name)
+
+    def pruning_tree(self):
+        """
+        枝刈り
+        :return:
+        """
+        self.tree.pruning()
+        self.update_total()
+
+    def true_route(self):
+        """
+        葉ノードがTrueのルートを返す
+        :return:
+        """
+        routes = self.tree.true_route(par_route=list(), true_route=list())
+        routes = [self.tree.true_route_rl(true_route=route, depth=0) for route in routes]
+        tech_list = self.condition.get_tech_list()
+        r = list()
+        rr = list()
+        sr = list()
+        er = list()
+        for route in routes:
+            d = dict()
+            n = list()
+            for tech in tech_list:
+                d[tech] = list()
+            for node in route:
+                node_id = node['node_id']
+                n.append(node_id)
+                tech_name = node['tech_name']
+                threshold = node['threshold']
+                operation = node['operation']
+                result = node['result']
+                if (operation == Node.MORE_THAN and result) or (operation == Node.LESS_THAN and not result):
+                    d[tech_name].append(str('{0:.5f}'.format(threshold)) + ' <')
+                elif (operation == Node.LESS_THAN and result) or (operation == Node.MORE_THAN and not result):
+                    d[tech_name].append(str('<' + ' {0:.5f}'.format(threshold)))
+            r.append(d)
+            flag = False
+            for i in d:
+                if len(d[i]) == 0:
+                    flag = True
+                    break
+            if flag:
+                er.append(n)
+            else:
+                rr.append(d)
+                sr.append(n)
+        return r, rr, sr, er
+
+    def pruning_tree_fill(self, success_route):
+        """
+        全ての項目を評価するルートのみにする
+        :param success_route:
+        :return:
+        """
+        sr_unique = list()
+        for route in success_route:
+            sr_unique.extend(route)
+        sr_unique = list(set(sr_unique))
+        dl_node_id = [i for i in (list(range(self.__total_node + 1))) if not (i in sr_unique)]
+
+        for dl in dl_node_id:
+            self.tree.false_node(node_id=dl)
+        self.update_total()

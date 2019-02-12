@@ -6,8 +6,8 @@ sys.setrecursionlimit(100000)
 
 fitness_function = TagFitnessFunction(ema_term=4, ma_term=8, goal=0.15)
 
-gp = GeneticNetwork(mutation=1, cross=50, elite_num=2, population=100, fitness_function=fitness_function)
+gp = GeneticNetwork(mutation=5, cross=50, elite_num=2, population=75, fitness_function=fitness_function)
 gp.init_population()
 gp.generation(steps=200)
 
-write_file(directory='15min/training/gp_01.pkl', obj=gp)
+write_file(directory='15min/training/gp_02.pkl', obj=gp)

@@ -7,12 +7,14 @@ import copy
 
 
 class GeneticNetwork:
+    MUTATION_NUM = 5
 
-    def __init__(self, mutation, cross, elite_num, population, fitness_function):
+    def __init__(self, mutation, cross, elite_num, new_num, population, fitness_function):
         """
         :param mutation:           int                                         突然変異のパーセント
         :param cross:              int                                         交叉のパーセント
         :param elite_num:          int                                         エリート個体数
+        :param new_num:            int                                         新規個体数
         :param population:         int                                         個体数
         :param fitness_function:   modules.gp.fitnessfunction.FitnessFunction  適応度関数
         """
@@ -34,11 +36,20 @@ class GeneticNetwork:
         self.__mutation = mutation
         self.__cross = cross
         self.__elite_num = elite_num
+        self.__new_num = new_num
         self.__population = population
         self.__fitness_function = fitness_function
         self.__condition = self.__fitness_function.get_condition()
         self.genomes = list()
         self.fitness = None
+
+    def genome_normalization(self):
+        """
+        遺伝子を正規化
+        :return:
+        """
+        for i in range(len(self.genomes)):
+            self.genomes[i].normalization()
 
     def init_population(self):
         """
@@ -47,6 +58,7 @@ class GeneticNetwork:
         """
         for i in range(self.__population):
             self.genomes.append(GPGenome(condition=self.__condition))
+        self.genome_normalization()
 
     def generation(self, steps):
         """
@@ -84,32 +96,30 @@ class GeneticNetwork:
         elites = self.select_elites()
 
         # エリート以外の遺伝子を交叉
-        print('cross:', end='')
-        for geno_i in range(0, len(self.genomes) - self.__elite_num, 2):
-            print("=", end='')
+        for geno_i in range(0, len(self.genomes) - self.__elite_num - self.__new_num, 2):
             par_a, par_b = self.roulette_select(roulette=roulette, sum_fitness=sum_fitness)
             child_a, child_b = self.crossover(par_a, par_b)
             new_genomes.append(child_a)
             new_genomes.append(child_b)
-        print()
+
+        # 新規個体
+        for i in range(0, self.__new_num):
+            new_genomes.append(GPGenome(condition=self.__condition))
 
         # 突然変異
-        print('mutate:', end='')
         for new_genome in new_genomes:
-            # 何回の突然変異を起こすか
-            count = int(self.__mutation * new_genome.get_total() / 1000)
-            for i in range(count):
-                print('=', end='')
-                try:
-                    new_genome.mutate()
-                except NodeException as ne:
-                    new_genome.show_tree()
-                    raise ne
-        print()
+            if random.randint(0, 100) <= self.__mutation:
+                for i in range(self.MUTATION_NUM):
+                    try:
+                        new_genome.mutate()
+                    except NodeException as ne:
+                        new_genome.show_tree()
+                        raise ne
 
         # エリートを結合
         new_genomes[0:0] = elites
         self.genomes = new_genomes
+        self.genome_normalization()
 
     def roulette_select(self, roulette, sum_fitness):
         """

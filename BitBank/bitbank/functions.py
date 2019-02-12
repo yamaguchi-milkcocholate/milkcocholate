@@ -55,7 +55,7 @@ def write_file(directory, obj):
 
 def read_file(directory):
     with open(directory, mode='rb') as f:
-        pickle.load(f)
+        return pickle.load(f)
 
 
 def load_data(span, folder):

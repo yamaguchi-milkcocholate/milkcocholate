@@ -1,5 +1,6 @@
 from bitbank.adviser.adviser import Adviser
 from bitbank.adviser.functions import *
+from bitbank.functions import read_file
 from bitbank.exceptions.tagexception import DataNotUpdateException
 
 
@@ -7,15 +8,17 @@ class Tag(Adviser):
     ASKS = 'asks'
     BIDS = 'bids'
 
-    def __init__(self, ema_term, ma_term):
+    def __init__(self, ema_term, ma_term, directory):
         """
         :param ema_term:
         :param ma_term:
+        :param directory: 遺伝子を持つGeneticProgrammingオブジェクトファイル
         """
         super().__init__()
         # 設定
         self.ema_term = ema_term
         self.ma_term = ma_term
+        self.genome = read_file(directory=directory).get_elite_genome()
         # データ
         # 直近
         self.ma = None
@@ -42,8 +45,9 @@ class Tag(Adviser):
         self.update_ema()
         # 分析
         inc, error = self.ma_regression()
-        price_diff = self.ema_price_diff()
-        ma_diff = self.ema_ma_diff()
+        ema_price_diff = self.ema_price_diff()
+        ema_ma_diff = self.ema_ma_diff()
+        ma_diff = self.ma_diff()
         if has_coin:
             board = self.find_maker(side=self.ASKS)
         else:
@@ -51,8 +55,9 @@ class Tag(Adviser):
 
         operation, price, order_type = self.analysis(
             inc=inc,
-            error=error,
-            price_diff=price_diff,
+            e=e,
+            ema_price_diff=ema_price_diff,
+            ema_ma_diff=ema_ma_diff,
             ma_diff=ma_diff,
             board=board
         )
@@ -68,20 +73,24 @@ class Tag(Adviser):
         self.is_update_data(False)
         return operation, price, order_type
 
-    def analysis(self, inc, error, price_diff, ma_diff, board):
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board):
         """
         分析して指示を出す
         :param inc: float 傾き
-        :param error: float 誤差
-        :param price_diff: float PRICEとEMA
-        :param ma_diff: float MAとEMA
+        :param e: float 誤差
+        :param ema_price_diff: float PRICEとEMA
+        :param ema_ma_diff: float MAとEMA
+        :param ma_diff: 直前のMAの傾き
         :param board: list 板情報
         :return: const int, float, const string
         """
-        if inc > 0 and error < 0.01 and price_diff > 0 and ma_diff > 0:
-
-        else:
-            pass
+        operation = self.genome.operation(
+            inc=inc,
+            e=e,
+            ema_price_diff=ema_price_diff,
+            ema_ma_diff=ema_ma_diff,
+            ma_diff=ma_diff
+        )
         return operation, price, order_type
 
     def find_maker(self, side):
@@ -142,6 +151,13 @@ class Tag(Adviser):
         """
         ema_n_1 = self.ema_list[-1]
         return ema_n_1 + ((self.ema_term - 1) / 2)(ema - ema_n_1)
+
+    def ma_diff(self):
+        """
+        MAの直前の傾き
+        :return:
+        """
+        return self.ma - self.ma_list[-1]
 
     def ma_regression(self):
         """

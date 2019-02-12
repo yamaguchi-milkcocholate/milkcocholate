@@ -6,7 +6,7 @@ class Node:
     MORE_THAN = 100
     LESS_THAN = 200
     EON = 300
-    MAX_DEPTH = 12
+    MAX_DEPTH = 20
     LEAF = 5
     LEAF_OPERATION = 'operation'
 
@@ -62,8 +62,6 @@ class Node:
             # 1/5でEON
             if random.randint(1, 100) % self.LEAF == 0 and self.depth != 0:
                 self.random_operation()
-                self.left_node = self.EON
-                self.right_node = self.EON
             else:
                 # テクニカル指標を割り当て
                 self.random_tech_analysis(condition=condition)
@@ -71,8 +69,6 @@ class Node:
                 self.right_node = Node(condition=condition, depth=self.depth + 1)
         else:
             self.random_operation()
-            self.left_node = self.EON
-            self.right_node = self.EON
 
     def random_operation(self):
         """
@@ -83,6 +79,8 @@ class Node:
             self.operation = True
         else:
             self.operation = False
+        self.left_node = self.EON
+        self.right_node = self.EON
         self.threshold = None
         self.tech_name = 'operation'
 
@@ -118,7 +116,29 @@ class Node:
             node_id = self.right_node.update_id(node_id=node_id + 1, depth=depth + 1)
         return node_id
 
+    def false_node(self, node_id):
+        """
+        Falseの葉ノードに変更
+        :param node_id:
+        :return:
+        """
+        if node_id == self.node_id:
+            self.left_node = self.EON
+            self.right_node = self.EON
+            self.tech_name = self.LEAF_OPERATION
+            self.threshold = None
+            self.operation = False
+        else:
+            if isinstance(self.right_node, Node):
+                self.right_node.false_node(node_id=node_id)
+            if isinstance(self.left_node, Node):
+                self.left_node.false_node(node_id=node_id)
+
     def get_node(self, node_id):
+        """
+        :param node_id:
+        :return:
+        """
         if node_id == self.node_id:
             return copy.deepcopy(self)
         else:
@@ -160,9 +180,6 @@ class Node:
         else:
             result = False
         return result
-
-    def get_node_id(self):
-        return self.node_id
 
     def put_node(self, node, node_id):
         """
@@ -268,3 +285,181 @@ class Node:
         else:
             result = False
         return result
+
+    def show_node_map(self, g, par_node_id=None):
+        """
+        木構造の可視化
+        :param g:
+        :param par_node_id:
+        :return:
+        """
+        g.node(str(self.node_id), self.__node_map())
+        if par_node_id is None:
+            pass
+        else:
+            g.edge(str(par_node_id), str(self.node_id))
+
+        if isinstance(self.right_node, Node):
+            g = self.right_node.show_node_map(g, par_node_id=self.node_id)
+
+        if isinstance(self.left_node, Node):
+            g = self.left_node.show_node_map(g, par_node_id=self.node_id)
+
+        return g
+
+    def __node_map(self):
+        """
+        ノードの基準を文字列にする
+        :return:
+        """
+        if self.tech_name == self.LEAF_OPERATION:
+            return str(self.operation)
+        else:
+            if self.operation == self.MORE_THAN:
+                operation = '>'
+            else:
+                operation = '<'
+            return self.tech_name + " " + operation + " {0:.5f}".format(self.threshold)
+
+    def pruning(self):
+        """
+        枝刈り
+        :return:
+        """
+        if self.left_node != self.EON and self.right_node != self.EON:
+            left_tech_name = self.left_node.get_tech_name()
+            right_tech_name = self.right_node.get_tech_name()
+            if left_tech_name == self.LEAF_OPERATION and right_tech_name == self.LEAF_OPERATION:
+                left_operation = self.left_node.get_operation()
+                right_operation = self.right_node.get_operation()
+                if left_operation == right_operation:
+                    self.__end_of_node(operation=left_operation)
+            else:
+                if isinstance(self.left_node, Node):
+                    self.left_node.pruning()
+                if isinstance(self.right_node, Node):
+                    self.right_node.pruning()
+
+    def __end_of_node(self, operation):
+        """
+        葉ノードに変更する
+        :param operation:
+        :return:
+        """
+        self.right_node = self.EON
+        self.left_node = self.EON
+        self.operation = operation
+        self.threshold = None
+        self.tech_name = self.LEAF_OPERATION
+
+    def true_route(self, par_route, true_route):
+        """
+        葉ノードがTrueのルートを返す
+        :param par_route: list
+        :param true_route: list
+        :return:
+        """
+        par_route.append({
+            'node_id': self.node_id,
+            'tech_name': self.tech_name,
+            'threshold': self.threshold,
+            'operation': self.operation
+        })
+        if self.tech_name == self.LEAF_OPERATION:
+            if self.operation:
+                true_route.append(list(par_route))
+
+        if isinstance(self.left_node, Node):
+            true_route = self.left_node.true_route(par_route=list(par_route), true_route=list(true_route))
+        if isinstance(self.right_node, Node):
+            true_route = self.right_node.true_route(par_route=list(par_route), true_route=list(true_route))
+
+        return true_route
+
+    def true_route_rl(self, true_route, depth):
+        """
+        ルートの左右を付け加える
+        :param true_route:
+        :param depth:
+        :return:
+        """
+        if depth < len(true_route) - 1:
+            next_node_id = true_route[depth + 1]['node_id']
+            left_node_id = self.left_node.get_node_id()
+            right_node_id = self.right_node.get_node_id()
+            # 左はTrue
+            if next_node_id == left_node_id:
+                true_route[depth]['result'] = True
+                true_route = self.left_node.true_route_rl(true_route=true_route, depth=depth + 1)
+            elif next_node_id == right_node_id:
+                true_route[depth]['result'] = False
+                true_route = self.right_node.true_route_rl(true_route=true_route, depth=depth + 1)
+            return true_route
+        else:
+            true_route[depth]['result'] = None
+            return true_route
+
+    def get_operation(self):
+        """
+        :return:
+        """
+        return self.operation
+
+    def get_tech_name(self):
+        """
+        :return:
+        """
+        return self.tech_name
+
+    def get_node_id(self):
+        """
+        :return:
+        """
+        return self.node_id
+
+    def get_right_node(self):
+        """
+        :return:
+        """
+        return self.right_node
+
+    def get_left_node(self):
+        """
+        :return:
+        """
+        return self.left_node
+
+    def set_right_node(self, node):
+        """
+        :param node:
+        :return:
+        """
+        self.right_node = node
+
+    def set_left_node(self, node):
+        """
+        :param node:
+        :return:
+        """
+        self.left_node = node
+
+    def set_operation(self, operation):
+        """
+        :param operation:
+        :return:
+        """
+        self.operation = operation
+
+    def set_threshold(self, threshold):
+        """
+        :param threshold:
+        :return:
+        """
+        self.threshold = threshold
+
+    def set_tech_name(self, tech_name):
+        """
+        :param tech_name:
+        :return:
+        """
+        self.tech_name = tech_name
