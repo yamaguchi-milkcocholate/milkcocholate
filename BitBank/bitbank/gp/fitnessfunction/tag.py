@@ -1,16 +1,16 @@
 from bitbank.gp.fitnessfunction.fitnessfunction import FitnessFunction
 from bitbank.functions import load_data
 from bitbank.adviser.functions import *
+import math
 
 
 class TagFitnessFunction(FitnessFunction):
 
-    def __init__(self, ema_term, ma_term, goal, trial=100):
+    def __init__(self, ema_term, ma_term, goal):
         super().__init__()
         self.ema_term = ema_term
         self.ma_term = ma_term
         self.goal = goal
-        self.trail = trial
         self.candlestick = load_data('15min', 'data_xrp')
         self.data = None
         self.ranges = dict()
@@ -71,20 +71,19 @@ class TagFitnessFunction(FitnessFunction):
         print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.5f}'.format(fitness))
         return fitness
 
-    def __fitness(self, success, fail):
+    @staticmethod
+    def __fitness(success, fail):
         """
         適応度を計算
         試行回数に重みをつける
         少ない時に罰則
+        ロジスティック関数
         :param success:
         :param fail:
         :return:
         """
         trial = success + fail + 1
-        if trial < self.trail:
-            w = (1 / self.trail) * trial
-        else:
-            w = 1
+        w = (100 * math.exp(trial * 0.04)) / (100 + math.exp(trial * 0.04))
         return (success / trial) * w
 
     def __buy_judge(self, data_i, buying_price, is_second, success, fail):

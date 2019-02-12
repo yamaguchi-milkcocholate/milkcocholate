@@ -84,22 +84,28 @@ class GeneticNetwork:
         elites = self.select_elites()
 
         # エリート以外の遺伝子を交叉
+        print('cross:', end='')
         for geno_i in range(0, len(self.genomes) - self.__elite_num, 2):
+            print("=", end='')
             par_a, par_b = self.roulette_select(roulette=roulette, sum_fitness=sum_fitness)
             child_a, child_b = self.crossover(par_a, par_b)
             new_genomes.append(child_a)
             new_genomes.append(child_b)
+        print()
 
         # 突然変異
+        print('mutate:', end='')
         for new_genome in new_genomes:
             # 何回の突然変異を起こすか
-            count = int(self.__mutation * new_genome.get_total())
+            count = int(self.__mutation * new_genome.get_total() / 1000)
             for i in range(count):
+                print('=', end='')
                 try:
                     new_genome.mutate()
                 except NodeException as ne:
                     new_genome.show_tree()
                     raise ne
+        print()
 
         # エリートを結合
         new_genomes[0:0] = elites
