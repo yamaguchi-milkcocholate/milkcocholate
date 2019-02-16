@@ -51,6 +51,11 @@ class Tag(Adviser):
         ema_price_diff = self.ema_price_diff()
         ema_ma_diff = self.ema_ma_diff()
         ma_diff = self.ma_diff()
+        print('inc           : {:.5f}'.format(inc))
+        print('e             : {:.5f}'.format(e))
+        print('ema price diff: {:.5f}'.format(ema_price_diff))
+        print('ema ma diff   : {:.5f}'.format(ema_ma_diff))
+        print('ma diff       : {:.5f}'.format(ma_diff))
         if has_coin:
             board = self.find_maker(side=self.ASKS)
         else:
