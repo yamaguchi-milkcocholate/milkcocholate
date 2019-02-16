@@ -15,25 +15,34 @@ class Prototype(Auto):
     BUY_FAIL = 0.02
     SELL_FAIL = 0.02
 
-    def __init__(self, adviser, pair):
+    def __init__(self, adviser, pair, log):
         """
         :param adviser:       bitbank.adviser テクニカル分析結果から売却の指示をするクラスのインスタンス
         :param pair:          string          通貨のペア
+        :param log:
         """
         super().__init__(adviser=adviser, pair=pair)
         self.order_ids = 0
         self.has_coin = False
+        self.is_waiting = False
+        self.log = log
 
     def __call__(self):
         # 指示を受ける
         operation, price, order_type = self.adviser.operation(
-            has_coin=self.has_coin
+            has_coin=self.has_coin,
+            is_waiting=self.is_waiting,
+            buying_price=self.buying_price
         )
 
         if operation == int(self.BUY):
+            line_ = 'BUY         : {:<10}'.format(price)
+            over_write_file(directory='../15min/log/' + self.log, line_=line_)
             self.buy(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.SELL):
+            line_ = 'SELL        : {:<10}'.format(price)
+            over_write_file(directory='../15min/log/' + self.log, line_=line_)
             self.sell(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.RETRY):
@@ -43,8 +52,12 @@ class Prototype(Auto):
             )
             # 再要求
             if result.side == 'buy':
+                line_ = 'RETRY BUY  : {:<10}'.format(price)
+                over_write_file(directory='../15min/log/' + self.log, line_=line_)
                 self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
             elif result.side == 'sell':
+                line_ = 'RETRY SELL : {:<10}'.format(price)
+                over_write_file(directory='../15min/log/' + self.log, line_=line_)
                 self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
         elif operation == int(self.STAY):
             pass

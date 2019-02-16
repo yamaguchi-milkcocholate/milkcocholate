@@ -83,3 +83,13 @@ def load_data(span, folder):
         candlestick.append(result)
     candlestick = pd.concat(candlestick, ignore_index=True)
     return candlestick[['open', 'end', 'low', 'high']].astype(float)
+
+
+def over_write_file(directory, line_):
+    """
+    ファイルを上書き(一行追加)
+    :param directory: string
+    :param l: string
+    """
+    with open(directory, 'a') as f:
+        f.write(l)

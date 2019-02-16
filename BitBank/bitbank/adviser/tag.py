@@ -7,6 +7,7 @@ from bitbank.exceptions.tagexception import DataNotUpdateException
 class Tag(Adviser):
     ASKS = 'asks'
     BIDS = 'bids'
+    PROFIT = 0.15
 
     def __init__(self, ema_term, ma_term, directory):
         """
@@ -31,10 +32,12 @@ class Tag(Adviser):
         # 作業
         self.fetch_count = 0
         self.__is_update_data = False
+        self.__price_more_than_ema = None
+        self.__ema_price_trend_count = None
 
         self.tag_candlestick()
 
-    def operation(self, has_coin, price=None):
+    def operation(self, has_coin, is_waiting, buying_price, price=None):
         if price is None:
             price = self.api_gateway.use_ticker(pair=self.pair)
             price = float(price['last'])
@@ -44,7 +47,7 @@ class Tag(Adviser):
         self.update_ma()
         self.update_ema()
         # 分析
-        inc, error = self.ma_regression()
+        inc, e = self.ma_regression()
         ema_price_diff = self.ema_price_diff()
         ema_ma_diff = self.ema_ma_diff()
         ma_diff = self.ma_diff()
@@ -59,7 +62,10 @@ class Tag(Adviser):
             ema_price_diff=ema_price_diff,
             ema_ma_diff=ema_ma_diff,
             ma_diff=ma_diff,
-            board=board
+            board=board,
+            has_coin=has_coin,
+            is_waiting=is_waiting,
+            buying_price=buying_price
         )
 
         # 間隔更新
@@ -73,7 +79,7 @@ class Tag(Adviser):
         self.is_update_data(False)
         return operation, price, order_type
 
-    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board):
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board, has_coin, is_waiting, buying_price):
         """
         分析して指示を出す
         :param inc: float 傾き
@@ -82,6 +88,9 @@ class Tag(Adviser):
         :param ema_ma_diff: float MAとEMA
         :param ma_diff: 直前のMAの傾き
         :param board: list 板情報
+        :param has_coin: bool
+        :param is_waiting: bool
+        :param buying_price: float|None
         :return: const int, float, const string
         """
         operation = self.genome.operation(
@@ -91,7 +100,61 @@ class Tag(Adviser):
             ema_ma_diff=ema_ma_diff,
             ma_diff=ma_diff
         )
-        return operation, price, order_type
+
+        if operation:
+            # 買い
+            if not has_coin and not is_waiting:
+                self.__buy_detail(
+                    ema_price_diff=ema_price_diff,
+                )
+                return self.BUY, board[0], self.TYPE_LIMIT
+            # 買いリトライ
+            elif not has_coin and not is_waiting:
+                self.__buy_detail(
+                    ema_price_diff=ema_price_diff,
+                )
+                return self.RETRY, board[0], self.TYPE_LIMIT
+            else:
+                pass
+        else:
+            # 売り (買いが完了)
+            if has_coin and not is_waiting:
+                return self.SELL, (buying_price + self.PROFIT), self.TYPE_LIMIT
+            # 売りリトライ
+            elif has_coin and is_waiting:
+                # 目標に到達できそうにないとき
+                if self.__ema_price_trend_count >= 1:
+                    return self.SELL, board[0], self.TYPE_MARKET
+            # ステイ
+            else:
+                pass
+
+        return self.STAY, None, None
+
+    def __buy_detail(self, ema_price_diff):
+        """
+        買い情報を記憶
+        :param ema_price_diff:
+        :return:
+        """
+        if ema_price_diff > 0:
+            self.__price_more_than_ema = True
+        else:
+            self.__price_more_than_ema = False
+        self.__ema_price_trend_count = 0
+
+    def __sell_detail(self, ema_price_diff):
+        """
+        売り情報を記憶
+        :param ema_price_diff:
+        :return:
+        """
+        if ema_price_diff > 0:
+            if not self.__price_more_than_ema:
+                self.__ema_price_trend_count += 1
+        else:
+            if self.__price_more_than_ema:
+                self.__ema_price_trend_count += 1
 
     def find_maker(self, side):
         """

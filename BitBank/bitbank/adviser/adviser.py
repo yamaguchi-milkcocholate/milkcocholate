@@ -14,6 +14,10 @@ class Adviser(ABC):
     BUY_TYPE = 'buy'
     SELL_TYPE = 'sell'
 
+    DEFAULT_TYPE = 'market'
+    TYPE_LIMIT = 'limit'
+    TYPE_MARKET = 'market'
+
     def __init__(self, pair='xrp_jpy', candle_type='15min', buying_price=None):
         self.api_gateway = ApiGateway()
         self.pair = pair
@@ -22,11 +26,13 @@ class Adviser(ABC):
         self.candlestick = self.make_price_data_frame()
 
     @abstractmethod
-    def operation(self, has_coin, price=None):
+    def operation(self, has_coin, is_waiting, buying_price, price=None):
         """
         指示と取引価格を渡す。
         :param has_coin: bool
         :param price: None|float
+        :param is_waiting: bool
+        :param buying_price: float|None
         :return: const int, float
         """
         pass

@@ -1,13 +1,14 @@
 from bitbank.prototype import Prototype
-from bitbank.adviser.zigzag import ZigZagAdviser
+from bitbank.adviser.tag import Tag
 from bitbank.scheduler import Scheduler
 
 
-adviser = ZigZagAdviser(init_max_high=33.5, init_min_low=33.0)
+adviser = Tag(ema_term=3, ma_term=6, directory='15min/training/gp_04.pkl')
 
 bot = Prototype(
     adviser=adviser,
     pair='xrp_jpy',
+    log='genome_04.txt'
 )
 
 scheduler = Scheduler(runner=bot)
