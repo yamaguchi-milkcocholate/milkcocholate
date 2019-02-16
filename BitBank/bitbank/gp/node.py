@@ -6,8 +6,8 @@ class Node:
     MORE_THAN = 100
     LESS_THAN = 200
     EON = 300
-    MAX_DEPTH = 13
-    LEAF = 5
+    MAX_DEPTH =6
+    LEAF = 20
     LEAF_OPERATION = 'operation'
 
     def __init__(self, condition, depth=0):

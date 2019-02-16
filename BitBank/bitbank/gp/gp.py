@@ -43,6 +43,12 @@ class GeneticNetwork:
         self.genomes = list()
         self.fitness = None
 
+    def additional_generation(self, steps):
+        for step_i in range(steps + 1):
+            print('No, ', step_i)
+            self.determine_next_generation()
+            self.calc_fitness()
+
     def genome_normalization(self):
         """
         遺伝子を正規化
