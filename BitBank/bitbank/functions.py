@@ -92,4 +92,4 @@ def over_write_file(directory, line_):
     :param l: string
     """
     with open(directory, 'a') as f:
-        f.write(l)
+        f.write(line_)
