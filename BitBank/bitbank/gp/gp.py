@@ -9,7 +9,7 @@ import copy
 class GeneticNetwork:
     MUTATION_NUM = 5
 
-    def __init__(self, mutation, cross, elite_num, new_num, population, fitness_function):
+    def __init__(self, mutation, cross, elite_num, new_num, population, fitness_function, keep, depth):
         """
         :param mutation:           int                                         突然変異のパーセント
         :param cross:              int                                         交叉のパーセント
@@ -17,6 +17,8 @@ class GeneticNetwork:
         :param new_num:            int                                         新規個体数
         :param population:         int                                         個体数
         :param fitness_function:   modules.gp.fitnessfunction.FitnessFunction  適応度関数
+        :param keep:               int
+        :param depth:              int
         """
         # 1. mutation(突然変異のパーセンテージ)は0 ~ 100
         # 2. cross(交叉のパーセンテージ)は0 ~ 100
@@ -39,6 +41,8 @@ class GeneticNetwork:
         self.__new_num = new_num
         self.__population = population
         self.__fitness_function = fitness_function
+        self.__keep = keep
+        self.__depth = depth
         self.__condition = self.__fitness_function.get_condition()
         self.genomes = list()
         self.fitness = None
@@ -55,7 +59,7 @@ class GeneticNetwork:
         :return:
         """
         for i in range(len(self.genomes)):
-            self.genomes[i].normalization()
+            self.genomes[i].normalization(keep=self.__keep, depth=self.__depth)
 
     def init_population(self):
         """

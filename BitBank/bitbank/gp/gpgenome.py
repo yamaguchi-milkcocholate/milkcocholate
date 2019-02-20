@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from bitbank.gp.node import Node
 from bitbank.exceptions.gpexception import NodeException
 import copy
@@ -85,14 +86,18 @@ class GPGenome:
         if not self.tree.mutate(node_id=node_id, condition=self.condition):
             raise NodeException('mutate: not found\nnode_id: ' + str(node_id))
 
-    def normalization(self):
+    def normalization(self, keep, depth):
         """
         正規化。拡張した枝刈り
+        :param keep:
+        :param depth:
         :return:
         """
         self.pruning_tree()
         r, rr, sr, er = self.true_route()
         self.pruning_tree_fill(success_route=sr)
+        r, rr, sr, er = self.true_route()
+        self.pruning_true_route(success_route=sr, keep=keep, depth=depth)
 
     def show_tree_map(self, name):
         g = Digraph(format='png')
@@ -166,9 +171,56 @@ class GPGenome:
             self.tree.false_node(node_id=dl)
         self.update_total()
 
-    def pruning_true_route(self, success_route):
+    def pruning_true_route(self, success_route, keep, depth):
         """
-        ルートを一つ削除する
+        ルートを少なくする
+        1. 深さを超えるルートを削除
+        2. 残ったルートからさらに減らす
         :param success_route:
+        :param keep: 残すルートの数
+        :param depth: 深さ
         :return:
         """
+        route_num = len(success_route)
+        exceed = [i for i in range(route_num) if len(success_route[i]) > depth]
+
+        # 削除しないルートのNODE ID
+        rem_r = [success_route[i] for i in range(route_num) if not (i in exceed)]
+        rem_r = [flatten for inner in rem_r for flatten in inner]
+        rem_r = list(set(rem_r))
+        # 削除するルートのNODE ID
+        del_r = [success_route[i] for i in range(route_num) if i in exceed]
+        del_r = [flatten for inner in del_r for flatten in inner]
+        del_r = list(set(del_r))
+
+        # 削除するNODE ID
+        del_n = [i for i in del_r if not (i in rem_r)]
+
+        for dl in del_n:
+            self.tree.false_node(node_id=dl)
+
+        success_route = [success_route[i] for i in range(route_num) if len(success_route[i]) <= depth]
+        route_num -= len(exceed)
+        del_num = route_num - keep
+        series = np.arange(0, route_num)
+        print(success_route)
+        print(len(success_route))
+        print(series)
+        if del_num > 0:
+            # 削除するルートのインデックス
+            select = np.random.choice(series, del_num, False)
+            # 削除しないルートのNODE ID
+            rem_r = [success_route[i] for i in range(route_num) if not (i in select)]
+            rem_r = [flatten for inner in rem_r for flatten in inner]
+            rem_r = list(set(rem_r))
+            # 削除するルートのNODE ID
+            del_r = [success_route[i] for i in range(route_num) if i in select]
+            del_r = [flatten for inner in del_r for flatten in inner]
+            del_r = list(set(del_r))
+
+            # 削除するNODE ID
+            del_n = [i for i in del_r if not (i in rem_r)]
+
+            for dl in del_n:
+                self.tree.false_node(node_id=dl)
+            self.update_total()
