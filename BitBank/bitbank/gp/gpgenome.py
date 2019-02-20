@@ -203,9 +203,6 @@ class GPGenome:
         route_num -= len(exceed)
         del_num = route_num - keep
         series = np.arange(0, route_num)
-        print(success_route)
-        print(len(success_route))
-        print(series)
         if del_num > 0:
             # 削除するルートのインデックス
             select = np.random.choice(series, del_num, False)
