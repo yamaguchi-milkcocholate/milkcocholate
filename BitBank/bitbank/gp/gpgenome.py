@@ -165,3 +165,10 @@ class GPGenome:
         for dl in dl_node_id:
             self.tree.false_node(node_id=dl)
         self.update_total()
+
+    def pruning_true_route(self, success_route):
+        """
+        ルートを一つ削除する
+        :param success_route:
+        :return:
+        """

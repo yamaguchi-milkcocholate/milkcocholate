@@ -6,7 +6,7 @@ class Node:
     MORE_THAN = 100
     LESS_THAN = 200
     EON = 300
-    MAX_DEPTH =6
+    MAX_DEPTH = 6
     LEAF = 20
     LEAF_OPERATION = 'operation'
 
