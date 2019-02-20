@@ -47,9 +47,9 @@ class Scheduler:
             print(e.get_message())
             self.__line(message="スケジューラーを停止しました。")
             sys.exit()
-        except:
+        except Exception as e:
             import traceback
             print(traceback.print_exc())
             self.__line(message="スケジューラーを停止しました。"
-                                "" + str(traceback.print_exc()))
+                                "" + str(e))
 

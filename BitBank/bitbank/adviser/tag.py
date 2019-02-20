@@ -33,7 +33,7 @@ class Tag(Adviser):
         self.fetch_count = 0
         self.__is_update_data = False
         self.__price_more_than_ema = None
-        self.__ema_price_trend_count = None
+        self.__ema_price_trend_count = 0
 
         self.tag_candlestick()
 
