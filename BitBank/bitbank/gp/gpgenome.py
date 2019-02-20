@@ -220,4 +220,4 @@ class GPGenome:
 
             for dl in del_n:
                 self.tree.false_node(node_id=dl)
-            self.update_total()
+        self.update_total()
