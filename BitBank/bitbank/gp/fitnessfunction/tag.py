@@ -68,7 +68,7 @@ class TagFitnessFunction(FitnessFunction):
                     buying_price = self.price(data_i=data_i)
                     is_second = False
         fitness = self.__fitness(success=success, fail=fail)
-        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.5f}'.format(fitness))
+        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(success / (success + fail)) + '  {:.5f}'.format(fitness))
         return fitness
 
     @staticmethod
@@ -84,7 +84,7 @@ class TagFitnessFunction(FitnessFunction):
         """
         trial = success + fail + 1
         w = (100 * math.exp(trial * 0.08)) / (100 + math.exp(trial * 0.08))
-        return (success / trial) * w
+        return 1 / 1000 * math.exp(10 * (success / trial)) * w
 
     def __buy_judge(self, data_i, buying_price, is_second, success, fail):
         """
