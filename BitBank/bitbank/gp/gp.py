@@ -47,6 +47,14 @@ class GeneticNetwork:
         self.genomes = list()
         self.fitness = None
 
+    def aggregate(self, genomes, steps):
+        self.genomes = genomes
+        self.calc_fitness()
+        for step_i in range(steps + 1):
+            print('No, ', step_i)
+            self.determine_next_generation()
+            self.calc_fitness()
+
     def additional_generation(self, steps):
         for step_i in range(steps + 1):
             print('No, ', step_i)

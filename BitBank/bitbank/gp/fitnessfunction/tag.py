@@ -68,7 +68,11 @@ class TagFitnessFunction(FitnessFunction):
                     buying_price = self.price(data_i=data_i)
                     is_second = False
         fitness = self.__fitness(success=success, fail=fail)
-        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(success / (success + fail)) + '  {:.5f}'.format(fitness))
+        if success + fail > 0:
+            rate = success / (success + fail)
+        else:
+            rate = 0
+        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(rate) + '  {:.5f}'.format(fitness))
         return fitness
 
     @staticmethod
