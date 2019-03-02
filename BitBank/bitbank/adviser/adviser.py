@@ -26,13 +26,14 @@ class Adviser(ABC):
         self.candlestick = self.make_price_data_frame()
 
     @abstractmethod
-    def operation(self, has_coin, is_waiting, buying_price, price=None):
+    def operation(self, has_coin, is_waiting, buying_price, waiting_price, price=None):
         """
         指示と取引価格を渡す。
         :param has_coin: bool
         :param price: None|float
         :param is_waiting: bool
         :param buying_price: float|None
+        :param waiting_price:
         :return: const int, float
         """
         pass

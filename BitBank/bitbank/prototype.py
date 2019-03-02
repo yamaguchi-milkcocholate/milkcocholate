@@ -25,14 +25,18 @@ class Prototype(Auto):
         self.order_ids = 0
         self.has_coin = False
         self.is_waiting = False
+        self.waiting_price = None
         self.log = log
 
     def __call__(self):
+        # 要求を確認
+        self.check_request()
         # 指示を受ける
         operation, price, order_type = self.adviser.operation(
             has_coin=self.has_coin,
             is_waiting=self.is_waiting,
-            buying_price=self.buying_price
+            buying_price=self.buying_price,
+            waiting_price=self.waiting_price
         )
 
         if operation == int(self.BUY):
@@ -63,6 +67,10 @@ class Prototype(Auto):
             pass
         else:
             raise SchedulerCancelException('operation fail')
+
+    def check_request(self):
+        self.waiting_price = None
+        self.is_waiting = False
 
     def buy(self, price, amount, order_type):
         self.new_orders(
@@ -111,6 +119,8 @@ class Prototype(Auto):
 
             self.new_order_message(order=order, retry=retry)
             self.order_ids += 1
+            self.waiting_price = price
+            self.is_waiting = True
             print()
             print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
         except Exception as e:
@@ -139,6 +149,8 @@ class Prototype(Auto):
             }
             self.cancel_order_message(result=result)
             self.order_ids = None
+            self.waiting_price = None
+            self.is_waiting = False
             order = Order.order(r=result)
             return order
         except Exception as e:

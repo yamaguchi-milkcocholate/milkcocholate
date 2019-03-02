@@ -9,17 +9,19 @@ class Tag(Adviser):
     BIDS = 'bids'
     PROFIT = 0.15
 
-    def __init__(self, ema_term, ma_term, directory):
+    def __init__(self, ema_term, ma_term, buy_directory, sell_directory):
         """
         :param ema_term:
         :param ma_term:
-        :param directory: 遺伝子を持つGeneticProgrammingオブジェクトファイル
+        :param buy_directory:
+        :param sell_directory:
         """
         super().__init__()
         # 設定
         self.ema_term = ema_term
         self.ma_term = ma_term
-        self.genome = read_file(directory=directory).get_elite_genome()
+        self.buy_genome = read_file(directory=buy_directory).get_elite_genome()
+        self.sell_genome = read_file(directory=sell_directory).get_elite_genome()
         # データ
         # 直近
         self.ma = None
@@ -37,7 +39,7 @@ class Tag(Adviser):
 
         self.tag_candlestick()
 
-    def operation(self, has_coin, is_waiting, buying_price, price=None):
+    def operation(self, has_coin, is_waiting, buying_price, waiting_price, price=None):
         if price is None:
             price = self.api_gateway.use_ticker(pair=self.pair)
             price = float(price['last'])
@@ -70,7 +72,8 @@ class Tag(Adviser):
             board=board,
             has_coin=has_coin,
             is_waiting=is_waiting,
-            buying_price=buying_price
+            buying_price=buying_price,
+            waiting_price=waiting_price
         )
 
         # 間隔更新
@@ -84,7 +87,7 @@ class Tag(Adviser):
         self.is_update_data(False)
         return operation, price, order_type
 
-    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board, has_coin, is_waiting, buying_price):
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board, has_coin, is_waiting, buying_price, waiting_price):
         """
         分析して指示を出す
         :param inc: float 傾き
@@ -96,70 +99,44 @@ class Tag(Adviser):
         :param has_coin: bool
         :param is_waiting: bool
         :param buying_price: float|None
+        :param waiting_price:
         :return: const int, float, const string
         """
-        operation = self.genome.operation(
-            inc=inc,
-            e=e,
-            ema_price_diff=ema_price_diff,
-            ema_ma_diff=ema_ma_diff,
-            ma_diff=ma_diff
-        )
-
-        if operation:
-            # 買い
-            if not has_coin and not is_waiting:
-                self.__buy_detail(
-                    ema_price_diff=ema_price_diff,
-                )
-                return self.BUY, board[0], self.TYPE_LIMIT
-            # 買いリトライ
-            elif not has_coin and not is_waiting:
-                self.__buy_detail(
-                    ema_price_diff=ema_price_diff,
-                )
-                return self.RETRY, board[0], self.TYPE_LIMIT
-            else:
-                pass
+        # 売り
+        if has_coin:
+            operation = self.sell_genome.operation(
+                inc=inc,
+                e=e,
+                ema_price_diff=ema_price_diff,
+                ema_ma_diff=ema_ma_diff,
+                ma_diff=ma_diff,
+                price=self.price - buying_price
+            )
+            if operation:
+                if is_waiting:
+                    if waiting_price < board[0]:
+                        return self.RETRY, board[0], self.TYPE_LIMIT
+                else:
+                    return self.SELL, board[0], self.TYPE_LIMIT
+        # 買い
         else:
-            # 売り (買いが完了)
-            if has_coin and not is_waiting:
-                return self.SELL, (buying_price + self.PROFIT), self.TYPE_LIMIT
-            # 売りリトライ
-            elif has_coin and is_waiting:
-                # 目標に到達できそうにないとき
-                if self.__ema_price_trend_count >= 1:
-                    return self.SELL, board[0], self.TYPE_MARKET
-            # ステイ
-            else:
-                pass
+            operation = self.buy_genome.operation(
+                inc=inc,
+                e=e,
+                ema_price_diff=ema_price_diff,
+                ema_ma_diff=ema_ma_diff,
+                ma_diff=ma_diff
+            )
+            if operation:
+                # リトライ
+                if is_waiting:
+                    if waiting_price > board[0]:
+                        return self.RETRY, board[0], self.TYPE_LIMIT
+                # 新規
+                else:
+                    return self.BUY, board[0], self.TYPE_LIMIT
 
         return self.STAY, None, None
-
-    def __buy_detail(self, ema_price_diff):
-        """
-        買い情報を記憶
-        :param ema_price_diff:
-        :return:
-        """
-        if ema_price_diff > 0:
-            self.__price_more_than_ema = True
-        else:
-            self.__price_more_than_ema = False
-        self.__ema_price_trend_count = 0
-
-    def __sell_detail(self, ema_price_diff):
-        """
-        売り情報を記憶
-        :param ema_price_diff:
-        :return:
-        """
-        if ema_price_diff > 0:
-            if not self.__price_more_than_ema:
-                self.__ema_price_trend_count += 1
-        else:
-            if self.__price_more_than_ema:
-                self.__ema_price_trend_count += 1
 
     def find_maker(self, side):
         """
