@@ -4,13 +4,15 @@ from bitbank.adviser.functions import *
 import math
 
 
-class TagFitnessFunction(FitnessFunction):
+class TagNextFitnessFunction(FitnessFunction):
 
-    def __init__(self, ema_term, ma_term, goal):
+    def __init__(self, ema_term, ma_term, goal, buy_genome, limit):
         super().__init__()
         self.ema_term = ema_term
         self.ma_term = ma_term
         self.goal = goal
+        self.buy_genome = buy_genome
+        self.limit = limit
         self.candlestick = load_data('15min', 'data_xrp')
         self.data = None
         self.ranges = dict()
@@ -39,24 +41,43 @@ class TagFitnessFunction(FitnessFunction):
         buying_price = None
         success = 0
         fail = 0
+        count = 0
         # PRICE > MA, PRICE > EMAになったらTrue
-        is_second = None
         for data_i in range(self.ma_term, data_size):
+            inc, e = self.ma_regression(data_i=data_i)
+            ma_diff = self.ma_diff(data_i=data_i)
             ema_price_diff = self.ema_price_diff(data_i=data_i)
             ema_ma_diff = self.ema_ma_diff(data_i=data_i)
             # 売りのタイミングを探る
             if is_check:
-                is_check, success, fail, buying_price, is_second = self.__buy_judge(
-                    data_i,
-                    buying_price,
-                    is_second,
-                    success,
-                    fail
-                )
-            else:
-                inc, e = self.ma_regression(data_i=data_i)
-                ma_diff = self.ma_diff(data_i=data_i)
+                count += 1
+                price = self.price(data_i)
                 r = genome.operation(
+                    inc=inc,
+                    e=e,
+                    ema_price_diff=ema_price_diff,
+                    ema_ma_diff=ema_ma_diff,
+                    ma_diff=ma_diff,
+                    price=price - buying_price
+                )
+                if r:
+                    success, fail = self.__sell_judge(
+                        buying_price,
+                        success,
+                        fail,
+                        price
+                    )
+                    is_check = False
+                    buying_price = None
+                    count = 0
+                if count >= self.limit:
+                    fail += 1
+                    is_check = False
+                    buying_price = None
+                    count = 0
+            # 買いのタイミングを探る
+            else:
+                r = self.buy_genome.operation(
                     inc=inc,
                     e=e,
                     ema_price_diff=ema_price_diff,
@@ -66,14 +87,21 @@ class TagFitnessFunction(FitnessFunction):
                 if r:
                     is_check = True
                     buying_price = self.price(data_i=data_i)
-                    is_second = False
         fitness = self.__fitness(success=success, fail=fail)
         if success + fail > 0:
             rate = success / (success + fail)
         else:
             rate = 0
-        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(rate) + '  {:.5f}'.format(fitness))
+        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(rate) + '  {:.5f}'.format(
+            fitness))
         return fitness
+
+    @staticmethod
+    def __sell_judge(buying_price, success, fail, price):
+        if buying_price >= price:
+            return success, fail + 1
+        else:
+            return success + 1, fail
 
     @staticmethod
     def __fitness(success, fail):
@@ -90,43 +118,6 @@ class TagFitnessFunction(FitnessFunction):
         w = (100 * math.exp(trial * 0.05)) / (100 + math.exp(trial * 0.05))
         return 1 / 1000 * math.exp(10 * (success / trial)) * w
 
-    def __buy_judge(self, data_i, buying_price, is_second, success, fail):
-        """
-        買いオペレーションが成功したかどうか
-        :param data_i:
-        :param buying_price:
-        :param is_second:
-        :param success:
-        :param fail:
-        :return:
-        """
-        price = float(self.data.loc[data_i, 'high'])
-        ma = float(self.data.loc[data_i, 'ma'])
-        ema = float(self.data.loc[data_i, 'ema'])
-
-        # すでに一度,PRICE > MA, PRICE > EMAになっている
-        if is_second:
-            # 成功
-            if (price > ma) and (price > ema) and (price > self.goal + buying_price):
-                return False, success + 1, fail, None, None
-            # 失敗
-            elif price < ma:
-                return False, success, fail + 1, None, None
-            # 審議中
-            else:
-                return True, success, fail, buying_price, True
-        else:
-            # 審議中(PRICE > MA, PRICE > EMAになった)
-            if (price > ma) and (price > ema):
-                # 一気に成功した時
-                if price > self.goal + buying_price:
-                    return False, success + 1, fail, None, None
-                else:
-                    return True, success, fail, buying_price, True
-            # 審議中(PRICE > MA, PRICE > EMAになってない)
-            else:
-                return True, success, fail, buying_price, False
-
     def feature_range(self):
         data_size = len(self.data)
         inc_list = list()
@@ -134,6 +125,7 @@ class TagFitnessFunction(FitnessFunction):
         ema_price_diff_list = list()
         ema_ma_diff_list = list()
         ma_diff_list = list()
+        price_list = list()
         for data_i in range(self.ma_term, data_size):
             inc, e = self.ma_regression(data_i=data_i)
             ema_price_diff = self.ema_price_diff(data_i=data_i)
@@ -144,12 +136,19 @@ class TagFitnessFunction(FitnessFunction):
             ema_price_diff_list.append(ema_price_diff)
             ema_ma_diff_list.append(ema_ma_diff)
             ma_diff_list.append(ma_diff)
+            price_list.append(self.price(data_i))
+        min_list = [min(price_list)] * len(price_list)
+
+        def norm(x, m):
+            return x - m
+        price_list = list(map(norm, price_list, min_list))
 
         self.__stats(name='inc', d_list=inc_list)
         self.__stats(name='e', d_list=e_list)
         self.__stats(name='ema_price_diff', d_list=ema_price_diff_list)
         self.__stats(name='ema_ma_diff', d_list=ema_ma_diff_list)
         self.__stats(name='ma_diff', d_list=ma_diff_list)
+        self.__stats(name='price', d_list=price_list)
 
     def __stats(self, name, d_list):
         print(name, end='')

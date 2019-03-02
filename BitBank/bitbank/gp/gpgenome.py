@@ -51,7 +51,10 @@ class GPGenome:
         ランダムなノードを返す
         :return: Node
         """
-        ids = random.randint(1, self.__total_node)
+        try:
+            ids = random.randint(1, self.__total_node)
+        except ValueError:
+            ids = 0
         result = self.tree.get_node(node_id=ids)
         if not result:
             self.show_tree()
@@ -77,12 +80,18 @@ class GPGenome:
         :param node:    Node
         :param node_id: integer(not 0)
         """
-        if not self.tree.put_node(node=node, node_id=node_id):
-            raise NodeException('put_node: not found')
+        if node_id == 0:
+            self.tree = node
+        else:
+            if not self.tree.put_node(node=node, node_id=node_id):
+                raise NodeException('put_node: not found')
         self.update_total()
 
     def mutate(self):
-        node_id = random.randint(1, self.__total_node)
+        try:
+            node_id = random.randint(1, self.__total_node)
+        except ValueError:
+            node_id = 0
         if not self.tree.mutate(node_id=node_id, condition=self.condition):
             raise NodeException('mutate: not found\nnode_id: ' + str(node_id))
 

@@ -51,3 +51,6 @@ class Aggregate:
             depth=self.depth
         )
         self.aggregated_gp.aggregate(genomes=genomes, steps=self.steps)
+
+    def get_elite_genome(self):
+        return self.aggregated_gp.get_elite_genome()
