@@ -1,0 +1,156 @@
+digraph {
+	node [shape=circle]
+	0 [label="e > 0.16406"]
+	2 [label="price > 0.08420"]
+	0 -> 2
+	76 [label=False]
+	2 -> 76
+	3 [label="ema_price_diff > 0.07442"]
+	2 -> 3
+	25 [label="ma_diff < 0.12577"]
+	3 -> 25
+	59 [label="ema_price_diff > 0.07442"]
+	25 -> 59
+	61 [label="ma_diff < 0.12577"]
+	59 -> 61
+	63 [label="ema_price_diff > 0.07442"]
+	61 -> 63
+	65 [label="ma_diff < 0.12577"]
+	63 -> 65
+	67 [label="price < 0.29704"]
+	65 -> 67
+	75 [label=False]
+	67 -> 75
+	68 [label="ema_ma_diff > 0.96914"]
+	67 -> 68
+	70 [label="inc < -0.14623"]
+	68 -> 70
+	72 [label="price < 2.05959"]
+	70 -> 72
+	74 [label=False]
+	72 -> 74
+	73 [label=True]
+	72 -> 73
+	71 [label=False]
+	70 -> 71
+	69 [label=False]
+	68 -> 69
+	66 [label=False]
+	65 -> 66
+	64 [label=False]
+	63 -> 64
+	62 [label=False]
+	61 -> 62
+	60 [label=False]
+	59 -> 60
+	26 [label="e < 0.20666"]
+	25 -> 26
+	58 [label=False]
+	26 -> 58
+	27 [label="ema_ma_diff > 0.96914"]
+	26 -> 27
+	29 [label="inc < -0.14623"]
+	27 -> 29
+	37 [label="ema_ma_diff > 0.96914"]
+	29 -> 37
+	39 [label="inc < -0.14623"]
+	37 -> 39
+	41 [label="ema_price_diff > 0.07442"]
+	39 -> 41
+	43 [label="ma_diff < 0.12577"]
+	41 -> 43
+	57 [label=False]
+	43 -> 57
+	44 [label="e < 0.20666"]
+	43 -> 44
+	50 [label="ema_ma_diff > 0.96914"]
+	44 -> 50
+	54 [label="inc < -0.14623"]
+	50 -> 54
+	56 [label=True]
+	54 -> 56
+	55 [label=False]
+	54 -> 55
+	51 [label="inc < -0.14623"]
+	50 -> 51
+	53 [label=False]
+	51 -> 53
+	52 [label=True]
+	51 -> 52
+	45 [label="ema_ma_diff > 0.96914"]
+	44 -> 45
+	47 [label="inc < -0.14623"]
+	45 -> 47
+	49 [label=True]
+	47 -> 49
+	48 [label=False]
+	47 -> 48
+	46 [label=True]
+	45 -> 46
+	42 [label=False]
+	41 -> 42
+	40 [label=False]
+	39 -> 40
+	38 [label=False]
+	37 -> 38
+	30 [label="inc < 0.29427"]
+	29 -> 30
+	32 [label="inc < -0.14623"]
+	30 -> 32
+	36 [label=False]
+	32 -> 36
+	33 [label="inc < -0.14623"]
+	32 -> 33
+	35 [label=False]
+	33 -> 35
+	34 [label=True]
+	33 -> 34
+	31 [label=False]
+	30 -> 31
+	28 [label=False]
+	27 -> 28
+	4 [label="ma_diff < 0.12577"]
+	3 -> 4
+	24 [label=False]
+	4 -> 24
+	5 [label="e < 0.20666"]
+	4 -> 5
+	23 [label=False]
+	5 -> 23
+	6 [label="ema_ma_diff > 0.96914"]
+	5 -> 6
+	8 [label="inc < -0.14623"]
+	6 -> 8
+	10 [label="price < 4.98091"]
+	8 -> 10
+	22 [label=False]
+	10 -> 22
+	11 [label="ema_ma_diff > 0.96914"]
+	10 -> 11
+	15 [label="inc < -0.14623"]
+	11 -> 15
+	17 [label="inc < -0.14623"]
+	15 -> 17
+	19 [label="inc < 0.29427"]
+	17 -> 19
+	21 [label=False]
+	19 -> 21
+	20 [label=True]
+	19 -> 20
+	18 [label=False]
+	17 -> 18
+	16 [label=False]
+	15 -> 16
+	12 [label="inc < -0.14623"]
+	11 -> 12
+	14 [label=False]
+	12 -> 14
+	13 [label=True]
+	12 -> 13
+	9 [label=False]
+	8 -> 9
+	7 [label=False]
+	6 -> 7
+	1 [label=False]
+	0 -> 1
+}
