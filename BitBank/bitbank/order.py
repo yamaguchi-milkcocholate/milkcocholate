@@ -17,8 +17,7 @@ class Order:
         self.remaining_amount = remaining_amount
         self.executed_amount = executed_amount
         self.average_price = average_price
-        self.ordered_at = datetime.fromtimestamp(
-            ordered_at / 1000).strftime("%Y-%m-%d %H:%M:%S")
+        self.ordered_at = ordered_at
         self.status = status
 
     def to_dict(self):

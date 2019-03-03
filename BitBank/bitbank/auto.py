@@ -60,7 +60,7 @@ class Auto:
         elif status == 'CANCELED_PARTIALLY_FILLED':
             japanese = '取消済(一部約定)'
         else:
-            japanese = None
+            japanese = 'None'
         return japanese
 
     def loss_cut_message(self):

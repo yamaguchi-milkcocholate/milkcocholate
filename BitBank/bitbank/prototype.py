@@ -38,7 +38,9 @@ class Prototype(Auto):
             buying_price=self.buying_price,
             waiting_price=self.waiting_price
         )
+        self.request(operation=operation, price=price, order_type=order_type)
 
+    def request(self, operation, price, order_type):
         if operation == int(self.BUY):
             line_ = 'BUY         : {:<10}'.format(price)
             over_write_file(directory='../15min/log/' + self.log, line_=line_)
@@ -122,7 +124,7 @@ class Prototype(Auto):
             self.waiting_price = price
             self.is_waiting = True
             print()
-            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
+            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + str(order.price))
         except Exception as e:
             print(e)
             self.error_message(message=e.args[0])
@@ -145,7 +147,8 @@ class Prototype(Auto):
                 'start_amount': 'hoge',
                 'executed_amount': 'hoge',
                 'remaining_amount': 'hoge',
-                'ordered_at': 'hoge'
+                'ordered_at': 'hoge',
+                'type': 'hoge'
             }
             self.cancel_order_message(result=result)
             self.order_ids = None
