@@ -42,13 +42,13 @@ class Prototype(Auto):
 
     def request(self, operation, price, order_type):
         if operation == int(self.BUY):
-            line_ = 'BUY         : {:<10}'.format(price)
-            over_write_file(directory='../15min/log/' + self.log, line_=line_)
+            line_ = 'BUY         : {:<10}\n'.format(price)
+            over_write_file(directory=self.log, line_=line_)
             self.buy(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.SELL):
-            line_ = 'SELL        : {:<10}'.format(price)
-            over_write_file(directory='../15min/log/' + self.log, line_=line_)
+            line_ = 'SELL        : {:<10}\n'.format(price)
+            over_write_file(directory=self.log, line_=line_)
             self.sell(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.RETRY):
@@ -58,12 +58,12 @@ class Prototype(Auto):
             )
             # 再要求
             if result.side == 'buy':
-                line_ = 'RETRY BUY  : {:<10}'.format(price)
-                over_write_file(directory='../15min/log/' + self.log, line_=line_)
+                line_ = 'RETRY BUY  : {:<10}\n'.format(price)
+                over_write_file(directory=self.log, line_=line_)
                 self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
             elif result.side == 'sell':
-                line_ = 'RETRY SELL : {:<10}'.format(price)
-                over_write_file(directory='../15min/log/' + self.log, line_=line_)
+                line_ = 'RETRY SELL : {:<10}\n'.format(price)
+                over_write_file(directory=self.log, line_=line_)
                 self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
         elif operation == int(self.STAY):
             pass

@@ -28,7 +28,7 @@ class TestPrototype(unittest.TestCase):
         bot = Prototype(
             adviser=adviser,
             pair='xrp_jpy',
-            log='test_01.txt'
+            log='../15min/log/test_01.txt'
         )
         bot.request(operation=bot.BUY, price=100, order_type=adviser.TYPE_LIMIT)
         bot.request(operation=bot.SELL, price=100, order_type=adviser.TYPE_LIMIT)

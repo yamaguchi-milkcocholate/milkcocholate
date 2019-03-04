@@ -8,7 +8,7 @@ adviser = Tag(ema_term=3, ma_term=6, buy_directory='15min/training/aggregate_gp_
 bot = Prototype(
     adviser=adviser,
     pair='xrp_jpy',
-    log='genome_01.txt'
+    log='15min/log/genome_01.txt'
 )
 
 scheduler = Scheduler(runner=bot)

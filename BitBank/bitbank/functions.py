@@ -89,7 +89,7 @@ def over_write_file(directory, line_):
     """
     ファイルを上書き(一行追加)
     :param directory: string
-    :param l: string
+    :param line_: string
     """
     with open(directory, 'a') as f:
         f.write(line_)
