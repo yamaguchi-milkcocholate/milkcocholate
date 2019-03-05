@@ -87,7 +87,7 @@ class TagFitnessFunction(FitnessFunction):
         :return:
         """
         trial = success + fail + 1
-        w = (100 * math.exp(trial * 0.05)) / (100 + math.exp(trial * 0.05))
+        w = (100 * math.exp(trial * 0.03)) / (100 + math.exp(trial * 0.03))
         return 1 / 1000 * math.exp(10 * (success / trial)) * w
 
     def __buy_judge(self, data_i, buying_price, is_second, success, fail):
