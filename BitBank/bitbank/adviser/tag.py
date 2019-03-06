@@ -9,12 +9,13 @@ class Tag(Adviser):
     BIDS = 'bids'
     PROFIT = 0.15
 
-    def __init__(self, ema_term, ma_term, buy_directory, sell_directory):
+    def __init__(self, ema_term, ma_term, buy_directory, sell_directory, price_range=0.1):
         """
         :param ema_term:
         :param ma_term:
         :param buy_directory:
         :param sell_directory:
+        :param price_range:
         """
         super().__init__()
         # 設定
@@ -22,6 +23,7 @@ class Tag(Adviser):
         self.ma_term = ma_term
         self.buy_genome = read_file(directory=buy_directory).get_elite_genome()
         self.sell_genome = read_file(directory=sell_directory).get_elite_genome()
+        self.price_range = price_range
         # データ
         # 直近
         self.ma = None
@@ -34,8 +36,6 @@ class Tag(Adviser):
         # 作業
         self.fetch_count = 0
         self.__is_update_data = False
-        self.__price_more_than_ema = None
-        self.__ema_price_trend_count = 0
 
         self.tag_candlestick()
 
@@ -58,36 +58,51 @@ class Tag(Adviser):
         print('ema price diff: {:.5f}'.format(ema_price_diff))
         print('ema ma diff   : {:.5f}'.format(ema_ma_diff))
         print('ma diff       : {:.5f}'.format(ma_diff))
-        if has_coin:
-            board = self.find_maker(side=self.ASKS)
-        else:
-            board = self.find_maker(side=self.BIDS)
-
-        operation, price, order_type = self.analysis(
-            inc=inc,
-            e=e,
-            ema_price_diff=ema_price_diff,
-            ema_ma_diff=ema_ma_diff,
-            ma_diff=ma_diff,
-            board=board,
-            has_coin=has_coin,
-            is_waiting=is_waiting,
-            buying_price=buying_price,
-            waiting_price=waiting_price
-        )
-
         # 間隔更新
         self.fetch_count += 0
         if self.fetch_count >= 15:
             self.fetch_count = 0
             self.update_data()
             self.update_ma_list()
-            self.update_ma_list()
+            self.update_ema_list()
 
         self.is_update_data(False)
-        return operation, price, order_type
 
-    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, board, has_coin, is_waiting, buying_price, waiting_price):
+        # 複数分析
+        if has_coin:
+            board = self.find_maker(side=self.ASKS)
+            board = [i for i in board if i <= (board[0] + self.price_range)]
+        else:
+            board = self.find_maker(side=self.BIDS)
+            board = [i for i in board if i >= (board[0] - self.price_range)]
+
+        for price in board:
+            guess_ma = self.guess_ma(price=price)
+            guess_ema = self.guess_ema(price=price)
+            inc, e = self.guess_ma_regression(guess_ma=guess_ma)
+            ema_price_diff = self.guess_ema_price_diff(ema=guess_ema, price=price)
+            ema_ma_diff = self.guess_ema_ma_diff(ema=guess_ema, ma=guess_ma)
+            ma_diff = self.guess_ma_diff(guess_ma=guess_ma)
+
+            operation, order_price, order_type = self.analysis(
+                inc=inc,
+                e=e,
+                ema_price_diff=ema_price_diff,
+                ema_ma_diff=ema_ma_diff,
+                ma_diff=ma_diff,
+                price=price,
+                has_coin=has_coin,
+                is_waiting=is_waiting,
+                buying_price=buying_price,
+                waiting_price=waiting_price
+            )
+            if operation != self.STAY:
+                print('PRICE: {:.5f} 1'.format(price))
+                return operation, order_price, order_type
+
+        return self.STAY, None, None
+
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, price, has_coin, is_waiting, buying_price, waiting_price):
         """
         分析して指示を出す
         :param inc: float 傾き
@@ -95,7 +110,7 @@ class Tag(Adviser):
         :param ema_price_diff: float PRICEとEMA
         :param ema_ma_diff: float MAとEMA
         :param ma_diff: 直前のMAの傾き
-        :param board: list 板情報
+        :param price: 価格
         :param has_coin: bool
         :param is_waiting: bool
         :param buying_price: float|None
@@ -114,10 +129,10 @@ class Tag(Adviser):
             )
             if operation:
                 if is_waiting:
-                    if waiting_price < board[0]:
-                        return self.RETRY, board[0], self.TYPE_LIMIT
+                    if waiting_price < price:
+                        return self.RETRY, price, self.TYPE_LIMIT
                 else:
-                    return self.SELL, board[0], self.TYPE_LIMIT
+                    return self.SELL, price, self.TYPE_LIMIT
         # 買い
         else:
             operation = self.buy_genome.operation(
@@ -130,13 +145,42 @@ class Tag(Adviser):
             if operation:
                 # リトライ
                 if is_waiting:
-                    if waiting_price > board[0]:
-                        return self.RETRY, board[0], self.TYPE_LIMIT
+                    if waiting_price > price:
+                        return self.RETRY, price, self.TYPE_LIMIT
                 # 新規
                 else:
-                    return self.BUY, board[0], self.TYPE_LIMIT
+                    return self.BUY, price, self.TYPE_LIMIT
 
         return self.STAY, None, None
+
+    def guess_ma(self, price):
+        return simple_moving_average(data=np.append(self.data, price), term=self.ma_term)[0]
+
+    def guess_ema(self, price):
+        return self.ema_list[-1] + (2 / (self.ema_term + 1)) * (price - self.ema_list[-1])
+
+    def guess_ma_diff(self, guess_ma):
+        return guess_ma - self.ma_list[-1]
+
+    def guess_ma_regression(self, guess_ma):
+        ma_list = np.append(self.ma_list, guess_ma)
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(ma_list))
+        w = linear_regression(x=x, t=ma_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - ma_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
+
+    @staticmethod
+    def guess_ema_price_diff(ema, price):
+        return ema - price
+
+    @staticmethod
+    def guess_ema_ma_diff(ema, ma):
+        return ema - ma
 
     def find_maker(self, side):
         """
@@ -181,22 +225,6 @@ class Tag(Adviser):
         self.ema = ema[-1]
         self.data = self.candlestick.end.values.astype(float)[-1 * self.ma_term + 1:]
 
-    def guess_price_ma(self, ma):
-        """
-        MAを入力して、PRICEを出力
-        :param ma: MA
-        :return: PRICE
-        """
-        return self.ma_term * ma - np.sum(self.data)
-
-    def guess_price_ema(self, ema):
-        """
-        EMAを入力して、PRICEを出力
-        :return:
-        """
-        ema_n_1 = self.ema_list[-1]
-        return ema_n_1 + ((self.ema_term - 1) / 2)(ema - ema_n_1)
-
     def ma_diff(self):
         """
         MAの直前の傾き
@@ -209,12 +237,13 @@ class Tag(Adviser):
         ~n-1の線形回帰直線と二乗和誤差
         :return: 傾き, 誤差
         """
+        ma_list = np.append(self.ma_list, self.ma)
         poly = Polynomial(dim=2)
-        x = np.arange(start=0, stop=len(self.ma_list))
-        w = linear_regression(x=x, t=self.ma_list, basic_function=poly)
+        x = np.arange(start=0, stop=len(ma_list))
+        w = linear_regression(x=x, t=ma_list, basic_function=poly)
         poly.set_coefficient(w=w)
         reg = np.asarray([poly.func(x=i) for i in range(len(x))])
-        e = reg - self.ma_list
+        e = reg - ma_list
         e = e * e.T
         e = np.sum(e)
         return w[1], e

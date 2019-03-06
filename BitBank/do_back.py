@@ -5,9 +5,9 @@ import sys
 from bitbank.functions import write_file, read_file
 sys.setrecursionlimit(100000)
 
-fitness_function = TagFitnessFunction(ema_term=6, ma_term=6, goal=0.1)
+fitness_function = TagFitnessFunction(ema_term=4, ma_term=8, goal=0.1, data='5min')
 aggregate = Aggregate(
-    gp_num=5,
+    gp_num=3,
     mutation=5,
     cross=50,
     elite_num=3,
@@ -16,7 +16,7 @@ aggregate = Aggregate(
     fitness_function=fitness_function,
     keep=10,
     depth=15,
-    steps=200
+    steps=100
 )
 
 """
@@ -36,4 +36,4 @@ gp.generation(steps=300)
 #gp.additional_generation(steps=200)
 """
 
-write_file(directory='15min/training/aggregate_gp_04.pkl', obj=aggregate)
+write_file(directory='5min/training/aggregate_gp_01.pkl', obj=aggregate)

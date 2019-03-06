@@ -8,7 +8,7 @@ sys.setrecursionlimit(100000)
 gp = read_file(directory='15min/training/aggregate_gp_04.pkl')
 buy_genome = gp.get_elite_genome()
 
-fitness_function = TagNextFitnessFunction(ema_term=6, ma_term=6, goal=0.1, buy_genome=buy_genome, limit=50)
+fitness_function = TagNextFitnessFunction(ema_term=6, ma_term=6, goal=0.1, buy_genome=buy_genome, limit=50, data='15min')
 
 gp = GeneticNetwork(
     mutation=5,
@@ -26,4 +26,4 @@ gp.generation(steps=200)
 # gp.additional_generation(steps=200)
 
 
-write_file(directory='15min/training/gp_next_06.pkl', obj=gp)
+write_file(directory='15min/training/gp_next_07.pkl', obj=gp)

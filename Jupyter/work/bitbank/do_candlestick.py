@@ -5,7 +5,7 @@ save_candle_data = savecandlestick.SaveCandlestick()
 start_day = '20190201'
 finish_day = '20190302'
 pair = 'xrp_jpy'
-timespace = '15min'
+timespace = '5min'
 folder = 'data_xrp'
 save_candle_data.save_candlestick(
     timespace=timespace,

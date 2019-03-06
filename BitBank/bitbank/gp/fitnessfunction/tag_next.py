@@ -6,14 +6,14 @@ import math
 
 class TagNextFitnessFunction(FitnessFunction):
 
-    def __init__(self, ema_term, ma_term, goal, buy_genome, limit):
+    def __init__(self, ema_term, ma_term, goal, buy_genome, limit, data):
         super().__init__()
         self.ema_term = ema_term
         self.ma_term = ma_term
         self.goal = goal
         self.buy_genome = buy_genome
         self.limit = limit
-        self.candlestick = load_data('15min', 'data_xrp')
+        self.candlestick = load_data(data, 'data_xrp')
         self.data = None
         self.ranges = dict()
         self.make_data_frame()
@@ -96,9 +96,8 @@ class TagNextFitnessFunction(FitnessFunction):
             fitness))
         return fitness
 
-    @staticmethod
-    def __sell_judge(buying_price, success, fail, price):
-        if buying_price >= price:
+    def __sell_judge(self, buying_price, success, fail, price):
+        if buying_price + self.goal >= price:
             return success, fail + 1
         else:
             return success + 1, fail
@@ -115,7 +114,7 @@ class TagNextFitnessFunction(FitnessFunction):
         :return:
         """
         trial = success + fail + 1
-        w = (100 * math.exp(trial * 0.05)) / (100 + math.exp(trial * 0.05))
+        w = (100 * math.exp(trial * 0.07)) / (100 + math.exp(trial * 0.07))
         return 1 / 1000 * math.exp(10 * (success / trial)) * w
 
     def feature_range(self):

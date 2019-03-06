@@ -6,12 +6,12 @@ import math
 
 class TagFitnessFunction(FitnessFunction):
 
-    def __init__(self, ema_term, ma_term, goal):
+    def __init__(self, ema_term, ma_term, goal, data):
         super().__init__()
         self.ema_term = ema_term
         self.ma_term = ma_term
         self.goal = goal
-        self.candlestick = load_data('15min', 'data_xrp')
+        self.candlestick = load_data(data, 'data_xrp')
         self.data = None
         self.ranges = dict()
         self.make_data_frame()
