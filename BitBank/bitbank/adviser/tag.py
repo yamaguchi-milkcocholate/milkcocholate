@@ -53,6 +53,10 @@ class Tag(Adviser):
         ema_price_diff = self.ema_price_diff()
         ema_ma_diff = self.ema_ma_diff()
         ma_diff = self.ma_diff()
+        print('price         : {:.5f}'.format(self.price))
+        print('ema           : {:.5f}'.format(self.ema))
+        print('ma            : {:.5f}'.format(self.ma))
+
         print('inc           : {:.5f}'.format(inc))
         print('e             : {:.5f}'.format(e))
         print('ema price diff: {:.5f}'.format(ema_price_diff))
@@ -60,7 +64,7 @@ class Tag(Adviser):
         print('ma diff       : {:.5f}'.format(ma_diff))
         # 間隔更新
         self.fetch_count += 0
-        if self.fetch_count >= 15:
+        if self.fetch_count >= 60:
             self.fetch_count = 0
             self.update_data()
             self.update_ma_list()
