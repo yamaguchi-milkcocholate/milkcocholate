@@ -122,6 +122,14 @@ class Auto:
         message.replace('n', '%0D%0A')
         self.__line(message=message)
 
+    def contract_order_message(self):
+        message = "約定しました。\n" \
+                  "===================\n" \
+                  "時刻: {}\n" \
+                  "===================".format(str(now))
+        message.replace('n', '%0D%0A')
+        self.__line(message=message)
+
     def __operation_to_side(self, operation):
         if operation == int(self.BUY):
             return 'buy'

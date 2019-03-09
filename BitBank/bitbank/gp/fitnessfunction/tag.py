@@ -101,10 +101,20 @@ class TagFitnessFunction(FitnessFunction):
         :return:
         """
         price = float(self.data.loc[data_i, 'high'])
-        ma = float(self.data.loc[data_i, 'ma'])
-        ema = float(self.data.loc[data_i, 'ema'])
+        # ma = float(self.data.loc[data_i, 'ma'])
+        # ema = float(self.data.loc[data_i, 'ema'])
+        low = float(self.data.loc[data_i, 'low'])
 
-        # すでに一度,PRICE > MA, PRICE > EMAになっている
+        if price > self.goal + buying_price:
+            return False, success + 1, fail, None, None
+        else:
+            if low < buying_price - 0.1:
+                return False, success, fail + 1, None, None
+            else:
+                return True, success, fail, buying_price, True
+
+        # すでに一度,PRICE > MA, PRICE >
+        """
         if is_second:
             # 成功
             if (price > ma) and (price > ema) and (price > self.goal + buying_price):
@@ -126,6 +136,7 @@ class TagFitnessFunction(FitnessFunction):
             # 審議中(PRICE > MA, PRICE > EMAになってない)
             else:
                 return True, success, fail, buying_price, False
+        """
 
     def feature_range(self):
         data_size = len(self.data)

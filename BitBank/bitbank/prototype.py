@@ -2,6 +2,7 @@ from bitbank.functions import *
 from bitbank.exceptions.schedcancel import SchedulerCancelException
 from bitbank.order import Order
 from bitbank.auto import Auto
+from bitbank.apigateway import ApiGateway
 
 
 class Prototype(Auto):
@@ -27,6 +28,7 @@ class Prototype(Auto):
         self.is_waiting = False
         self.waiting_price = None
         self.log = log
+        self.api_gateway = ApiGateway()
 
     def __call__(self):
         # 要求を確認
@@ -71,8 +73,20 @@ class Prototype(Auto):
             raise SchedulerCancelException('operation fail')
 
     def check_request(self):
-        self.waiting_price = None
-        self.is_waiting = False
+        if self.is_waiting:
+            price = float(self.api_gateway.use_ticker(pair=self.pair)['last'])
+            # 売り
+            if self.has_coin:
+                if self.waiting_price <= price:
+                    self.waiting_price = None
+                    self.is_waiting = False
+                    self.contract_order_message()
+            # 買い
+            else:
+                if self.waiting_price >= price:
+                    self.waiting_price = None
+                    self.is_waiting = False
+                    self.contract_order_message()
 
     def buy(self, price, amount, order_type):
         self.new_orders(
@@ -151,7 +165,7 @@ class Prototype(Auto):
                 'type': 'hoge'
             }
             self.cancel_order_message(result=result)
-            self.order_ids = None
+            self.order_ids -= 1
             self.waiting_price = None
             self.is_waiting = False
             order = Order.order(r=result)

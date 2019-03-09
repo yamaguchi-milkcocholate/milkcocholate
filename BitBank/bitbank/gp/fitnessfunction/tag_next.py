@@ -41,6 +41,8 @@ class TagNextFitnessFunction(FitnessFunction):
         buying_price = None
         success = 0
         fail = 0
+        s = 0
+        f = 0
         count = 0
         # PRICE > MA, PRICE > EMAになったらTrue
         for data_i in range(self.ma_term, data_size):
@@ -61,11 +63,13 @@ class TagNextFitnessFunction(FitnessFunction):
                     price=price - buying_price
                 )
                 if r:
-                    success, fail = self.__sell_judge(
+                    success, fail, s, f = self.__sell_judge(
                         buying_price,
                         success,
                         fail,
-                        price
+                        price,
+                        s,
+                        f
                     )
                     is_check = False
                     buying_price = None
@@ -87,23 +91,29 @@ class TagNextFitnessFunction(FitnessFunction):
                 if r:
                     is_check = True
                     buying_price = self.price(data_i=data_i)
-        fitness = self.__fitness(success=success, fail=fail)
+        fitness = self.__fitness(success=success, fail=fail, s=s, f=f)
+        if s + f > 0:
+            r = s / (s + f)
+        else:
+            r = 0
         if success + fail > 0:
             rate = success / (success + fail)
         else:
             rate = 0
-        print('{:>5}'.format(success) + '/{:<5}'.format(success + fail) + '  {:.3f}'.format(rate) + '  {:.5f}'.format(
+        print('{:>5}'.format(s) + '/{:<5}'.format(s + f) + '  {:.3f}'.format(r) + '  {:.5f}'.format(rate) + '  {:.5f}'.format(
             fitness))
         return fitness
 
-    def __sell_judge(self, buying_price, success, fail, price):
-        if buying_price + self.goal >= price:
-            return success, fail + 1
+    def __sell_judge(self, buying_price, success, fail, price, s, f):
+        if buying_price + self.goal <= price:
+            return success + 10, fail, s + 1, f
+        elif buying_price > price:
+            return success + 1, fail, s + 1, f
         else:
-            return success + 1, fail
+            return success, fail + 10, s, f + 1
 
     @staticmethod
-    def __fitness(success, fail):
+    def __fitness(success, fail, s, f):
         """
         適応度を計算
         試行回数に重みをつける
@@ -113,9 +123,10 @@ class TagNextFitnessFunction(FitnessFunction):
         :param fail:
         :return:
         """
+        t = s + f + 1
         trial = success + fail + 1
-        w = (100 * math.exp(trial * 0.07)) / (100 + math.exp(trial * 0.07))
-        return 1 / 1000 * math.exp(10 * (success / trial)) * w
+        w = (100 * math.exp(t * 0.05)) / (100 + math.exp(t * 0.05))
+        return math.exp((success / trial)) * w
 
     def feature_range(self):
         data_size = len(self.data)
