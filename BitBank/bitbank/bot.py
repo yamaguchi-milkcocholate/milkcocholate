@@ -6,105 +6,104 @@ from bitbank.auto import Auto
 
 
 class Bot(Auto):
-    DIVIDE_ORDER = 1
-    PRICE_LIMIT = 3.0
-
-    MANAGE_AMOUNT = 180000
-    COMMISSION = 0.0015
+    MANAGE_AMOUNT = 200000
     LOSS_CUT_PRICE = 0.5
 
-    BUY_FAIL = 0.02
-    SELL_FAIL = 0.02
-
-    def __init__(self, adviser, pair, api_key, api_secret):
+    def __init__(self, adviser, pair, api_key, api_secret, log):
         """
         :param adviser:       bitbank.adviser テクニカル分析結果から売却の指示をするクラスのインスタンス
         :param pair:          string          通貨のペア
         :param api_key:       string          APIキー
         :param api_secret     string          APIシークレットキー
+        :param log
         """
         super().__init__(adviser=adviser, pair=pair, api_key=api_key, api_secret=api_secret)
+        self.order_id = 0
+        self.has_coin = False
+        self.is_waiting = False
+        self.waiting_price = None
+        self.log = log
 
     def __call__(self):
-        # 注文の情報を確認
-        orders = self.fetch_orders()
+        # 要求を確認
+        self.check_request()
+        # 指示を受ける
+        operation, price, order_type = self.adviser.operation(
+            has_coin=self.has_coin,
+            is_waiting=self.is_waiting,
+            buying_price=self.buying_price,
+            waiting_price=self.waiting_price
+        )
+        self.request(operation=operation, price=price, order_type=order_type)
 
+    def check_request(self):
         # 注文があった場合
-        if orders is not False:
-            # 約定していない注文をキャンセル(その後リストから削除)。成立していればリストから削除
-            for order_id in orders:
-                # 約定注文
-                if orders[order_id].status == 'FULLY_FILLED':
-                    # リストから削除
-                    self.order_ids = None
-                # 注文中
-                else:
-                    # オーダーをキャンセルしない
-                    price = self.fetch_price()
-                    # 買い損ねたとき
-                    if float(orders[order_id].price) + self.BUY_FAIL <= price and orders[order_id].side == 'buy':
-                        self.cancel_orders(order_id=order_id)
-                    elif float(orders[order_id].price) - self.SELL_FAIL >= price and orders[order_id].side == 'sell':
-                        self.cancel_orders(order_id=order_id)
+        if self.is_waiting:
+            # 注文の情報を確認
+            order = self.fetch_order()
+            if order.status == 'FULLY_FILLED':
+                # 削除
+                self.order_id = None
+                self.waiting_price = None
+                self.is_waiting = False
+            # 注文中
+            else:
+                pass
 
-        # アセットを読み込む
+    def request(self, operation, price, order_type):
         assets_free_amount = self.fetch_asset()
+        # 損切
+        self.loss_cut(assets_free_amount[self.coin])
+        if operation == int(self.BUY):
+            line_ = 'BUY         : {:<10}'.format(price) + now() + '\n'
+            over_write_file(directory=self.log, line_=line_)
+            amount = float(self.MANAGE_AMOUNT / price)
+            self.buy(price=price, amount=amount, order_type=order_type)
 
-        # 損切り
-        self.loss_cut(float(assets_free_amount[self.coin]))
+        elif operation == int(self.SELL):
+            line_ = 'SELL        : {:<10}'.format(price) + now() + '\n'
+            over_write_file(directory=self.log, line_=line_)
+            amount = float(assets_free_amount[self.coin])
+            self.sell(price=price, amount=amount, order_type=order_type)
 
-        # データを更新
-        self.adviser.fetch_recent_data()
-
-        # 日本円があるとき、新規注文する
-        if float(assets_free_amount[self.yen]) > self.MANAGE_AMOUNT:
-            operation, price = self.adviser.operation(
-                has_coin=False
+        elif operation == int(self.RETRY):
+            # キャンセル
+            result = self.cancel_orders(
+                order_id=self.order_id
             )
-            # STAYではないとき
-            if operation == int(self.BUY):
-                # 新規注文
-                if self.can_order():
-                    side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='bids')
-                    for i in range(self.DIVIDE_ORDER):
-                        amount = float(self.MANAGE_AMOUNT / price / self.DIVIDE_ORDER)
-                        self.new_orders(
-                            price=candidate[i],
-                            amount=amount,
-                            side=side,
-                            order_type=self.TYPE_LIMIT
-                        )
-                    self.buying_price = price
-                else:
-                    raise SchedulerCancelException('price belows the limit. ')
-            else:
-                pass
+            # 再要求
+            if result.side == 'buy':
+                line_ = 'RETRY BUY  : {:<10}'.format(price) + now() + '\n'
+                over_write_file(directory=self.log, line_=line_)
+                self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
+            elif result.side == 'sell':
+                line_ = 'RETRY SELL : {:<10}'.format(price) + now() + '\n'
+                over_write_file(directory=self.log, line_=line_)
+                self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
+        elif operation == int(self.STAY):
+            pass
+        else:
+            raise SchedulerCancelException('operation fail')
 
-        # コインがあるとき、新規注文する
-        if float(assets_free_amount[self.coin]) > 0:
-            operation, price = self.adviser.operation(
-                has_coin=True
-            )
-            # STAYではないとき
-            if operation == int(self.SELL):
-                # 新規注文
-                if self.can_order():
-                    side = self.__operation_to_side(operation=operation)
-                    candidate = self.find_maker(side='asks')
-                    for i in range(self.DIVIDE_ORDER):
-                        self.new_orders(
-                            price=candidate[i],
-                            amount=(float(assets_free_amount[self.coin]) / self.DIVIDE_ORDER),
-                            side=side,
-                            order_type=self.TYPE_LIMIT
-                        )
-                    self.buying_price = None
-                else:
-                    raise SchedulerCancelException('price belows the limit. ')
+    def buy(self, price, amount, order_type):
+        self.new_orders(
+            price=price,
+            amount=amount,
+            side='buy',
+            order_type=order_type
+        )
+        self.buying_price = price
+        self.has_coin = True
 
-            else:
-                pass
+    def sell(self, price, amount, order_type):
+        self.new_orders(
+            price=price,
+            amount=amount,
+            side='sell',
+            order_type=order_type
+        )
+        self.buying_price = None
+        self.has_coin = False
 
     def loss_cut(self, coin):
         price = self.fetch_price()
@@ -120,36 +119,6 @@ class Bot(Auto):
                     order_type=self.TYPE_MARKET
                 )
                 raise SchedulerCancelException("loss cut")
-
-    def find_maker(self, side):
-        """
-        Maker手数料の候補を返す
-        :return: list 取引値に近い順
-        """
-        result = self.api_gateway.use_depth(pair=self.pair)
-        result = np.asarray(result[side], dtype=float)
-        result = result[0:, 0]
-        if side == 'asks':
-            # 売り側
-            # 小さい
-            head = result[0]
-            # 大きい
-            tail = result[-1]
-        elif side == 'bids':
-            # 買い側
-            # 大きい
-            tail = result[0]
-            # 小さい
-            head = result[-1]
-        else:
-            raise TypeError('in find_maker')
-        mask = np.arange(start=head, stop=tail, step=0.001, dtype=np.float64)
-        mask = np.round(mask, decimals=3)
-        result = np.round(result, decimals=3)
-        inter_diff = np.setdiff1d(mask, result)
-        if side == 'bids':
-            inter_diff = inter_diff[::-1]
-        return inter_diff
 
     def fetch_asset(self):
         """
@@ -198,9 +167,11 @@ class Bot(Auto):
             order = Order.order(r=result)
 
             self.new_order_message(order=order, retry=retry)
-            self.order_ids = result['order_id']
+            self.order_id = result['order_id']
+            self.waiting_price = price
+            self.is_waiting = True
             print()
-            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + order.price)
+            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + str(order.price))
         except Exception as e:
             print(e)
             if '60002' in e.args[0]:
@@ -240,17 +211,13 @@ class Bot(Auto):
                 order_id=order_id
             )
             self.cancel_order_message(result=result)
-            self.order_ids = None
+            self.order_id = None
+            self.waiting_price = None
+            self.is_waiting = False
+            # Orderインスタンス化
+            order = Order.order(r=result)
+            return order
 
-            # 売り注文だったら成り行きで売り払う
-            if result['side'] == 'sell':
-                self.market_selling_message()
-                self.new_orders(
-                    price=result['price'],
-                    amount=result['remaining_amount'],
-                    side='sell',
-                    order_type=self.TYPE_MARKET,
-                )
         except Exception as e:
             print(e)
             if '50010'in e.args[0]:
@@ -258,66 +225,31 @@ class Bot(Auto):
             else:
                 raise SchedulerCancelException('Fail to cancel order')
 
-    def fetch_orders(self):
+    def fetch_order(self):
         """
         現在の注文の状況を確認する
-        :return: False | list  注文が存在すればその情報、なければFalse
-        {
-            'order_id_1': bitbank.order.Order,
-            'order_id_2': bitbank.order.Order,
-        }
+        :return: False | Order  注文が存在すればその情報、なければFalse
         """
-        if self.order_ids is None:
+        if self.order_id is None:
             return False
-        results = self.api_gateway.use_orders_info(
+        result = self.api_gateway.use_order(
             pair=self.pair,
-            order_ids=[self.order_ids]
+            order_ids=self.order_id
         )
-        if results['orders'] is None:
+        if result is None:
             raise SchedulerCancelException('Fail to get orders information')
 
-        orders = dict()
-        for result in results['orders']:
-            order = Order(
-                order_id=result['order_id'],
-                pair=result['pair'],
-                side=result['side'],
-                type=result['type'],
-                price=result['price'],
-                start_amount=result['start_amount'],
-                remaining_amount=result['remaining_amount'],
-                executed_amount=result['executed_amount'],
-                average_price=result['average_price'],
-                ordered_at=result['ordered_at'],
-                status=result['status']
-            )
-            orders[result['order_id']] = order
-        return orders
-
-    def can_order(self):
-        """
-        開始時よりも価格が大幅に下がった時に強制終了させるためのメソッド
-        :return: bool:
-        """
-        price = self.fetch_price()
-        if price >= (self.__start_price - self.PRICE_LIMIT):
-            return True
-        else:
-            # 全てのコインを売る
-            assets_free_amount = self.fetch_asset()
-            self.new_orders(
-                price=price,
-                amount=assets_free_amount[self.coin],
-                side='sell',
-                order_type=self.TYPE_MARKET
-            )
-            message = "開始時の価格を大きく下回りました。\n" \
-                      "取引を中止します。 \n" \
-                      "===================\n" \
-                      "時刻: {}\n" \
-                      "===================".format(
-                       now()
-                       )
-            message.replace('n', '%0D%0A')
-            self.__line(message=message)
-            return False
+        order = Order(
+            order_id=result['order_id'],
+            pair=result['pair'],
+            side=result['side'],
+            type=result['type'],
+            price=result['price'],
+            start_amount=result['start_amount'],
+            remaining_amount=result['remaining_amount'],
+            executed_amount=result['executed_amount'],
+            average_price=result['average_price'],
+            ordered_at=result['ordered_at'],
+            status=result['status']
+        )
+        return order

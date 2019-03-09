@@ -126,7 +126,7 @@ class Auto:
         message = "約定しました。\n" \
                   "===================\n" \
                   "時刻: {}\n" \
-                  "===================".format(str(now))
+                  "===================".format(now)
         message.replace('n', '%0D%0A')
         self.__line(message=message)
 

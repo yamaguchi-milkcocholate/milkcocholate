@@ -128,6 +128,32 @@ class ApiGateway:
             order_id=order_id
         )
 
+    def use_order(self, pair, order_id):
+        """
+        :param pair:
+        :param order_id:
+        :return:
+        {
+            "order_id": 0,
+            "pair": "string",
+            "side": "string",
+            "type": "string",
+            "start_amount": "string",
+            "remaining_amount": "string",
+            "executed_amount": "string",
+            "price": "string",
+            "average_price": "string",
+            "ordered_at": 0,
+            "status": "string"
+          }
+        """
+        if self.__pri is None:
+            raise Exception('Private API is closed')
+        return self.__pri.get_order(
+            pair=pair,
+            order_id=order_id
+        )
+
     def use_orders_info(self, pair, order_ids):
         """
         BitBankの注文情報

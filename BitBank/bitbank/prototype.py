@@ -6,7 +6,6 @@ from bitbank.apigateway import ApiGateway
 
 
 class Prototype(Auto):
-
     DIVIDE_ORDER = 1
     PRICE_LIMIT = 3.0
 
@@ -23,7 +22,7 @@ class Prototype(Auto):
         :param log:
         """
         super().__init__(adviser=adviser, pair=pair)
-        self.order_ids = 0
+        self.order_id = 0
         self.has_coin = False
         self.is_waiting = False
         self.waiting_price = None
@@ -44,27 +43,27 @@ class Prototype(Auto):
 
     def request(self, operation, price, order_type):
         if operation == int(self.BUY):
-            line_ = 'BUY         : {:<10}\n'.format(price)
+            line_ = 'BUY         : {:<10}'.format(price) + now() + '\n'
             over_write_file(directory=self.log, line_=line_)
             self.buy(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.SELL):
-            line_ = 'SELL        : {:<10}\n'.format(price)
+            line_ = 'SELL        : {:<10}'.format(price) + now() + '\n'
             over_write_file(directory=self.log, line_=line_)
             self.sell(price=price, amount='hoge', order_type=order_type)
 
         elif operation == int(self.RETRY):
             # キャンセル
             result = self.cancel_orders(
-                order_id=self.order_ids
+                order_id=self.order_id
             )
             # 再要求
             if result.side == 'buy':
-                line_ = 'RETRY BUY  : {:<10}\n'.format(price)
+                line_ = 'RETRY BUY  : {:<10}'.format(price) + now() + '\n'
                 over_write_file(directory=self.log, line_=line_)
                 self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
             elif result.side == 'sell':
-                line_ = 'RETRY SELL : {:<10}\n'.format(price)
+                line_ = 'RETRY SELL : {:<10}'.format(price) + now() + '\n'
                 over_write_file(directory=self.log, line_=line_)
                 self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
         elif operation == int(self.STAY):
@@ -134,7 +133,7 @@ class Prototype(Auto):
             )
 
             self.new_order_message(order=order, retry=retry)
-            self.order_ids += 1
+            self.order_id += 1
             self.waiting_price = price
             self.is_waiting = True
             print()
@@ -165,7 +164,7 @@ class Prototype(Auto):
                 'type': 'hoge'
             }
             self.cancel_order_message(result=result)
-            self.order_ids -= 1
+            self.order_id -= 1
             self.waiting_price = None
             self.is_waiting = False
             order = Order.order(r=result)

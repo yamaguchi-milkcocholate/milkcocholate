@@ -7,7 +7,6 @@ from bitbank.exceptions.tagexception import DataNotUpdateException
 class Tag(Adviser):
     ASKS = 'asks'
     BIDS = 'bids'
-    PROFIT = 0.15
 
     def __init__(self, ema_term, ma_term, buy_directory, sell_directory, price_range=0.1):
         """
@@ -222,7 +221,7 @@ class Tag(Adviser):
         :return:
         """
         ma = simple_moving_average(data=self.candlestick.end.values.astype(float), term=self.ma_term)
-        self.ma_list = ma[-1 * self.ma_term:-1]
+        self.ma_list = ma[-1 * self.ma_term + 1:-1]
         self.ma = ma[-1]
         ema = exponential_moving_average(data=self.candlestick.end.values.astype(float), term=self.ema_term)
         self.ema_list = ema[-1 * self.ema_term:-1]
