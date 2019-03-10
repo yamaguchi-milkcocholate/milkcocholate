@@ -6,7 +6,7 @@ from bitbank.auto import Auto
 
 
 class Bot(Auto):
-    MANAGE_AMOUNT = 200000
+    MANAGE_AMOUNT = 190000
     LOSS_CUT_PRICE = 0.5
 
     def __init__(self, adviser, pair, api_key, api_secret, log):
@@ -41,27 +41,42 @@ class Bot(Auto):
         if self.is_waiting:
             # 注文の情報を確認
             order = self.fetch_order()
-            if order.status == 'FULLY_FILLED':
-                # 削除
-                self.order_id = None
-                self.waiting_price = None
-                self.is_waiting = False
-            # 注文中
-            else:
-                pass
+            side = order.side
+            if side == 'buy':
+                if order.status == 'FULLY_FILLED':
+                    # 削除
+                    self.order_id = None
+                    self.waiting_price = None
+                    self.is_waiting = False
+                    self.has_coin = True
+                    self.buying_price = float(order.price)
+                # 注文中
+                else:
+                    pass
+            elif side == 'sell':
+                if order.status == 'FULLY_FILLED':
+                    # 削除
+                    self.order_id = None
+                    self.waiting_price = None
+                    self.is_waiting = False
+                    self.has_coin = False
+                    self.buying_price = None
+                # 注文中
+                else:
+                    pass
 
     def request(self, operation, price, order_type):
         assets_free_amount = self.fetch_asset()
         # 損切
         self.loss_cut(assets_free_amount[self.coin])
         if operation == int(self.BUY):
-            line_ = 'BUY         : {:<10}'.format(price) + now() + '\n'
+            line_ = 'BUY         : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
             over_write_file(directory=self.log, line_=line_)
             amount = float(self.MANAGE_AMOUNT / price)
             self.buy(price=price, amount=amount, order_type=order_type)
 
         elif operation == int(self.SELL):
-            line_ = 'SELL        : {:<10}'.format(price) + now() + '\n'
+            line_ = 'SELL        : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
             over_write_file(directory=self.log, line_=line_)
             amount = float(assets_free_amount[self.coin])
             self.sell(price=price, amount=amount, order_type=order_type)
@@ -73,11 +88,11 @@ class Bot(Auto):
             )
             # 再要求
             if result.side == 'buy':
-                line_ = 'RETRY BUY  : {:<10}'.format(price) + now() + '\n'
+                line_ = 'RETRY BUY   : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
                 over_write_file(directory=self.log, line_=line_)
                 self.buy(price=price, amount=result.remaining_amount, order_type=order_type)
             elif result.side == 'sell':
-                line_ = 'RETRY SELL : {:<10}'.format(price) + now() + '\n'
+                line_ = 'RETRY SELL  : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
                 over_write_file(directory=self.log, line_=line_)
                 self.sell(price=price, amount=result.remaining_amount, order_type=order_type)
         elif operation == int(self.STAY):
@@ -92,8 +107,6 @@ class Bot(Auto):
             side='buy',
             order_type=order_type
         )
-        self.buying_price = price
-        self.has_coin = True
 
     def sell(self, price, amount, order_type):
         self.new_orders(
@@ -102,8 +115,6 @@ class Bot(Auto):
             side='sell',
             order_type=order_type
         )
-        self.buying_price = None
-        self.has_coin = False
 
     def loss_cut(self, coin):
         price = self.fetch_price()
@@ -171,7 +182,7 @@ class Bot(Auto):
             self.waiting_price = price
             self.is_waiting = True
             print()
-            print(order.ordered_at + '   ' + side + ' ' + order.start_amount + ' ' + str(order.price))
+            print(str(order.ordered_at) + '   ' + str(side) + ' ' + str(order.start_amount) + ' ' + str(order.price))
         except Exception as e:
             print(e)
             if '60002' in e.args[0]:
@@ -234,7 +245,7 @@ class Bot(Auto):
             return False
         result = self.api_gateway.use_order(
             pair=self.pair,
-            order_ids=self.order_id
+            order_id=self.order_id
         )
         if result is None:
             raise SchedulerCancelException('Fail to get orders information')

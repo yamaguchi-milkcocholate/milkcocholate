@@ -79,6 +79,8 @@ class Tag(Adviser):
             board = self.find_maker(side=self.BIDS)
             board = [i for i in board if i >= (board[0] - self.price_range)]
 
+        sell_retrys = list()
+
         for price in board:
             guess_ma = self.guess_ma(price=price)
             guess_ema = self.guess_ema(price=price)
@@ -99,9 +101,23 @@ class Tag(Adviser):
                 buying_price=buying_price,
                 waiting_price=waiting_price
             )
-            if operation != self.STAY:
+            if operation == self.BUY or operation == self.SELL or (operation == self.RETRY and not has_coin):
                 print('PRICE: {:.5f} 1'.format(price))
                 return operation, order_price, order_type
+            # 売りのリトライ
+            elif has_coin and operation == self.RETRY:
+                sell_retrys.append({'operation': operation, 'price': float(price), 'order_type': order_type})
+            else:
+                pass
+
+        if len(sell_retrys) > 0:
+            true_ = [i for i in sell_retrys if i['price'] > buying_price]
+            # buying_priceを超えるものがある
+            if len(true_) > 0:
+                return true_[0]['operation'], true_[0]['price'], true_[0]['order_type']
+            # 超えるものがない
+            else:
+                return sell_retrys[0]['operation'], sell_retrys[0]['price'], sell_retrys[0]['order_type']
 
         return self.STAY, None, None
 
@@ -132,7 +148,7 @@ class Tag(Adviser):
             )
             if operation:
                 if is_waiting:
-                    if waiting_price < price:
+                    if waiting_price > price:
                         return self.RETRY, price, self.TYPE_LIMIT
                 else:
                     return self.SELL, price, self.TYPE_LIMIT
@@ -148,7 +164,7 @@ class Tag(Adviser):
             if operation:
                 # リトライ
                 if is_waiting:
-                    if waiting_price > price:
+                    if waiting_price < price:
                         return self.RETRY, price, self.TYPE_LIMIT
                 # 新規
                 else:

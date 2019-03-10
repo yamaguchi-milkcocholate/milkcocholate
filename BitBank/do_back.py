@@ -14,7 +14,7 @@ aggregate = Aggregate(
     population=50,
     new_num=3,
     fitness_function=fitness_function,
-    keep=25,
+    keep=40,
     depth=15,
     steps=200
 )
@@ -36,4 +36,4 @@ gp.generation(steps=300)
 #gp.additional_generation(steps=200)
 """
 
-write_file(directory='15min/training/aggregate_gp_08.pkl', obj=aggregate)
+write_file(directory='15min/training/aggregate_gp_09.pkl', obj=aggregate)
