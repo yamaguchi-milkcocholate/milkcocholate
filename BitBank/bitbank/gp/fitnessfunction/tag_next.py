@@ -125,7 +125,7 @@ class TagNextFitnessFunction(FitnessFunction):
         """
         t = s + f + 1
         trial = success + fail + 1
-        w = (100 * math.exp(t * 0.05)) / (100 + math.exp(t * 0.05))
+        w = (100 * math.exp(t * 0.03)) / (100 + math.exp(t * 0.03))
         return math.exp((success / trial)) * w
 
     def feature_range(self):

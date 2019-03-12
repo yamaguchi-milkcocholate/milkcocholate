@@ -88,7 +88,6 @@ class Tag(Adviser):
             ema_price_diff = self.guess_ema_price_diff(ema=guess_ema, price=price)
             ema_ma_diff = self.guess_ema_ma_diff(ema=guess_ema, ma=guess_ma)
             ma_diff = self.guess_ma_diff(guess_ma=guess_ma)
-
             operation, order_price, order_type = self.analysis(
                 inc=inc,
                 e=e,
@@ -101,12 +100,16 @@ class Tag(Adviser):
                 buying_price=buying_price,
                 waiting_price=waiting_price
             )
-            if operation == self.BUY or operation == self.SELL or (operation == self.RETRY and not has_coin):
-                print('PRICE: {:.5f} 1'.format(price))
+            if operation == self.BUY or operation == self.SELL:
+                print('PRICE: {:.5f} 1'.format(order_price))
+                return operation, order_price, order_type
+            elif operation == self.RETRY and not has_coin:
+
+                print('PRICE: {:.5f} 1'.format(order_price))
                 return operation, order_price, order_type
             # 売りのリトライ
             elif has_coin and operation == self.RETRY:
-                sell_retrys.append({'operation': operation, 'price': float(price), 'order_type': order_type})
+                sell_retrys.append({'operation': operation, 'price': float(order_price), 'order_type': order_type})
             else:
                 pass
 
@@ -164,7 +167,7 @@ class Tag(Adviser):
             if operation:
                 # リトライ
                 if is_waiting:
-                    if waiting_price < price:
+                    if waiting_price > price:
                         return self.RETRY, price, self.TYPE_LIMIT
                 # 新規
                 else:

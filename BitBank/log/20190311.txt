@@ -1,0 +1,30 @@
+BUY         : 34.403    2019-03-11 14:00:44  limit
+SELL        : 34.311    2019-03-11 14:59:14  limit
+RETRY SELL  : 34.307    2019-03-11 14:59:30  limit
+RETRY SELL  : 34.304    2019-03-11 14:59:45  limit
+BUY         : 34.398    2019-03-11 15:25:29  limit
+SELL        : 34.308    2019-03-11 18:07:44  limit
+BUY         : 34.393    2019-03-11 18:39:14  limit
+SELL        : 34.612    2019-03-11 19:26:59  limit
+BUY         : 34.393    2019-03-11 19:45:44  limit
+RETRY BUY   : 34.398    2019-03-11 19:46:00  limit
+RETRY BUY   : 34.403    2019-03-11 19:46:15  limit
+SELL        : 34.304    2019-03-11 21:05:59  limit
+RETRY SELL  : 34.303    2019-03-11 21:06:15  limit
+RETRY SELL  : 34.29     2019-03-11 21:06:30  limit
+RETRY SELL  : 34.285    2019-03-11 21:06:45  limit
+RETRY SELL  : 34.282    2019-03-11 21:07:45  limit
+RETRY SELL  : 34.28     2019-03-11 21:08:30  limit
+RETRY SELL  : 34.277    2019-03-11 21:08:44  limit
+RETRY SELL  : 34.265    2019-03-11 21:08:59  limit
+RETRY SELL  : 34.262    2019-03-11 21:09:15  limit
+RETRY SELL  : 34.244    2019-03-11 21:09:45  limit
+SELL        : 34.213    2019-03-11 21:09:59  limit
+RETRY SELL  : 34.202    2019-03-11 21:10:30  limit
+BUY         : 34.398    2019-03-12 06:11:14  limit
+RETRY BUY   : 34.401    2019-03-12 06:12:45  limit
+SELL        : 34.312    2019-03-12 09:32:14  limit
+RETRY SELL  : 34.302    2019-03-12 09:39:00  limit
+RETRY SELL  : 34.298    2019-03-12 09:40:45  limit
+RETRY SELL  : 34.296    2019-03-12 09:41:00  limit
+RETRY SELL  : 34.256    2019-03-12 09:41:15  limit
