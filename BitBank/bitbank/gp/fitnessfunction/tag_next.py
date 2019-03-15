@@ -6,16 +6,20 @@ import math
 
 class TagNextFitnessFunction(FitnessFunction):
 
-    def __init__(self, ema_term, ma_term, goal, buy_genome, limit, data):
+    def __init__(self, ema_term, ma_term, goal, buy_genome, limit, data, top, balance, edge):
         super().__init__()
         self.ema_term = ema_term
         self.ma_term = ma_term
         self.goal = goal
         self.buy_genome = buy_genome
         self.limit = limit
+        self.top = top
+        self.balance = balance
+        self.edge = edge
         self.candlestick = load_data(data, 'data_xrp')
         self.data = None
         self.ranges = dict()
+        self.tech_data = dict()
         self.make_data_frame()
         self.feature_range()
 
@@ -46,21 +50,32 @@ class TagNextFitnessFunction(FitnessFunction):
         count = 0
         # PRICE > MA, PRICE > EMAになったらTrue
         for data_i in range(self.ma_term, data_size):
-            inc, e = self.ma_regression(data_i=data_i)
-            ma_diff = self.ma_diff(data_i=data_i)
-            ema_price_diff = self.ema_price_diff(data_i=data_i)
-            ema_ma_diff = self.ema_ma_diff(data_i=data_i)
+            ema_price_diff = self.tech_data[data_i]['ema_price_diff']
+            ema_ma_diff = self.tech_data[data_i]['ema_ma_diff']
+            inc = self.tech_data[data_i]['inc']
+            e = self.tech_data[data_i]['e']
+            ma_diff = self.tech_data[data_i]['ma_diff']
+            ema_inc = self.tech_data[data_i]['ema_inc']
+            ema_e = self.tech_data[data_i]['ema_e']
+            ema_diff = self.tech_data[data_i]['ema_diff']
+            price = self.tech_data[data_i]['price']
+            price_inc = self.tech_data[data_i]['price_inc']
+            price_e = self.tech_data[data_i]['price_e']
             # 売りのタイミングを探る
             if is_check:
                 count += 1
-                price = self.price(data_i)
                 r = genome.operation(
                     inc=inc,
                     e=e,
                     ema_price_diff=ema_price_diff,
                     ema_ma_diff=ema_ma_diff,
                     ma_diff=ma_diff,
-                    price=price - buying_price
+                    price=price - buying_price,
+                    ema_inc=ema_inc,
+                    ema_e=ema_e,
+                    ema_diff=ema_diff,
+                    price_inc=price_inc,
+                    price_e=price_e
                 )
                 if r:
                     success, fail, s, f = self.__sell_judge(
@@ -86,7 +101,12 @@ class TagNextFitnessFunction(FitnessFunction):
                     e=e,
                     ema_price_diff=ema_price_diff,
                     ema_ma_diff=ema_ma_diff,
-                    ma_diff=ma_diff
+                    ma_diff=ma_diff,
+                    ema_inc=ema_inc,
+                    ema_e=ema_e,
+                    ema_diff=ema_diff,
+                    price_inc=price_inc,
+                    price_e=price_e
                 )
                 if r:
                     is_check = True
@@ -107,13 +127,12 @@ class TagNextFitnessFunction(FitnessFunction):
     def __sell_judge(self, buying_price, success, fail, price, s, f):
         if buying_price + self.goal <= price:
             return success + 10, fail, s + 1, f
-        elif buying_price > price:
-            return success + 1, fail, s + 1, f
+        # elif buying_price > price:
+            # return success + 1, fail, s + 1, f
         else:
             return success, fail + 10, s, f + 1
 
-    @staticmethod
-    def __fitness(success, fail, s, f):
+    def __fitness(self, success, fail, s, f):
         """
         適応度を計算
         試行回数に重みをつける
@@ -123,10 +142,14 @@ class TagNextFitnessFunction(FitnessFunction):
         :param fail:
         :return:
         """
-        t = s + f + 1
-        trial = success + fail + 1
-        w = (100 * math.exp(t * 0.03)) / (100 + math.exp(t * 0.03))
-        return math.exp((success / trial)) * w
+        edge = s + f
+        if edge >= self.edge:
+            fitness = (self.balance / self.edge) * success + ((self.balance - self.top) / self.edge) * fail + (self.top - self.balance)
+        else:
+            fitness = (self.top / self.edge) * success
+        if fitness <= 0:
+            fitness = 0
+        return fitness + 1
 
     def feature_range(self):
         data_size = len(self.data)
@@ -135,18 +158,37 @@ class TagNextFitnessFunction(FitnessFunction):
         ema_price_diff_list = list()
         ema_ma_diff_list = list()
         ma_diff_list = list()
+        ema_diff_list = list()
+        ema_inc_list = list()
+        ema_e_list = list()
         price_list = list()
+        price_inc_list = list()
+        price_e_list = list()
         for data_i in range(self.ma_term, data_size):
             inc, e = self.ma_regression(data_i=data_i)
             ema_price_diff = self.ema_price_diff(data_i=data_i)
             ema_ma_diff = self.ema_ma_diff(data_i=data_i)
             ma_diff = self.ma_diff(data_i=data_i)
+            ema_diff = self.ema_diff(data_i=data_i)
+            ema_inc, ema_e = self.ema_regression(data_i=data_i)
+            price_inc, price_e = self.price_regression(data_i=data_i)
+
             inc_list.append(inc)
             e_list.append(e)
             ema_price_diff_list.append(ema_price_diff)
             ema_ma_diff_list.append(ema_ma_diff)
             ma_diff_list.append(ma_diff)
+            ema_diff_list.append(ema_diff)
+            ema_inc_list.append(ema_inc)
+            ema_e_list.append(ema_e)
+            price_inc_list.append(price_inc)
+            price_e_list.append(price_e)
             price_list.append(self.price(data_i))
+            add = {
+                'inc': inc, 'e': e, 'ema_price_diff': ema_price_diff, 'ema_ma_diff': ema_ma_diff, 'ma_diff': ma_diff,
+                'ema_diff': ema_diff, 'ema_inc': ema_inc, 'ema_e': ema_e, 'price': self.price(data_i), 'price_inc': price_inc, 'price_e': price_e
+            }
+            self.tech_data[data_i] = add
         min_list = [min(price_list)] * len(price_list)
 
         def norm(x, m):
@@ -158,7 +200,12 @@ class TagNextFitnessFunction(FitnessFunction):
         self.__stats(name='ema_price_diff', d_list=ema_price_diff_list)
         self.__stats(name='ema_ma_diff', d_list=ema_ma_diff_list)
         self.__stats(name='ma_diff', d_list=ma_diff_list)
+        self.__stats(name='ema_inc', d_list=ema_inc_list)
+        self.__stats(name='ema_e', d_list=ema_e_list)
+        self.__stats(name='ema_diff', d_list=ema_diff_list)
         self.__stats(name='price', d_list=price_list)
+        self.__stats(name='price_inc', d_list=price_inc_list)
+        self.__stats(name='price_e', d_list=price_e_list)
 
     def __stats(self, name, d_list):
         print(name, end='')
@@ -194,6 +241,30 @@ class TagNextFitnessFunction(FitnessFunction):
 
     def price(self, data_i):
         return float(self.data.loc[data_i, 'end'])
+
+    def price_regression(self, data_i):
+        ema_list = self.data.loc[data_i - self.ma_term:data_i - 1].end.values
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(ema_list))
+        w = linear_regression(x=x, t=ema_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - ema_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
+
+    def ema_regression(self, data_i):
+        ema_list = self.data.loc[data_i - self.ema_term:data_i - 1].ema.values
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(ema_list))
+        w = linear_regression(x=x, t=ema_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - ema_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
 
     def ma_regression(self, data_i):
         """
@@ -235,6 +306,9 @@ class TagNextFitnessFunction(FitnessFunction):
         :return:
         """
         return float(self.data.loc[data_i, 'ma']) - float(self.data.loc[data_i - 1, 'ma'])
+
+    def ema_diff(self, data_i):
+        return float(self.data.loc[data_i, 'ema']) - float(self.data.loc[data_i - 1, 'ema'])
 
     @staticmethod
     def __uniform_length(candlestick, ma, ema, r_len):

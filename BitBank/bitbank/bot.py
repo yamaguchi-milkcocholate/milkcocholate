@@ -9,7 +9,7 @@ class Bot(Auto):
     MANAGE_AMOUNT = 190000
     LOSS_CUT_PRICE = 0.5
 
-    def __init__(self, adviser, pair, api_key, api_secret, log):
+    def __init__(self, adviser, pair, api_key, api_secret, log, limit):
         """
         :param adviser:       bitbank.adviser テクニカル分析結果から売却の指示をするクラスのインスタンス
         :param pair:          string          通貨のペア
@@ -23,6 +23,8 @@ class Bot(Auto):
         self.is_waiting = False
         self.waiting_price = None
         self.log = log
+        self.buy_count = 0
+        self.limit = limit
 
     def __call__(self):
         # 要求を確認
@@ -37,6 +39,8 @@ class Bot(Auto):
         self.request(operation=operation, price=price, order_type=order_type)
 
     def check_request(self):
+        if self.has_coin:
+            self.buy_count += 1
         # 注文があった場合
         if self.is_waiting:
             # 注文の情報を確認
@@ -51,6 +55,14 @@ class Bot(Auto):
                     self.has_coin = True
                     self.buying_price = float(order.price)
                 # 注文中
+                elif order.status == 'UNFILLED ':
+                    if self.adviser.should_cancel(price=self.waiting_price):
+                        # キャンセル
+                        result = self.cancel_orders(
+                            order_id=self.order_id
+                        )
+                        self.waiting_price = None
+                        self.is_waiting = False
                 else:
                     pass
             elif side == 'sell':
@@ -62,6 +74,14 @@ class Bot(Auto):
                     self.has_coin = False
                     self.buying_price = None
                 # 注文中
+                elif order.status == 'UNFILLED ':
+                    if self.adviser.should_cancel(price=self.waiting_price):
+                        # キャンセル
+                        result = self.cancel_orders(
+                            order_id=self.order_id
+                        )
+                        self.waiting_price = None
+                        self.is_waiting = False
                 else:
                     pass
 
@@ -76,10 +96,13 @@ class Bot(Auto):
             self.buy(price=price, amount=amount, order_type=order_type)
 
         elif operation == int(self.SELL):
-            line_ = 'SELL        : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
-            over_write_file(directory=self.log, line_=line_)
-            amount = float(assets_free_amount[self.coin])
-            self.sell(price=price, amount=amount, order_type=order_type)
+            if self.buy_count < self.limit and self.buying_price < price:
+                pass
+            else:
+                line_ = 'SELL        : {:<10}'.format(price) + now() + '  ' + str(order_type) + '\n'
+                over_write_file(directory=self.log, line_=line_)
+                amount = float(assets_free_amount[self.coin])
+                self.sell(price=price, amount=amount, order_type=order_type)
 
         elif operation == int(self.RETRY):
             # キャンセル
@@ -109,6 +132,7 @@ class Bot(Auto):
         )
 
     def sell(self, price, amount, order_type):
+        self.buy_count = 0
         self.new_orders(
             price=price,
             amount=amount,

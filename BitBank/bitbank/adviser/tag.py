@@ -38,6 +38,36 @@ class Tag(Adviser):
 
         self.tag_candlestick()
 
+    def should_cancel(self, price, has_coin, buying_price):
+        guess_ma = self.guess_ma(price=price)
+        guess_ema = self.guess_ema(price=price)
+        inc, e = self.guess_ma_regression(guess_ma=guess_ma)
+        ema_price_diff = self.guess_ema_price_diff(ema=guess_ema, price=price)
+        ema_ma_diff = self.guess_ema_ma_diff(ema=guess_ema, ma=guess_ma)
+        ma_diff = self.guess_ma_diff(guess_ma=guess_ma)
+        ema_diff = self.guess_ema_diff(guess_ema=guess_ema)
+        ema_inc, ema_e = self.guess_ema_regression(guess_ema=guess_ema)
+        # is_waiting = False なので、BUY, SELL, STAY のうちどれか
+        operation, order_price, order_type = self.analysis(
+            inc=inc,
+            e=e,
+            ema_price_diff=ema_price_diff,
+            ema_ma_diff=ema_ma_diff,
+            ma_diff=ma_diff,
+            ema_inc=ema_inc,
+            ema_e=ema_e,
+            ema_diff=ema_diff,
+            price=price,
+            has_coin=has_coin,
+            is_waiting=False,
+            buying_price=buying_price,
+            waiting_price=price
+        )
+        if operation == self.BUY or operation == self.SELL:
+            return False
+        elif operation == self.STAY:
+            return True
+
     def operation(self, has_coin, is_waiting, buying_price, waiting_price, price=None):
         if price is None:
             price = self.api_gateway.use_ticker(pair=self.pair)
@@ -88,12 +118,17 @@ class Tag(Adviser):
             ema_price_diff = self.guess_ema_price_diff(ema=guess_ema, price=price)
             ema_ma_diff = self.guess_ema_ma_diff(ema=guess_ema, ma=guess_ma)
             ma_diff = self.guess_ma_diff(guess_ma=guess_ma)
+            ema_diff = self.guess_ema_diff(guess_ema=guess_ema)
+            ema_inc, ema_e = self.guess_ema_regression(guess_ema=guess_ema)
             operation, order_price, order_type = self.analysis(
                 inc=inc,
                 e=e,
                 ema_price_diff=ema_price_diff,
                 ema_ma_diff=ema_ma_diff,
                 ma_diff=ma_diff,
+                ema_inc=ema_inc,
+                ema_e=ema_e,
+                ema_diff=ema_diff,
                 price=price,
                 has_coin=has_coin,
                 is_waiting=is_waiting,
@@ -124,7 +159,7 @@ class Tag(Adviser):
 
         return self.STAY, None, None
 
-    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, price, has_coin, is_waiting, buying_price, waiting_price):
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, price, has_coin, is_waiting, buying_price, waiting_price, ema_diff, ema_inc, ema_e):
         """
         分析して指示を出す
         :param inc: float 傾き
@@ -147,6 +182,9 @@ class Tag(Adviser):
                 ema_price_diff=ema_price_diff,
                 ema_ma_diff=ema_ma_diff,
                 ma_diff=ma_diff,
+                ema_inc=ema_inc,
+                ema_e=ema_e,
+                ema_diff=ema_diff,
                 price=self.price - buying_price
             )
             if operation:
@@ -162,12 +200,15 @@ class Tag(Adviser):
                 e=e,
                 ema_price_diff=ema_price_diff,
                 ema_ma_diff=ema_ma_diff,
-                ma_diff=ma_diff
+                ma_diff=ma_diff,
+                ema_inc=ema_inc,
+                ema_e=ema_e,
+                ema_diff=ema_diff,
             )
             if operation:
                 # リトライ
                 if is_waiting:
-                    if waiting_price > price:
+                    if waiting_price < price:
                         return self.RETRY, price, self.TYPE_LIMIT
                 # 新規
                 else:
@@ -183,6 +224,21 @@ class Tag(Adviser):
 
     def guess_ma_diff(self, guess_ma):
         return guess_ma - self.ma_list[-1]
+
+    def guess_ema_diff(self, guess_ema):
+        return guess_ema - self.ema_list[-1]
+
+    def guess_ema_regression(self, guess_ema):
+        ema_list = np.append(self.ema_list, guess_ema)
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(ema_list))
+        w = linear_regression(x=x, t=ema_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - ema_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
 
     def guess_ma_regression(self, guess_ma):
         ma_list = np.append(self.ma_list, guess_ma)

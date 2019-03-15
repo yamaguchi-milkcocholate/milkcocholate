@@ -104,8 +104,8 @@ class GPGenome:
         """
         self.pruning_tree()
         r, rr, sr, er = self.true_route()
-        self.pruning_tree_fill(success_route=sr)
-        r, rr, sr, er = self.true_route()
+        # self.pruning_tree_fill(success_route=sr)
+        # r, rr, sr, er = self.true_route()
         self.pruning_true_route(success_route=sr, keep=keep, depth=depth)
 
     def show_tree_map(self, name):
