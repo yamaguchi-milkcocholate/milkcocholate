@@ -12,8 +12,8 @@ api_secret = input()
 adviser = Tag(
     ema_term=4,
     ma_term=8,
-    buy_directory='15min/training/buy_20190312.pkl',
-    sell_directory='15min/training/sell_20190312.pkl'
+    buy_directory='15min/training/buy_20190315.pkl',
+    sell_directory='15min/training/sell_20190315.pkl'
 )
 
 bot = Bot(

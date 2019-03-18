@@ -82,6 +82,8 @@ class Tag(Adviser):
         ema_price_diff = self.ema_price_diff()
         ema_ma_diff = self.ema_ma_diff()
         ma_diff = self.ma_diff()
+        ema_inc, ema_e = self.ema_regression()
+        price_inc, price_e = self.price_regression()
         print('price         : {:.5f}'.format(self.price))
         print('ema           : {:.5f}'.format(self.ema))
         print('ma            : {:.5f}'.format(self.ma))
@@ -91,6 +93,11 @@ class Tag(Adviser):
         print('ema price diff: {:.5f}'.format(ema_price_diff))
         print('ema ma diff   : {:.5f}'.format(ema_ma_diff))
         print('ma diff       : {:.5f}'.format(ma_diff))
+        print('ema inc       : {:.5f}'.format(ema_inc))
+        print('ema e         : {:.5f}'.format(ema_e))
+        print('price inc     : {:.5f}'.format(price_inc))
+        print('price e       : {:.5f}'.format(price_e))
+
         # 間隔更新
         self.fetch_count += 0
         if self.fetch_count >= 60:
@@ -120,6 +127,7 @@ class Tag(Adviser):
             ma_diff = self.guess_ma_diff(guess_ma=guess_ma)
             ema_diff = self.guess_ema_diff(guess_ema=guess_ema)
             ema_inc, ema_e = self.guess_ema_regression(guess_ema=guess_ema)
+            price_inc, price_e = self.guess_price_regression(guess_price=price)
             operation, order_price, order_type = self.analysis(
                 inc=inc,
                 e=e,
@@ -130,6 +138,8 @@ class Tag(Adviser):
                 ema_e=ema_e,
                 ema_diff=ema_diff,
                 price=price,
+                price_inc=price_inc,
+                price_e=price_e,
                 has_coin=has_coin,
                 is_waiting=is_waiting,
                 buying_price=buying_price,
@@ -159,7 +169,7 @@ class Tag(Adviser):
 
         return self.STAY, None, None
 
-    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, price, has_coin, is_waiting, buying_price, waiting_price, ema_diff, ema_inc, ema_e):
+    def analysis(self, inc, e, ema_price_diff, ema_ma_diff, ma_diff, price, has_coin, is_waiting, buying_price, waiting_price, ema_diff, ema_inc, ema_e, price_inc, price_e):
         """
         分析して指示を出す
         :param inc: float 傾き
@@ -185,7 +195,9 @@ class Tag(Adviser):
                 ema_inc=ema_inc,
                 ema_e=ema_e,
                 ema_diff=ema_diff,
-                price=self.price - buying_price
+                price=self.price - buying_price,
+                price_inc=price_inc,
+                price_e=price_e
             )
             if operation:
                 if is_waiting:
@@ -204,6 +216,8 @@ class Tag(Adviser):
                 ema_inc=ema_inc,
                 ema_e=ema_e,
                 ema_diff=ema_diff,
+                price_inc=price_inc,
+                price_e=price_e
             )
             if operation:
                 # リトライ
@@ -227,6 +241,18 @@ class Tag(Adviser):
 
     def guess_ema_diff(self, guess_ema):
         return guess_ema - self.ema_list[-1]
+
+    def guess_price_regression(self, guess_price):
+        price_list = np.append(self.data, guess_price)
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(price_list))
+        w = linear_regression(x=x, t=price_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - price_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
 
     def guess_ema_regression(self, guess_ema):
         ema_list = np.append(self.ema_list, guess_ema)
@@ -309,6 +335,38 @@ class Tag(Adviser):
         :return:
         """
         return self.ma - self.ma_list[-1]
+
+    def price_regression(self):
+        """
+        ~n-1の線形回帰直線と二乗和誤差
+        :return: 傾き, 誤差
+        """
+        price_list = np.append(self.data, self.price)
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(price_list))
+        w = linear_regression(x=x, t=price_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - price_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
+
+    def ema_regression(self):
+        """
+        ~n-1の線形回帰直線と二乗和誤差
+        :return: 傾き, 誤差
+        """
+        ema_list = np.append(self.ema_list, self.ema)
+        poly = Polynomial(dim=2)
+        x = np.arange(start=0, stop=len(ema_list))
+        w = linear_regression(x=x, t=ema_list, basic_function=poly)
+        poly.set_coefficient(w=w)
+        reg = np.asarray([poly.func(x=i) for i in range(len(x))])
+        e = reg - ema_list
+        e = e * e.T
+        e = np.sum(e)
+        return w[1], e
 
     def ma_regression(self):
         """
