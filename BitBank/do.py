@@ -1,5 +1,5 @@
 from bitbank.bot import Bot
-from bitbank.adviser.zigzag import ZigZagAdviser
+from bitbank.adviser.tag import Tag
 from bitbank.scheduler import Scheduler
 
 
@@ -9,27 +9,20 @@ api_key = input()
 print('api_secret: ', end='')
 api_secret = input()
 
-print('host: ', end='')
-host = input()
-
-print('population id: ', end='')
-population_id = input()
-population_id = int(population_id)
-
-print('genome id: ', end='')
-genome_id = input()
-genome_id = int(genome_id)
-
-adviser = ZigZagAdviser(init_max_high=33.5, init_min_low=33.0)
+adviser = Tag(
+    ema_term=4,
+    ma_term=8,
+    buy_directory='15min/training/buy_20190315.pkl',
+    sell_directory='15min/training/sell_20190315.pkl'
+)
 
 bot = Bot(
-    host=host,
-    population_id=population_id,
-    genome_id=genome_id,
     adviser=adviser,
     pair='xrp_jpy',
     api_key=api_key,
-    api_secret=api_secret
+    api_secret=api_secret,
+    log='log/20190311.txt',
+    limit=50
 )
 
 scheduler = Scheduler(runner=bot)

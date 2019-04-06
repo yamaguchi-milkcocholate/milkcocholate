@@ -1,0 +1,56 @@
+digraph {
+	node [shape=circle]
+	0 [label="ema_price_diff < 0.24139"]
+	206 [label=False]
+	0 -> 206
+	1 [label="e > 0.06677"]
+	0 -> 1
+	45 [label=False]
+	1 -> 45
+	2 [label="inc < 0.30098"]
+	1 -> 2
+	36 [label="e > 0.16104"]
+	2 -> 36
+	38 [label="ema_ma_diff > 0.90854"]
+	36 -> 38
+	40 [label="ma_diff < 0.02121"]
+	38 -> 40
+	42 [label="inc < 0.13032"]
+	40 -> 42
+	44 [label=True]
+	42 -> 44
+	43 [label=False]
+	42 -> 43
+	41 [label=False]
+	40 -> 41
+	39 [label=False]
+	38 -> 39
+	37 [label=False]
+	36 -> 37
+	3 [label="ema_ma_diff > 0.44338"]
+	2 -> 3
+	35 [label=False]
+	3 -> 35
+	4 [label="ema_ma_diff < 0.27268"]
+	3 -> 4
+	6 [label="ma_diff > 0.28222"]
+	4 -> 6
+	24 [label="e < 0.14338"]
+	6 -> 24
+	26 [label=False]
+	24 -> 26
+	25 [label=True]
+	24 -> 25
+	7 [label="ema_price_diff < -0.46571"]
+	6 -> 7
+	21 [label="ema_ma_diff < 0.52879"]
+	7 -> 21
+	23 [label=True]
+	21 -> 23
+	22 [label=False]
+	21 -> 22
+	8 [label=False]
+	7 -> 8
+	5 [label=False]
+	4 -> 5
+}

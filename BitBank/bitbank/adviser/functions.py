@@ -14,7 +14,27 @@ def simple_moving_average(data, term):
         # numpy[start:stop:steps] stopは含まれない
         values = data[i:i + start + 1]
         average_list.append(float(np.sum(values) / term))
-    return np.asarray(a=average_list, dtype=np.float32)
+    return np.asarray(a=average_list, dtype=float)
+
+
+def exponential_moving_average(data, term):
+    """
+    dataの時系列で新しい順に（後ろから）termの期間の指数移動平均線を返す関数
+    :param data: array like 時系列順のデータ
+    :param term: int   期間
+    :return:     numpy 指数移動平均線のリスト
+    """
+    ema_list = list()
+    start = term - 1
+    # 最初はsma
+    values = data[0:start + 1]
+    ema_list.append(simple_moving_average(data=values, term=term)[0])
+
+    for i in range(1, len(data) - start):
+        # numpy[start:stop:steps] stopは含まれない
+        value = ema_list[-1] + (2 / (term + 1)) * (data[i + start] - ema_list[-1])
+        ema_list.append(value)
+    return np.asarray(a=ema_list, dtype=float)
 
 
 def standard_deviation(data, term):
@@ -73,6 +93,16 @@ class Polynomial(object):
         :param dim: int 多項式の次元 (初期値は0次元なので、入力値のまま)
         """
         self._dim = dim
+        self.w = None
 
     def __call__(self, x):
         return np.array([x ** i for i in range(self._dim)]).T
+
+    def set_coefficient(self, w):
+        if len(w) == self._dim:
+            self.w = w
+        else:
+            raise TypeError('dim can`t match')
+
+    def func(self, x):
+        return sum([self.w[i] * x ** i for i in range(self._dim)])

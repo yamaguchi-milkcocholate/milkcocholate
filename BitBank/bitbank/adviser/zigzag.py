@@ -1,4 +1,5 @@
 from bitbank.apigateway import ApiGateway
+from bitbank.functions import *
 import pandas as pd
 from pytz import timezone
 import datetime
@@ -24,18 +25,19 @@ class ZigZagAdviser:
         self.__pair = pair
         self.__candle_type = candle_type
         self.__api_gateway = ApiGateway()
-        self.genome = None
-        self.buy_deviation = None
-        self.sell_deviation = None
-        self.rsi_term = None
         self.rsi_data = None
         self.rsi_step = None
-        self.rsi_bottom = None
-        self.rsi_top = None
         self.max_high = None
         self.min_low = None
         self.price = None
         self.trend = None
+        # 設定
+        self.buy_deviation = 0.03
+        self.sell_deviation = 0.02
+        self.rsi_term = 14
+        self.rsi_bottom = 40.0
+        self.rsi_top = 60.0
+
         self.__line = Line()
         self.buying_price = buying_price
         self.limit = limit
@@ -43,6 +45,7 @@ class ZigZagAdviser:
         self.candlestick = self.make_price_data_frame()
         self.init_max_high = init_max_high
         self.init_min_low = init_min_low
+        self()
 
     def __call__(self):
         self.is_candlestick = True
@@ -245,12 +248,12 @@ class ZigZagAdviser:
             message = "買いエントリーを審議中\n" \
                       "decision : " + str(self.decision_term) + "\n" \
                       "RSI : " + str(kwargs['rsi']) + "\n" \
-                      "" + str(self.__now())
+                      "" + str(now())
         elif side == 'sell':
             message = "売りエントリーを審議中\n" \
                       "decision : " + str(self.decision_term) + "\n" \
                       "RSI : " + str(kwargs['rsi']) + "\n" \
-                      "" + str(self.__now())
+                      "" + str(now())
         else:
             message = ""
         if self.decision_term == 1 or self.decision_term % 10 == 0:
@@ -287,17 +290,3 @@ class ZigZagAdviser:
         for item in candlestick_today:
             candlestick_yesterday.append(item)
         return pd.DataFrame(candlestick_yesterday, columns=['open', 'high', 'low', 'end', 'yield', 'time'])
-
-    @staticmethod
-    def __now():
-        return datetime.datetime.now(timezone('UTC')).astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
-
-    def set_genome(self, genome):
-        self.genome = genome
-        # 設定
-        self.genome = [10, 0.03, 0.02]
-        self.buy_deviation = self.genome[1]
-        self.sell_deviation = self.genome[2]
-        self.rsi_term = 14
-        self.rsi_bottom = 40.0
-        self.rsi_top = 60.0
